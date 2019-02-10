@@ -1,0 +1,73 @@
+#include "Solver.h"
+#include "misc.h"
+#include <algorithm>
+#include <math.h>
+#include <functional>
+#include <random>
+
+
+// Helper function for the TOME algorithm
+pair<Formula, Formula> Solver::local_mus(Formula bot, Formula top, int diff){
+	if(diff == 1)
+		return make_pair(bot, top);
+	int ones = 0;
+	Formula pivot = bot;
+	for(int i = 0; i < dimension; i++)
+		if(!pivot[i] && top[i]){
+			pivot[i] = true;
+			if(++ones >= diff/2)
+				break;
+		}
+	if(is_valid(pivot))
+		return local_mus(pivot, top, diff - ones);	
+	else
+		return local_mus(bot, pivot, ones);
+}
+
+// The core of the TOME algorithm for MUS enumeration
+void Solver::find_all_muses_tome(){
+	Formula bot, top, mss, fmus, original_top;
+	vector<Formula> path;
+	int diff;
+	while(true){
+		bot = explorer->get_unexplored(0, false);
+		if(bot.empty()) break;
+		top = explorer->get_top_unexplored(bot);
+		original_top = top;
+		if(is_valid(top)){
+			block_down(top);
+			continue;
+		}
+		if(!is_valid(bot)){
+			MUS mus = MUS(bot, -1, muses.size()); //-1 duration means skipped shrink
+			muses.push_back(mus);
+			mark_MUS(mus);
+			if(variant == 21){
+				int rot = recursive_rotation_delta(mus, original_top, 0);
+				cout << "recursively rotated: " << rot << endl;
+			}
+			if(variant == 22){
+				int rot = backbone_mus_rotation(mus, original_top);
+				cout << "recursively rotated: " << rot << endl;
+			}
+			continue;
+		}	
+		diff =  std::count(top.begin(), top.end(), true) - std::count(bot.begin(), bot.end(), true);
+		auto locals = local_mus(bot, top, diff);
+		fmus = locals.second;
+		mss = locals.first;
+		MUS mus = shrink_formula(fmus); 		
+		mark_MUS(mus);
+		block_down(mss);
+	
+		if(variant == 21){
+			int rot = recursive_rotation_delta(mus, original_top, 0);
+			cout << "recursively rotated: " << rot << endl;
+		}
+		if(variant == 22){
+			int rot = backbone_mus_rotation(mus, original_top);
+			cout << "recursively rotated: " << rot << endl;
+		}
+	}
+}
+
