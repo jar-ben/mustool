@@ -8,7 +8,6 @@
 //return ids of violated clause if there is some
 vector<int> Solver::propagate_backbone(int i, bool positive, vector<int> &lits_left, vector<bool> &satisfied, vector<bool> &top, vector<int> &singletons, Formula &seed, int c, 	vector<int> &influenced, bool mark_influenced){
 	vector<int> violated;
-//	cout << "propagating: " << ( (positive)? i + 1 : (i + 1) * -1 ) << endl;
 	if(positive){//implied positive value of i-th literal
 		for(auto c1: satSolver->hitmap_pos[i]){ //clauses satisfied by implied positive value of i-th literal
 			satisfied[c1] = true;
@@ -404,7 +403,6 @@ void Solver::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &
 		}
 		iters++;
 	}
-	//cout << "siters: " << iters << endl;
 }
 
 bool Solver::backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1){
@@ -433,7 +431,6 @@ int Solver::backbone_mus_rotation(MUS &m1, Formula &top){
 	int iterations = 0;
 	Formula original_top = top;
 	bool extended = false;
-//	for(auto c: m1.without_crits){ 
 	for(int d = 0; d < m1.without_crits.size(); d++){
 		int c = m1.without_crits[ (d + muses.size()) % m1.without_crits.size() ];
 		if(explorer->is_critical(c, top)) continue;

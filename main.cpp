@@ -87,7 +87,6 @@ int main(int argc, char *argv[]){
 	bool criticals_rotation = false;
 	bool unex_impl = false;
 	bool test_rotation_unex = false;
-	bool rotation_solver = false;
 	int mus_size_limit = 10000;
 	int scope_limit = 1000000;
 
@@ -127,9 +126,6 @@ int main(int argc, char *argv[]){
 			case 'a':
 				block_down_mus = true;
 				break;
-			case 'q':
-				rotation_solver = true;
-				break;
 			case 'k':
 				test_rotation_unex = true;
 				break;
@@ -157,9 +153,6 @@ int main(int argc, char *argv[]){
                         case 'v':
                                 variant = atoi(optarg);
                                 break;
-//			case 't':
-//				visualize = true;
-//				break;
                         case 'o':
                                 output = optarg;
                                 break;
@@ -229,7 +222,6 @@ int main(int argc, char *argv[]){
 	solver.criticals_rotation = criticals_rotation;
 	solver.explorer->use_implications = unex_impl;
 	solver.explorer->test_rotation_unex = test_rotation_unex;
-	solver.explorer->rotation_solver = rotation_solver;
 	solver.explorer->mus_size_limit = mus_size_limit;
 	solver.scope_limit = scope_limit;
 

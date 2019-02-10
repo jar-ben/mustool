@@ -7,7 +7,6 @@ using namespace std;
 
 
 NuxmvHandle::NuxmvHandle(string filename):SatSolver(filename){
-//	cout << "starting nuxm init" << endl;
 	ifstream file;
 	file.open(filename, ifstream::in);
 	std::string tf;
@@ -25,7 +24,6 @@ NuxmvHandle::NuxmvHandle(string filename):SatSolver(filename){
 
 	build_nuxmv_model();
 	build_nuxmv_batch();
-//	cout << "nuxmv inited" << endl;
 }
 
 NuxmvHandle::~NuxmvHandle(){
@@ -33,7 +31,6 @@ NuxmvHandle::~NuxmvHandle(){
 
 
 void NuxmvHandle::build_nuxmv_model(){
-//	cout << "building model" << endl;
 	stringstream model, filen;
 	model << "MODULE main" << std::endl << "VAR" << std::endl;
 	for(int i = 0; i < variables; i++)
@@ -44,13 +41,11 @@ void NuxmvHandle::build_nuxmv_model(){
 	file.open(model_file);
 	file << model.str();
 	file.close();	
-//	cout << "model built" << endl;
 }
 
 
 
 void NuxmvHandle::build_nuxmv_batch(){
-//	cout << "building batch" << endl;
 	stringstream batch, filen;
 	batch << "read_model -i " << model_file << std::endl;
 	batch << "go_msat" << std::endl; 
@@ -67,11 +62,9 @@ void NuxmvHandle::build_nuxmv_batch(){
 	file.open(batch_file, ios_base::out);
 	file << batch_prefix;
 	file.close();		
-//	cout << "batch built" << endl;
 }
 
 void NuxmvHandle::build_nuxmv_batch_file(std::vector<bool> &controls){	
-//	cout << "building batch file" << endl;
 	std::stringstream batch_final;
 	batch_final << "reqan_check_consistency -r \"";
 	std::vector<string> ones;
@@ -89,12 +82,10 @@ void NuxmvHandle::build_nuxmv_batch_file(std::vector<bool> &controls){
 	file.open(batch_file, ios_base::app);
 	file << batch_final.str();
 	file.close();		
-//	cout << "batch file built" << endl;
 }
 
 
 bool NuxmvHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
-//	cout << "solving" << endl;
 	if(std::count(f.begin(), f.end(), true) == 0)
 		return true;
 	checks++;
@@ -119,8 +110,6 @@ bool NuxmvHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
 	temp << "temp.txt" << random_id;
 	restore << "head -n -2 " << batch_file << "> " <<temp.str() << "; cp " << temp.str() << " " << batch_file;
 	system(restore.str().c_str());
-//	cout << "solved" << endl;
-
 	return ret;
 }
 

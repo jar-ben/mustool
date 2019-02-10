@@ -46,7 +46,6 @@ Explorer::Explorer(int v, bool verb){
 	//init local available structrures
 	maybe_available.resize(dimension, false);
 	parent_muses.resize(dimension, std::vector<int>());
-	rSolver = new RotationSolver(dimension);
 	sat_rotated = 0;
 	seed_priority_queue = false;
 
@@ -69,7 +68,6 @@ Explorer::~Explorer(){
 	delete solver;
 	delete botSolver;
 	delete topSolver;
-	delete rSolver;
 }
 
 /*
@@ -611,8 +609,6 @@ bool Explorer::checkValuation(vector<bool> valuation){
                         lits.push(itoLit2((i + 1) * (-1)));
 
         }
-//	if(!botSolver->solve(lits)){ cout << "botSolver fail;" << endl;}// exit(1); }
-//	if(!topSolver->solve(lits)){ cout << "topSolver fail;" << endl;}// exit(1); }
         return solver->solve(lits);
 }
 

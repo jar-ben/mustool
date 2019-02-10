@@ -62,7 +62,6 @@ public:
 		std::vector<bool>& model, std::vector<std::vector<bool>>& model_extensions);
 	std::vector<bool> get_model();
 	std::vector<bool> model_extension(std::vector<bool> subset, std::vector<bool> model);
-	bool validate_model(std::vector<bool> model, std::vector<bool> subset, std::vector<bool> original);
 
 	void criticals_rotation(std::vector<bool>& criticals, std::vector<bool> subset);
 	int critical_rotation(std::vector<bool>& criticals, int critical, std::vector<bool>& model, std::vector<int>& new_criticals);

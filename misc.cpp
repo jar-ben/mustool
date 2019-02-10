@@ -30,12 +30,19 @@ void print_formula(vector<bool> f){
 	cout << endl;
 }
 
+void print_formula_int(vector<bool> f){
+	for(int i = 0; i < f.size(); i++)
+	       if(f[i]) cout << i << " ";
+	cout << endl;	
+}
+
 void print_err(string m){
 	cout << endl;
 	cout << "########## ########## ########## ########## ########## " << endl;
 	cout << m << endl;
 	cout << "########## ########## ########## ########## ########## " << endl;
 	cout << endl << endl << endl;
+	exit(1);
 }
 
 bool ends_with(std::string const & value, std::string const & ending)

@@ -14,7 +14,6 @@ void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 		if(!subset[i]){
 			assumptions.push_back(-1 * i - 1);			
 		}
-		//if(crits[i])	assumptions.push_back(i + 1); 
 	}
 
 	Formula top;	
@@ -60,7 +59,6 @@ void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 				model = satSolver->get_model();
 			}
 			block_down(top);	
-			if(variant == 10 && (streak > 2 || iteration == 1) && depth > 0){ current_depth--; return; }		
 			vector<int> crit_all;
 			for(int i = 0; i < dimension; i++)
 				if(subset[i] && !origin_top[i]){
@@ -80,9 +78,8 @@ void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			}	
 			if(depth > depthMUS) continue;		
 			for(auto crit: crit_all){
-				Formula rec_subset = origin_top; //zde byl puvodne (omylem) top a ne origin_top, takze se neslo do rekurze. S top je to ale zajimava varianta
+				Formula rec_subset = origin_top;
 				rec_subset[crit] = true;
-
 				Formula rec_crits = crits;
 				rec_crits[crit] = true;
 				if(model_rotation){			
@@ -92,31 +89,25 @@ void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 						else block_down(extension);
 					}
 				}
-
 				find_all_muses_duality_based_remus(rec_subset, rec_crits, depth + 1);
 			}
 		}
 	}
 	current_depth--;
-//	if(model_rotation) block_down(subset);
 }
 	
 
-// helper funcion for the ReMUS algorithm (experimental, not integrated yet)
+// helper funcion for the ReMUS algorithm (experimental, not fully integrated yet)
 // modifies mus into a set S such that mus /subseteq S /subseteq top
 void Solver::extend_mus(Formula &top, Formula &mus, int dMUS){
-	switch (extend_top_variant) {
-		case 1:
-			int origin_top_size = count_ones(top);
-			int ones = count_ones(mus);
-			for(int i = 0; i < dimension; i++)
-				if(top[i] && !mus[i]){
-					mus[i] = true;
-					ones++;
-					if(ones >= origin_top_size * dim_reduction) 
-						break;
-				}			
-			break;
-	}	
+	int origin_top_size = count_ones(top);
+	int ones = count_ones(mus);
+	for(int i = 0; i < dimension; i++){
+		if(top[i] && !mus[i]){
+			mus[i] = true;
+			ones++;
+			if(ones >= origin_top_size * dim_reduction) 
+				break;
+		}			
+	}
 }
-

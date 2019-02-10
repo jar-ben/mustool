@@ -5,19 +5,8 @@
 #include <functional>
 #include <random>
 
-bool Solver::use_backbone(){
-	int total = 0;
-	for(auto mus: muses){
-		total += mus.int_mus.size();
-	}
-	float avg = total / float(muses.size());
-	cout << "average size: " << avg << endl << endl << endl;
-	return avg < 3000;
-}
-
 void Solver::marco_base(){
 	int crit_candidate = 0;
-	bool use = true;
 	Formula top = explorer->get_unexplored(1, false);
 	while(!top.empty()){
 		Formula original_top = top;
@@ -28,7 +17,6 @@ void Solver::marco_base(){
 				Formula model = satSolver->get_model();
 				int rotation_limit = 100;
 				int sat_rotated = explorer->sat_rotation(original_top, model, satSolver->clauses, rotation_limit);
-	//			cout << "sat rotated: " << sat_rotated << endl;
 			}
 		}else{
 			MUS mus = shrink_formula(top);
@@ -43,22 +31,11 @@ void Solver::marco_base(){
 				}
 			}
 			if(variant == 32){
-//				if(muses.size() == 20)
-//					use = use_backbone();
-				if(use){
-					int rot = backbone_mus_rotation(mus, original_top);
-					cout << "recursively rotated: " << rot << endl;
-				}
+				int rot = backbone_mus_rotation(mus, original_top);
+				cout << "recursively rotated: " << rot << endl;
 			}
 		}
-		bool crit_attempt = false;
-//		while(crit_candidate < dimension){
-//			if(explorer->mus_intersection[crit_candidate++]){
-//				top = Formula(dimension, true); top[crit_candidate-1] = false; crit_attempt = true; break;
-//			}
-//		}
-		if(!crit_attempt)
-			top = explorer->get_unexplored(1, false);
+		top = explorer->get_unexplored(1, false);
 	}
 }
 

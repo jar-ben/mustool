@@ -26,6 +26,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include <iostream>
 #include "ParseUtils.h"
 #include <string>
+#include "misc.h"
 
 namespace ReMUS{
 
@@ -39,14 +40,14 @@ bool ends_with(std::string const & value, std::string const & ending) {
 
 
 static void readClause(StreamBuffer& in, std::vector<int>& lits) {
-    	int     parsed_lit, var;
-    lits.clear();
-    for (;;){
-        parsed_lit = parseInt(in);
-        if (parsed_lit == 0) break;
-        var = abs(parsed_lit)-1;
-	lits.push_back(parsed_lit);
-    }
+	int parsed_lit, var;
+	lits.clear();
+    	for (;;){
+		parsed_lit = parseInt(in);
+		if (parsed_lit == 0) break;
+		var = abs(parsed_lit)-1;
+		lits.push_back(parsed_lit);
+	}
 }
 
 void readGroupClause(StreamBuffer& in, std::vector<int>& lits)
@@ -110,7 +111,7 @@ static void parse_DIMACS(std::string filename, std::vector<std::vector<int>>& cl
 
 	bool group = ends_with(filename, "gcnf");
 	if(in == NULL)
-		std::cout << "could not open the file "<< std::endl;
+		print_err("could not open the file " + filename);
     	StreamBuffer ins(in);
        	parse_DIMACS_main(ins, cls, ends_with); 
 	gzclose_r(in);

@@ -10,21 +10,10 @@
 #include <time.h>   
 #include "Dimacs.h"
 #include <cstdio>
+#include "misc.h"
 
 using namespace Minisat;
 using namespace std;
-
-void print_formula2(std::vector<bool> f){
-	for(int i = 0; i < f.size(); i++)
-		std::cout << int(f[i]);
-	std::cout << std::endl;
-}
-
-void print_clause(vector<int> cl){
-	for(auto &l: cl)
-		cout << l << " ";
-	cout << endl;
-}
 
 Lit itoLit(int i){
 	bool sign = i < 0;
@@ -48,7 +37,6 @@ vector<int>  convert_clause(string clause){
 
 MSHandle::MSHandle(string filename):SatSolver(filename){
 	solver = new Solver();
-//        solver->phase_saving = 2;
 	vars = 0;
 	parse_dimacs(filename);
 	dimension = clauses.size();
@@ -119,10 +107,8 @@ bool MSHandle::add_unit(int lit){
 
 bool MSHandle::parse_dimacs(string path){
         ifstream infile(path, ifstream::in);
-        if (!infile.is_open()){
-		cout << endl << "wrong input file" << endl;
-		exit(1);
-	}
+        if (!infile.is_open())
+		print_err("wrong input file");
 
         string line;
 	vector<int> clause;
@@ -160,42 +146,6 @@ bool MSHandle::parse_dimacs(string path){
 		add_clause(clause); //add clause to the solver
 	}
 	return true;
-}
-
-bool MSHandle::validate_model(vector<bool> model, vector<bool> subset, vector<bool> original){
-	for(int i = 0; i < subset.size(); i++){
-		if(subset[i]){
-			//cout << endl << endl;
-			bool ok = false;
-			for(int j = 0; j < clauses[i].size() - 1; j++){
-				int lit = clauses[i][j];
-				//cout << "lit: " << lit << endl;
-				if(lit > 0 && model[lit - 1])
-					ok = true;
-				if(lit < 0 && !model[(-1 * lit) - 1])
-					ok = true;
-			}
-			if(!ok){
-				cout << "invalid model" << endl;
-				cout << "clause: " << clauses_str[i] << endl;
-				cout << "formula:" << endl;
-				for(int i = 0; i < dimension; i++){
-					if(subset[i])
-						cout << clauses_str[i] << endl;
-				}
-				cout << "vars: " << vars << endl;
-				cout << "model:" << endl;
-				for(int i = 0; i < vars; i++)
-					if(model[i])
-						cout << i << ": true" << endl;
-					else
-						cout << i << ": false" << endl;
-				if(original[i]) cout << "cointained in the original one" << endl;
-				else cout << "not cointained in the original one" << endl;
-				exit(1);
-			}
-		}
-	}
 }
 
 vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
@@ -246,8 +196,6 @@ void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 
 //checks only guaranteed edges
 int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>& subset, vector<bool>& model, vector<vector<bool>>& model_extensions){
-	//return model_rotation_beta(criticals, critical, subset, model, model_extensions);
-
 	int rotated = 0;
 	compute_flip_edges(critical); //TODO: better encansulape
 	for(int i = 0; i < flip_edges[critical].size(); i++){
@@ -289,45 +237,6 @@ int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>
 }
 
 //post extension
-int MSHandle::model_rotation_beta(vector<bool>& criticals, int critical, vector<bool>& subset, vector<bool>& model, vector<vector<bool>>& model_extensions){
-	int rotated = 0;
-	compute_flip_edges(critical); //TODO: better encansulape
-	for(int i = 0; i < flip_edges[critical].size(); i++){
-		int literal = clauses[critical][i];
-		int lit_index = (literal > 0)? (literal - 1) : ((-1 * literal) - 1);				
-		model[lit_index] = !model[lit_index]; //rotate model
-		vector<int> literal_edges = flip_edges[critical][i]; //edges grouped by literals
-		int count = 0;
-		int last = -1;
-		vector<bool> extension_seed = subset;	
-		for(auto &c: literal_edges){ //individual edges
-			if(subset[c]){ //there is a flip edge from critical to c
-				bool sat = false;
-				for(int j = 0; j < clauses[c].size() - 1; j++){ // be carefull of the "- 1", there is a control literal at the end of each clause
-					int lit = clauses[c][j];		
-					if(lit != literal * -1 && ((lit > 0 && model[lit - 1]) || (lit < 0 && !model[(-1 * lit) - 1]))){
-						sat = true;
-						break;
-					}
-				}
-				if(!sat){ count++; extension_seed[c] = false; last = c; }
-			}
-		}
-
-		if(count == 1 && !criticals[last]){			
-			vector<bool> extension = model_extension(extension_seed, model);
-			model_extensions.push_back(extension);
-			rotated_crits++;
-			criticals[last] = true;
-			model_rotation_beta(criticals, last, subset, model, model_extensions);	
-		}
-		
-		model[lit_index] = !model[lit_index]; //undo rotation
-	}	
-	return rotated;
-}
-
-//post extension
 int MSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bool>& model, vector<int>& new_criticals){
 	int rotated = 0;
 	compute_flip_edges(critical); //TODO: better encansulape
@@ -362,7 +271,6 @@ int MSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bo
 	return rotated;
 }
 
-
 int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implied, std::vector<bool>& values){
 	vec<Lit> lits;	
 	for(unsigned int i = 0; i < controls.size(); i++){
@@ -373,7 +281,6 @@ int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implie
 	}
         vec<Lit> outvec;
         bool res = solver->implies(lits, outvec, true);
-//	if(!res){ cout << "huhaha" << endl; exit(0); }
         int impl = 0;
         for (int i = 0 ; i < outvec.size(); i++) {
 		int lit = Littoi(outvec[i]);
@@ -408,17 +315,7 @@ bool MSHandle::solve(vector<bool> &seed, vector<int> &assumptions){
 	}
 
 
-	bool sat = solver->solve(lits);
-
-
-/*	if(!sat && unsat_improve){ // extract unsat core
-		vector<bool> core = vector<bool> (dimension, false);		
-	        for (int i = 0 ; i < solver->conflict.size() ; i++) 
-			core[var(solver->conflict[i]) - vars] = true;
-		controls = core;		
-
-	}				
-*/	return sat;
+	return solver->solve(lits);
 }
 
 void MSHandle::get_unsat_core(std::vector<bool> &core){
@@ -507,11 +404,8 @@ bool MSHandle::solve_glucose(vector<bool>& formula, bool sat_improve, bool unsat
 	//2560 -- satisfiable
 	//5120 -- unsatisfiable
 	bool sat = status == 2560;
-	if(status != 2560 && status != 5120){
-		std::cout << "invalid glucose return value: " << status << std::endl;
-		exit(1);
-	}
-
+	if(status != 2560 && status != 5120)
+		print_err("invalid glucose return value: " + to_string(status));
 	if(!sat && unsat_improve){
 		std::string core_path = "core.cnf";
 		stringstream drup_cmd;
@@ -540,11 +434,6 @@ bool MSHandle::solve_lingeling(vector<bool>& formula){
 	//10 -- satisfiable
 	//20 -- unsatisfiable
 	bool sat = status == 2560;
-//	cout << "status:" << status << endl;
-//	if(status != 10 && status != 20){
-//		std::cout << "invalid lingeling return value: " << status << std::endl;
-//		exit(1);
-//	}
 	return sat;
 }
 

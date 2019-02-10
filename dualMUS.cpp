@@ -28,12 +28,6 @@ int Solver::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 		if(!top[i]) top_int.push_back(i);
 
 	vector<int> indicator(muses.size(), 0);
-	/*
-	for(auto c2: top_int){
-		for(auto mid: explorer->parent_muses[c2]){//TOTO mozna se omezit jen na poslednich k musu, tady i nize samozrejme
-			indicator[mid]++;			
-		}
-	}*/
 	for(int mid = muses.size() - 1; mid > mid_limit; mid--){
 		auto &m = muses[mid];
 		for(auto c2: top_int)
@@ -46,9 +40,7 @@ int Solver::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 	unordered_set<vector<int>, OverlapHash> overlaps;	
 	vector<bool> already_used_mus(muses.size(), false);
 
-	//just for experimental statistics
 	int round = 0;
-
 	for(auto c1: m1.without_crits){
 		if(explorer->mus_intersection[c1]) continue;
 		vector<int> pairs;	
@@ -65,7 +57,6 @@ int Solver::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 				for(auto o: m2.without_crits)
 					if(o != c2 && !m1.bool_mus[o])
 						m1_overlap.push_back(o);
-	//			if(overlaps.find(m1_overlap) != overlaps.end()) continue;
 				overlaps.insert(m1_overlap);
 				bool unexplored = true;					
 				for(int i = 0; i < local_muses_overlaps.size(); i++){
@@ -98,8 +89,6 @@ int Solver::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 			}
 		}		
 	}
-//	if(rotated > 0)
-//		cout << "overlaps: " << overlaps.size() << ", rotated: " << rotated << ", " << (float(rotated) / overlaps.size()) <<  endl;
 	return rotated;
 }
 

@@ -25,10 +25,8 @@ Solver::Solver(string filename, int var, bool vis, string s_solver){
 			satSolver = new SpotHandle(filename);
 		domain = "ltl";
 	}
-	else{
+	else
 		print_err("wrong input file");
-		exit(1);
-	}
 	dimension = satSolver->dimension;	
 	cout << "Dimension:" << dimension << endl;
         explorer = new Explorer(dimension);	
@@ -62,10 +60,7 @@ Solver::Solver(string filename, int var, bool vis, string s_solver){
 	backbone_crit_value.resize(dimension, false);
 	backbone_crit_used.resize(dimension, false);
 
-        std::random_device rd;
-        std::mt19937 eng(rd());
-        std::uniform_int_distribution<> distr(1, 1000000000);
-        hash = distr(eng);
+        hash = random_number();
 	satSolver->hash = hash;
 	used_backbones_count = 0;
 	original_backbones_count = 0;
@@ -77,10 +72,8 @@ Solver::~Solver(){
 }
 
 void Solver::write_mus_to_file(MUS& f){
-	if(satSolver->clauses_string.size() != dimension){
+	if(satSolver->clauses_string.size() != dimension)
 		print_err("write_mus_to_file error");
-		exit(1);
-	}
 	ofstream outfile;
 	outfile.open(output_file, std::ios_base::app);
 	for(auto c: f.int_mus)
@@ -156,22 +149,15 @@ bool Solver::is_valid(Formula &formula, bool core, bool grow){
 
 //verify if f is a MUS
 void Solver::validate_mus(Formula &f){
-	if(is_valid(f)){
+	if(is_valid(f))
 		print_err("the mus is SAT");
-		exit(1);
-	}
-	if(!explorer->checkValuation(f)){
+	if(!explorer->checkValuation(f))
 		print_err("this mus has been already explored");
-		exit(1);
-	}	
 	for(int l = 0; l < f.size(); l++)
 		if(f[l]){
 			f[l] = false;
-			if(!is_valid(f)){
+			if(!is_valid(f))
 				print_err("the mus has an unsat subset");	
-				satSolver->export_formula(f, "spurious_mus");
-				exit(1);
-			}
 			f[l] = true;
 		}	
 }
@@ -238,10 +224,8 @@ void Solver::enumerate(){
 	initial_time = chrono::high_resolution_clock::now();
 	cout << "running algorithm variant " << variant << endl;
 	Formula whole(dimension, true);
-	if(is_valid(whole)){
-		cout << "the input instance is satisfiable" << endl;
-		exit(1);
-	}
+	if(is_valid(whole))
+		print_err("the input instance is satisfiable");
 
 	switch (variant) {
 		case 1:

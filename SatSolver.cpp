@@ -23,7 +23,7 @@ vector<bool> SatSolver::grow(std::vector<bool> &f){
 	for(int i = 0; i < dimension; i++){
 		if(!s[i]){
 			s[i] = true;
-			if(!solve(s))
+			if(!solve(s, false, true))
 				s[i] = false;
 		}
 	}

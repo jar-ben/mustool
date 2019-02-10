@@ -10,7 +10,6 @@
 #include <iostream>
 #include <algorithm>
 #include <utility>
-#include "RotationSolver.h"
 #include <queue>
 #include <tuple>
 #include "types_h.h"
@@ -35,9 +34,6 @@ public:
 	Minisat::Solver* topSolver;
 
 	SatSolver* satSolver;
-
-	RotationSolver* rSolver;
-	bool rotation_solver;
 		
 	int bot_calls, top_calls;
 	int vars;
