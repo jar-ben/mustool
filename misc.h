@@ -16,5 +16,5 @@ bool is_subset(std::vector<int> &a, std::vector<bool> &b);
 bool is_subset(std::vector<bool> &a, std::vector<bool> &b);
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b);
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<int> &b);
-
+void trim(std::string &f);
 

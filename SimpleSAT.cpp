@@ -59,7 +59,6 @@ void SimpleSAT::get_unsat_core(std::vector<bool> &core){
 		int index = var(solver->conflict[i]) - vars;
 		if(index >= 0)
 			core[var(solver->conflict[i]) - vars] = true;
-
 	}	
 };
 
@@ -77,13 +76,11 @@ bool SimpleSAT::solve(vector<bool>& controls, bool unsat_improve, bool sat_impro
 	}
 	bool sat = solver->solve(lits);
 	if(!sat && unsat_improve){ // extract unsat core
-		vector<bool> core = vector<bool> (dimension, false);		
+		controls.resize(dimension, false);
 	        for (int i = 0 ; i < solver->conflict.size() ; i++){ 
-			if(var(solver->conflict[i]) - vars <= core.size() && var(solver->conflict[i]) - vars >= 0)
-				core[var(solver->conflict[i]) - vars] = true;
+			if(var(solver->conflict[i]) - vars <= dimension && var(solver->conflict[i]) - vars >= 0)
+				controls[var(solver->conflict[i]) - vars] = true;
 		}
-		controls = core;		
-
 	}				
 	return sat;
 }

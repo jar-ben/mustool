@@ -78,14 +78,14 @@ Solver::~Solver(){
 
 void Solver::write_mus_to_file(MUS& f){
 	if(satSolver->clauses_string.size() != dimension){
-		print_err("clauses_string error");
-		return;
+		print_err("write_mus_to_file error");
+		exit(1);
 	}
 	ofstream outfile;
 	outfile.open(output_file, std::ios_base::app);
 	for(auto c: f.int_mus)
-		outfile << satSolver->clauses_string[c] << endl;
-	outfile << endl;
+		outfile << satSolver->clauses_string[c] << "\n";
+	outfile << "\n";
 	outfile.close(); 
 }
 
@@ -105,8 +105,6 @@ bool Solver::check_mus_via_hsd(Formula &f){
 	Formula bot = explorer->get_bot_unexplored(f);
 	int size_bot = count_ones(bot);
 	int size_f = count_ones(f);
-	if(verbose) std::cout << "HSD: " << (size_f - size_bot) << ", hsd_succ: " << hsd_succ << endl << endl; 
-	cout << "hsdd: " << (size_f - size_bot) << endl;
 	bool result =  false;
 
 	if(bot == f){
@@ -157,7 +155,7 @@ bool Solver::is_valid(Formula &formula, bool core, bool grow){
 }
 
 //verify if f is a MUS
-bool Solver::validate_mus(Formula &f){
+void Solver::validate_mus(Formula &f){
 	if(is_valid(f)){
 		print_err("the mus is SAT");
 		exit(1);
@@ -165,21 +163,17 @@ bool Solver::validate_mus(Formula &f){
 	if(!explorer->checkValuation(f)){
 		print_err("this mus has been already explored");
 		exit(1);
-		duplicated++;
 	}	
 	for(int l = 0; l < f.size(); l++)
 		if(f[l]){
 			f[l] = false;
 			if(!is_valid(f)){
-				print_err("the mus has unsat subset");	
+				print_err("the mus has an unsat subset");	
 				satSolver->export_formula(f, "spurious_mus");
 				exit(1);
-				spurious_muses++;				
-				return false;
 			}
 			f[l] = true;
 		}	
-	return true;
 }
 
 MUS& Solver::shrink_formula(Formula &f, Formula crits){
@@ -206,8 +200,6 @@ MUS& Solver::shrink_formula(Formula &f, Formula crits){
 		}
 	}
 
-	if(use_core_backbones && count_ones(explorer->critical) > explorer->core.size())
-		core_backbones();
 	Formula mus = satSolver->shrink(f, crits);
 	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
@@ -241,110 +233,6 @@ void Solver::mark_MUS(MUS& f, bool block_unex){
 	if(output_file != "")
 		write_mus_to_file(f);
 }
-
-
-int Solver::backbone_dual_mus(MUS &m1, Formula &top){
-	if(!explorer->easy_to_shrink(m1)) return 0;
-	int rotated = 0;
-	int mid_limit = muses.size() - scope_limit;
-	if(mid_limit < 0) mid_limit = 0;
-	int vars = satSolver->vars;	
-
-	vector<int> top_int;
-	for(int i = 0; i < dimension; i++)
-		if(!top[i]) top_int.push_back(i);
-
-	vector<int> indicator(muses.size(), 0);
-	for(int mid = muses.size() - 1; mid > mid_limit; mid--){
-		auto &m = muses[mid];
-		for(auto c2: top_int)
-			if(m.bool_mus[c2])
-				indicator[mid]++;
-	}
-
-	vector<vector<int>> local_muses_overlaps;
-	vector<int> local_muses_ids;
-	unordered_set<vector<int>, OverlapHash> overlaps;	
-	vector<bool> already_used_mus(muses.size(), false);
-
-	vector<int> variables_map;
-	vector<int> variables_map_inv;
-	backbone_build_literal_map(m1.bool_mus, variables_map, variables_map_inv);
-
-	//just for experimental statistics
-	int round = 0;
-
-	for(auto c1: m1.without_crits){
-		if(explorer->mus_intersection[c1]) continue;
-
-		//compute backbones
-		Formula implied(vars, false);
-		Formula values(vars, false);
-		vector<int> lits_left (dimension,0);
-		vector<bool> satisfied(dimension, false);
-		vector<int> singletons;
-		Formula seed = m1.bool_mus; seed[c1] = false;
-		backbone_simplify(seed, c1, implied, values);	
-		get_backbones(seed, implied, values, variables_map, variables_map_inv);
-
-		vector<int> pairs;	
-		for(auto c: top_int){
-			if(explorer->is_backbone_pair(c, implied, values)){ pairs.push_back(c); }
-		}		
-		for(auto c2: pairs){			
-			
-			Formula tmp = top;
-			tmp[c1] = false;
-
-			for(auto mid: explorer->parent_muses[c2]){
-				if(indicator[mid] != 1) continue;// || already_used_mus[mid]) continue;
-				auto &m2 = muses[mid];
-				if(m2.bool_mus[c1] || !explorer->easy_to_shrink(m2)) continue;
-				round++;
-//				cout << "round: " << round << endl;
- 				vector<int> m1_overlap;
-				for(auto o: m2.without_crits)
-					if(o != c2 && !m1.bool_mus[o])
-						m1_overlap.push_back(o);
-	//			if(overlaps.find(m1_overlap) != overlaps.end()) continue;
-				overlaps.insert(m1_overlap);
-				bool unexplored = true;					
-				for(int i = 0; i < local_muses_overlaps.size(); i++){
-					if(muses[local_muses_ids[i]].bool_mus[c1]) continue; //hitten by c1
-					auto &overlap = local_muses_overlaps[i];
-					bool hit = false;
-					for(auto l: overlap){
-						if(!m2.bool_mus[l]){
-							hit = true; break; 
-						}
-					}
-					if(!hit){ unexplored = false; break; }
-				}
-				if(!unexplored) continue;	
-				seed = m1.bool_mus; seed[c1] = false;			
-				for(auto o: m1_overlap) seed[o] = true;
-
-				MUS m = shrink_formula(seed);
-				rotated_muses++;
-				mark_MUS(m);
-				indicator.push_back(0);
-				rotated++;
-				already_used_mus[mid] = true;
-				//local mus overlap
-				vector<int> overlap;
-				for(auto l: m.without_crits)
-					if(!m1.bool_mus[l])
-						overlap.push_back(l);
-				local_muses_overlaps.push_back(overlap);
-				local_muses_ids.push_back(muses.size() - 1);
-			}
-		}		
-	}
-//	if(rotated > 0)
-//		cout << "overlaps: " << overlaps.size() << ", rotated: " << rotated << ", " << (float(rotated) / overlaps.size()) <<  endl;
-	return rotated;
-}
-
 
 void Solver::enumerate(){
 	initial_time = chrono::high_resolution_clock::now();

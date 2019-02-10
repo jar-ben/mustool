@@ -3,24 +3,9 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <regex>
 #include <random>
+#include "misc.h"
 using namespace z3;
-
-//from z3 import *
-
-
-void print_bit(std::vector<bool> &f){
-	for(int i = 0; i < f.size(); i++)
-		std::cout << ((f[i])? "1" : "0");
-	std::cout << std::endl;
-}
-
-void trim(std::string &f){
-	f.erase( std::remove(f.begin(), f.end(), '\n'), f.end() );
-	std::regex pattern("  ");
-	f = std::regex_replace(f, pattern, "");	
-}
 
 
 Z3Handle::Z3Handle(std::string filename): SatSolver(filename){

@@ -90,7 +90,7 @@ public:
 	Formula grow_formula(Formula& f);
 	void write_mus_to_file(MUS& f);
 
-	bool validate_mus(Formula &f);
+	void validate_mus(Formula &f);
 
 	//reMUS algorithm functions
 	void find_all_muses_duality_based_remus(Formula subset, Formula crits, int depth);
@@ -146,14 +146,8 @@ public:
 	void implied_literal(int cl, Formula &implied, int &lit, int &var, bool &value);
 	int seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<int> &singletons, int from, int to, Formula &seed, Formula &top, Formula &implied, vector<int> &added);
 
-	int backbone_dual_mus(MUS &m1, Formula &top);
-
 	bool check_mus_via_hsd(Formula &f);
 	void enumerate();
-
-	void core_backbones();
-	bool use_core_backbones;
-
 
 	vector<Formula> used_backbones;
 	int used_backbones_count;

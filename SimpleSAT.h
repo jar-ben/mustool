@@ -8,8 +8,6 @@
 #include "SatSolver.h"
 #include <unordered_map>
 
-//#include "muser2_api.hh"
-
 class SimpleSAT{
 public:
 	Minisat::Solver* solver;
@@ -25,6 +23,4 @@ public:
 	bool add_clause(std::vector<int> clause);
 	bool add_unit(int lit);
 };
-
-
 #endif

@@ -17,7 +17,7 @@ class MUS{
 		without_crits = int_mus;		
 		dimension = int_mus.size();
 		duration = d;
-		id = idc++;
+		id = idc;
 		seed_dimension = seed_d;
 	}
 	Formula bool_mus;

@@ -6,8 +6,8 @@ using namespace std;
 SpotHandle::SpotHandle(string filename):SatSolver(filename){
 	ifstream file;
 	file.open(filename, ifstream::in);
-	std::string tf;
-	while (std::getline(file, tf)){
+	string tf;
+	while (getline(file, tf)){
 		formulae.push_back(spot::parse_formula(tf));
 		clauses_string.push_back(tf);
 	}

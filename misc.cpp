@@ -6,8 +6,15 @@
 #include <string>
 #include <array>
 #include <random>
+#include <regex>
 
 using namespace std;
+
+void trim(string &f){
+	f.erase( remove(f.begin(), f.end(), '\n'), f.end() );
+	regex pattern("  ");
+	f = regex_replace(f, pattern, "");	
+}
 
 int count_zeros(vector<bool> &f){
 	return std::count(f.begin(), f.end(), false);

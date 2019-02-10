@@ -90,7 +90,6 @@ int main(int argc, char *argv[]){
 	bool rotation_solver = false;
 	int mus_size_limit = 10000;
 	int scope_limit = 1000000;
-	bool use_core_backbones = false;
 
 	int c;
 	while(1){
@@ -124,9 +123,6 @@ int main(int argc, char *argv[]){
 		switch (c){
 			case 'l':
 				mus_size_limit = atoi(optarg);
-				break;
-			case 'u':
-				use_core_backbones = true;
 				break;
 			case 'a':
 				block_down_mus = true;
@@ -236,7 +232,6 @@ int main(int argc, char *argv[]){
 	solver.explorer->rotation_solver = rotation_solver;
 	solver.explorer->mus_size_limit = mus_size_limit;
 	solver.scope_limit = scope_limit;
-	solver.use_core_backbones = use_core_backbones;
 
 	solver.enumerate();
 

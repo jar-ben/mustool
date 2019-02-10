@@ -50,18 +50,6 @@ void Solver::marco_base(){
 					cout << "recursively rotated: " << rot << endl;
 				}
 			}
-			if(variant == 33){
-				int rot = backbone_dual_mus(mus, original_top);
-				cout << "recursively rotated: " << rot << endl;
-			}
-			if(variant == 34){
-				chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
-				auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
-				if(duration > 30 || muses.size() > 100){
-					int rot = backbone_mus_rotation_all(mus, original_top);
-					cout << "recursively rotated: " << rot << endl;
-				}
-			}
 		}
 		bool crit_attempt = false;
 //		while(crit_candidate < dimension){

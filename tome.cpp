@@ -5,8 +5,7 @@
 #include <functional>
 #include <random>
 
-
-// Helper function for the TOME algorithm
+// Binary search
 pair<Formula, Formula> Solver::local_mus(Formula bot, Formula top, int diff){
 	if(diff == 1)
 		return make_pair(bot, top);
@@ -24,7 +23,7 @@ pair<Formula, Formula> Solver::local_mus(Formula bot, Formula top, int diff){
 		return local_mus(bot, pivot, ones);
 }
 
-// The core of the TOME algorithm for MUS enumeration
+// The core of the TOME algorithm
 void Solver::find_all_muses_tome(){
 	Formula bot, top, mss, fmus, original_top;
 	vector<Formula> path;

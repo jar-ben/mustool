@@ -279,55 +279,8 @@ vector<int> Solver::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 	return violated;
 }
 
-void Solver::core_backbones(){
-	explorer->core.clear();
-	Formula core(dimension, false);
-	for(int i = 0; i < dimension; i++)
-		if(explorer->critical[i])
-			core[i] = true;
-	Formula implied (satSolver->vars, false);
-	Formula values (satSolver->vars, false);
-	vector<int> variables_map;
-	vector<int> variables_map_inv;
-	backbone_build_literal_map(core, variables_map, variables_map_inv);
-
-	get_backbones(core, implied, values, variables_map, variables_map_inv);
-	cout << "simpl implied: " << count_ones(implied) << endl;
-	if( count_ones(implied) > 0 ) { exit(0); }
-	//simplify
-	for(int c = 0; c < dimension; c++){
-		if(core[c]){
-			vector<int> clause (1,c);
-			for(auto lit: satSolver->clauses[c]){
-				int var = (lit > 0)? lit : (-1 * lit);
-				int phase = (lit > 0)? 1: -1;
-				bool value = phase == 1;
-				if(var <= satSolver->vars){
-					if( implied[var - 1] && values[var - 1] != value){ cout << "simplified" << endl; continue; }
-//					else if( implied[var - 1] && values[var - 1] == value){ sat = true; break; }
-					else clause.push_back(lit);
-				}
-			}
-			explorer->core.push_back(clause);
-		}
-	}
-
-}
-
 int Solver::get_backbones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv){
 	//export the seed
-
-/*	bool orig = true;
-	for(auto used_backbone: used_backbones){
-		if(is_subset(used_backbone, seed) || is_subset(seed, used_backbone)){
-			orig = false;
-			break;
-		}	
-	}
-	if(!orig) 	used_backbones_count++;
-	else original_backbones_count++;
-	used_backbones.push_back(seed);
-*/
 	vector<vector<int>> cls;
 	for(int i = 0;  i < dimension; i++){
 		if(seed[i]){

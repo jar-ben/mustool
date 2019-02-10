@@ -29,8 +29,6 @@ SimpleExplorer::~SimpleExplorer(){
 }
 
 bool SimpleExplorer::block_down(Formula cl){
-
-	//add to SAT unex solver
 	added_clauses++;
         vec<Lit> msClause;
         for(int i = 0; i < cl.size(); i++)
@@ -165,7 +163,6 @@ std::vector<bool> SimpleExplorer::get_bot_unexplored(vector<int> assumptions){
 
 
 std::vector<bool> SimpleExplorer::get_unexplored(uint8_t polarity, bool rnd_pol){
-
         solver->rnd_pol = rnd_pol;
 	if(!rnd_pol)
 	        for(int i = 0; i < vars; i++)
