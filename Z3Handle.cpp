@@ -63,11 +63,7 @@ Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
 		trim(pom);
 		clauses_string.push_back(pom);
 		clauses_string_map[pom] = clauses_string.size() - 1;	
-		//std::cout << pom << std::endl;
 	}	
-//	std::cout << Z3_benchmark_to_smtlib_string(ctx, "benchmark generated from python API", "", "unknown", "", sz1, v, e) << std::endl;
-	//std::cout << s->to_smt2() << std::endl;
-
 }
 
 // implements the shrinking procedure
@@ -75,16 +71,6 @@ Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
 std::vector<bool> Z3Handle::shrink(std::vector<bool> &formula, std::vector<bool> crits){
 	if(crits.empty())
 		crits = std::vector<bool> (dimension, false);	
-	if(shrink_alg == "custom"){
-		return SatSolver::shrink(formula, crits);
-	}
-
-	if(shrink_alg == "hsmtmuc")
-		return shrink_hsmtmuc(formula, crits);
-	return custom_shrink(formula, crits);
-}
-
-std::vector<bool> Z3Handle::custom_shrink(std::vector<bool> &formula, std::vector<bool> crits){
 	std::vector<bool> shrinked = formula;
 	for(int i = 0; i < formula.size(); i++){
 		if(shrinked[i] && !crits[i]){
@@ -95,65 +81,6 @@ std::vector<bool> Z3Handle::custom_shrink(std::vector<bool> &formula, std::vecto
 	}
 	return shrinked;
 }
-
-std::vector<bool> Z3Handle::shrink_hsmtmuc(std::vector<bool> &formula, std::vector<bool> crits){
-	std::vector<bool> mus;
-	std::random_device rd; 
-	std::mt19937 eng(rd());
-	std::uniform_int_distribution<> distr(1, 1000000000); 
-	int hash = distr(eng);
-//	int hash = 10;
-
-	std::stringstream exp, imp;
-	exp << "shrink" << hash << ".smt2";
-	imp << "shrink" << hash << ".smt2.hlmuc";
-	export_formula(formula, exp.str(), crits);
-
-	std::stringstream cmd;
-	cmd << "./HSmtMuc -smt2 -hlmuc -file " << exp.str() << " > /dev/null";
-	int status = system(cmd.str().c_str());
-	remove(exp.str().c_str());
-	if(WEXITSTATUS(status) != 0) //hsmtmuc sometimes fails to compute mus
-		return custom_shrink(formula, crits);
-
-	mus = import_formula(imp.str());	
-	remove(imp.str().c_str());
-	return mus;
-}
-
-void Z3Handle::export_formula(std::vector<bool> formula, std::string filename, std::vector<bool> crits){
-	z3::solver* sol = new solver(ctx);
-	for(int i = 0; i < formula.size(); i++){
-		if(formula[i]){
-			sol->add(clauses[i]);
-		}
-	}
-	std::string smt2 = sol->to_smt2(); 
-
-	std::ofstream file;
-	file.open(filename);
-	file << smt2;
-	file.close();
-}
-
-std::vector<bool> Z3Handle::import_formula(std::string filename){
-	std::ifstream file(filename, std::ifstream::in);
-	std::vector<bool> f(dimension,false);
-	std::string line;	
-	while (getline(file, line))
-	{	trim(line);
-		if(clauses_string_map.find(line) == clauses_string_map.end()){
-			std::cout << "--- not found: " << line << std::endl;
-			exit(1);
-		}
-		else{
-			f[clauses_string_map[line]] = true;	
-//			std::cout << "--- found" << std::endl;
-		}
-	}	
-	return f;
-}
-
 
 // check formula for satisfiability
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
@@ -172,18 +99,16 @@ bool Z3Handle::solve(std::vector<bool> &formula, bool core, bool grow){
 		case unknown: result = false; break;
 	}	
 
-
 	if(!result && core){ // extract unsat core
-		std::vector<bool> core(formula.size(), false);
+		formula.resize(formula.size(), false);
 		auto unsat_core = s->unsat_core();
 		for(int i = 0; i < unsat_core.size(); i++){
         		std::stringstream fname; fname << unsat_core[i];
 			std::string name = fname.str();
 			name.erase(0,6);
 			int id = std::stoi(name);
-			core[id] = true;
+			formula[id] = true;
 		}		
-		formula = core;	
 	}
 	if(result && grow){ // extract model extension
 		int count = 0;
@@ -199,7 +124,6 @@ bool Z3Handle::solve(std::vector<bool> &formula, bool core, bool grow){
 			}
 		}
 	}
-
 	return result;
 }
 
