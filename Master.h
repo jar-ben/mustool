@@ -35,7 +35,7 @@ typedef vector<int> Clause;
 typedef vector<Formula> Path;
 typedef Path::iterator PathIter;
 
-class Solver{
+class Master{
 public:
 	int dimension; //dimension of the input instance
 	int variant; //MUS enumeration algorithm to be used
@@ -80,8 +80,8 @@ public:
 	SatSolver* satSolver; 
 	string sat_solver;
 
-	Solver(string filename, int var = 1, bool vis = false, string sat_solver = "");
-	~Solver();
+	Master(string filename, int var = 1, bool vis = false, string sat_solver = "");
+	~Master();
 	bool is_valid(Formula &f, bool core = false, bool grow = false);
 	void block_down(Formula f);
 	void block_up(MUS& f);
@@ -134,6 +134,9 @@ public:
 	vector<int> backbone_init(Formula &seed, Formula &implied, Formula &values, vector<int> &lits_left, Formula &satisfied, vector<int> &singletons, Formula &top,
 			vector<int> &variables_map, vector<int> &variables_map_inv, int c);
 	int get_backbones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv);
+	
+	int get_backbones_bones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv);
+
 	void backbone_build_literal_map(Formula &seed, vector<int> &variables_map, vector<int> &variables_map_inv);
 	void backbone_simplify(Formula &seed, int c, Formula &implied, Formula &values);
 

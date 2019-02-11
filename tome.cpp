@@ -1,4 +1,4 @@
-#include "Solver.h"
+#include "Master.h"
 #include "misc.h"
 #include <algorithm>
 #include <math.h>
@@ -6,7 +6,7 @@
 #include <random>
 
 // Binary search
-pair<Formula, Formula> Solver::local_mus(Formula bot, Formula top, int diff){
+pair<Formula, Formula> Master::local_mus(Formula bot, Formula top, int diff){
 	if(diff == 1)
 		return make_pair(bot, top);
 	int ones = 0;
@@ -24,7 +24,7 @@ pair<Formula, Formula> Solver::local_mus(Formula bot, Formula top, int diff){
 }
 
 // The core of the TOME algorithm
-void Solver::find_all_muses_tome(){
+void Master::find_all_muses_tome(){
 	Formula bot, top, mss, fmus, original_top;
 	vector<Formula> path;
 	int diff;

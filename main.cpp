@@ -1,6 +1,6 @@
 #include <ctime>
 #include <time.h>
-#include "Solver.h"
+#include "Master.h"
 #include <getopt.h>
 #include <algorithm>
 
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
 		ofs.close();
 	}
 
-	Solver solver(input, variant, visualize, sat_solver);
+	Master solver(input, variant, visualize, sat_solver);
 	solver.output_file = output;
 	solver.verbose = verbose;
 	solver.depthMUS = (depthMUS >= 0)? depthMUS : solver.dimension;

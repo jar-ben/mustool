@@ -1,11 +1,11 @@
-#include "Solver.h"
+#include "Master.h"
 #include "misc.h"
 #include <algorithm>
 #include <math.h>
 #include <functional>
 #include <random>
 
-vector<int> Solver::minimal_hitting_set(vector<int> local_muses){
+vector<int> Master::minimal_hitting_set(vector<int> local_muses){
 	vector<int> hs;
 	for(auto mid: local_muses){
 		auto &mus = muses[mid];
@@ -17,7 +17,7 @@ vector<int> Solver::minimal_hitting_set(vector<int> local_muses){
 	return hs;
 }
 
-int Solver::recursive_rotation_delta(MUS m1, Formula &top, int depth){
+int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 	if(!explorer->easy_to_shrink(m1)) return 0;
 	int rotated = 0;
 	int mid_limit = muses.size() - scope_limit;

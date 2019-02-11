@@ -1,4 +1,4 @@
-#include "Solver.h"
+#include "Master.h"
 #include "misc.h"
 #include <algorithm>
 #include <math.h>
@@ -6,7 +6,7 @@
 #include <random>
 
 
-Solver::Solver(string filename, int var, bool vis, string s_solver){
+Master::Master(string filename, int var, bool vis, string s_solver){
         isValidExecutions = 0;
         variant = var;
 	sat_solver = s_solver;
@@ -66,12 +66,12 @@ Solver::Solver(string filename, int var, bool vis, string s_solver){
 	original_backbones_count = 0;
 }
 
-Solver::~Solver(){
+Master::~Master(){
 	delete satSolver;
 	delete explorer;
 }
 
-void Solver::write_mus_to_file(MUS& f){
+void Master::write_mus_to_file(MUS& f){
 	if(satSolver->clauses_string.size() != dimension)
 		print_err("write_mus_to_file error");
 	ofstream outfile;
@@ -83,18 +83,18 @@ void Solver::write_mus_to_file(MUS& f){
 }
 
 // mark formula and all of its supersets as explored
-void Solver::block_up(MUS& formula){
+void Master::block_up(MUS& formula){
 	explorer->block_up(formula);
 }
 
 // mark formula and all of its subsets as explored
-void Solver::block_down(Formula formula){
+void Master::block_down(Formula formula){
         explorer->block_down(formula);
 }
 
 // experimental function
 // allows output overapproximated MUSes 
-bool Solver::check_mus_via_hsd(Formula &f){
+bool Master::check_mus_via_hsd(Formula &f){
 	Formula bot = explorer->get_bot_unexplored(f);
 	int size_bot = count_ones(bot);
 	int size_f = count_ones(f);
@@ -143,12 +143,12 @@ bool Solver::check_mus_via_hsd(Formula &f){
 
 // check formula for satisfiability
 // core and grow controls optional extraction of unsat core and model extension (replaces formula)
-bool Solver::is_valid(Formula &formula, bool core, bool grow){
+bool Master::is_valid(Formula &formula, bool core, bool grow){
 	return satSolver->solve(formula, core, grow);
 }
 
 //verify if f is a MUS
-void Solver::validate_mus(Formula &f){
+void Master::validate_mus(Formula &f){
 	if(is_valid(f))
 		print_err("the mus is SAT");
 	if(!explorer->checkValuation(f))
@@ -162,7 +162,7 @@ void Solver::validate_mus(Formula &f){
 		}	
 }
 
-MUS& Solver::shrink_formula(Formula &f, Formula crits){
+MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	if(crits.empty()) crits = explorer->critical;
@@ -194,12 +194,12 @@ MUS& Solver::shrink_formula(Formula &f, Formula crits){
 }
 
 //grow formula into a MSS
-Formula Solver::grow_formula(Formula &f){
+Formula Master::grow_formula(Formula &f){
 	return satSolver->grow(f);
 }
 
 
-void Solver::mark_MUS(MUS& f, bool block_unex){	
+void Master::mark_MUS(MUS& f, bool block_unex){	
 	if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f, block_unex);
 
@@ -220,7 +220,7 @@ void Solver::mark_MUS(MUS& f, bool block_unex){
 		write_mus_to_file(f);
 }
 
-void Solver::enumerate(){
+void Master::enumerate(){
 	initial_time = chrono::high_resolution_clock::now();
 	cout << "running algorithm variant " << variant << endl;
 	Formula whole(dimension, true);

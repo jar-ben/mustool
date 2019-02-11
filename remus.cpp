@@ -1,4 +1,4 @@
-#include "Solver.h"
+#include "Master.h"
 #include "misc.h"
 #include <algorithm>
 #include <math.h>
@@ -7,7 +7,7 @@
 
 
 //remus
-void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, int depth){
+void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, int depth){
 	current_depth++;	
 	std::vector<int> assumptions;
 	for(int i = 0; i < dimension; i++){
@@ -99,7 +99,7 @@ void Solver::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 
 // helper funcion for the ReMUS algorithm (experimental, not fully integrated yet)
 // modifies mus into a set S such that mus /subseteq S /subseteq top
-void Solver::extend_mus(Formula &top, Formula &mus, int dMUS){
+void Master::extend_mus(Formula &top, Formula &mus, int dMUS){
 	int origin_top_size = count_ones(top);
 	int ones = count_ones(mus);
 	for(int i = 0; i < dimension; i++){

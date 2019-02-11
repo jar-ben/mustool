@@ -1,11 +1,11 @@
-#include "Solver.h"
+#include "Master.h"
 #include "misc.h"
 #include <algorithm>
 #include <math.h>
 #include <functional>
 #include <random>
 
-void Solver::marco_base(){
+void Master::marco_base(){
 	int crit_candidate = 0;
 	Formula top = explorer->get_unexplored(1, false);
 	while(!top.empty()){
