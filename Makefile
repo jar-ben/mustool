@@ -1,15 +1,33 @@
-DIR = $(shell pwd)
-LIB = -L /usr/lib -L /usr/local/lib -L $(DIR)/include
-LIB += -L $(DIR)/minibones/src/minisat/core
-LINK = -lz -lspot
-MINISAT = $(DIR)/custom_minisat
-SOURCE = $(DIR)/*.cpp
-#SOURCE += $(MINISAT)/*.cc
-USR = /usr/include
-INC = -I $(USR) -I /usr/local/include
-#INC += -I $(MINISAT)
-COBJS= $(DIR)/minibones/src/*.o
-CXX?=g++
+DIR	= $(shell pwd)
+CSRCS	= $(wildcard *.cpp)
+COBJS	= $(CSRCS:.cpp=.o)
 
-all:
-	$(CXX) -O3 -g $(INC) $(LIB) $(LINK) $(SOURCE) -w -std=c++11 -o mvc $(COBJS) -lz3 -lspot -lminisat
+MINISAT	= $(DIR)/custom_minisat
+MCSRCS	= $(wildcard $(MINISAT)/*.cc)
+MCOBJS	= $(MCSRCS:.cc=.o)
+
+LIBD 	= -L/usr/lib -L/usr/local/lib
+LIBS 	= -lz -lspot -lz3
+USR 	= /usr/include
+INC 	= -I $(MINISAT) -I $(USR) -I /usr/local/include
+
+CXX	= g++
+#CFLAGS	= -O3 -w #-Wall
+CFLAGS 	= -w -std=c++11
+
+mvc: $(COBJS) $(MCOBJS)
+	@echo Linking: $@
+	$(CXX) -O3 -o $@ $(COBJS) $(MCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+
+%.o: %.cpp
+	@echo Compiling: $@
+	@$(CXX) $(CFLAGS) $(INC) -c -o $@ $<
+
+%.o: %.cc
+	@echo Compiling: $@
+	@$(CXX) $(CFLAGS) $(INC) -c -o $@ $<
+
+print-%  : ; @echo $* = $($*)
+
+clean:
+	rm *.o
