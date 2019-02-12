@@ -10,7 +10,7 @@
 
 class SimpleSAT{
 public:
-	Minisat::Solver* solver;
+	CustomMinisat::Solver* solver;
 
 	SimpleSAT(std::vector<std::vector<int>> cls, int v);
 	~SimpleSAT();

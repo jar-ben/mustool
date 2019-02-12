@@ -29,9 +29,9 @@ class Explorer{
 public:
 	bool verbose;
 	int dimension;
-	Minisat::Solver* solver;
-	Minisat::Solver* botSolver;
-	Minisat::Solver* topSolver;
+	CustomMinisat::Solver* solver;
+	CustomMinisat::Solver* botSolver;
+	CustomMinisat::Solver* topSolver;
 
 	SatSolver* satSolver;
 		

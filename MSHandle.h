@@ -12,7 +12,7 @@
 
 class MSHandle: public SatSolver{
 public:
-	Minisat::Solver* solver;
+	CustomMinisat::Solver* solver;
 //	std::vector<std::vector<int>> clauses;
 	std::map<std::vector<int>,int> clauses_map;
 	std::vector<std::string> clauses_str;

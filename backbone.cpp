@@ -1,6 +1,6 @@
 #include "Master.h"
 #include "misc.h"
-#include "Bones.h"
+//#include "Bones.h"
 #include <algorithm>
 #include <math.h>
 #include <functional>
@@ -304,8 +304,8 @@ int Master::get_backbones_bones(Formula &seed, Formula &implied, Formula &values
 		}
 	}
 
-	Bones b = Bones();
-	b.get_backbones(cls);
+//	Bones b = Bones();
+//	b.get_backbones(cls);
 	return 0;	
 }
 

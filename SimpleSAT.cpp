@@ -9,7 +9,7 @@
 #include <time.h>   
 
 
-using namespace Minisat;
+using namespace CustomMinisat;
 using namespace std;
 
 Lit itoLitS(int i){

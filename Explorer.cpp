@@ -1,7 +1,7 @@
 #include "Explorer.h"
 #include "misc.h"
 
-using namespace Minisat;
+using namespace CustomMinisat;
 using namespace std;
 
 Lit itoLit2(int i){

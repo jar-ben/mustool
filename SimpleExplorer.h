@@ -20,7 +20,7 @@ class SimpleExplorer{
 public:
 	bool verbose;
 	int dimension;
-	Minisat::Solver* solver;
+	CustomMinisat::Solver* solver;
 	int vars;
 	int added_clauses;
 
