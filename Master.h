@@ -140,8 +140,7 @@ public:
 	void backbone_build_literal_map(Formula &seed, vector<int> &variables_map, vector<int> &variables_map_inv);
 	void backbone_simplify(Formula &seed, int c, Formula &implied, Formula &values);
 
-	bool backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1);
-
+	void backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1);
 	vector<bool> backbone_crit_value;
 	vector<bool> backbone_crit_used;
 

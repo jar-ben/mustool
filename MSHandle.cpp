@@ -472,7 +472,6 @@ void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool
 		if(f[i] && !crits[i]){
 			fprintf(file, "{%d} %s\n", group++, clauses_str[i].c_str());
 		}
-	//fclose(file);
 	if (fclose(file) == EOF) {
 		cout << "error closing file: " << strerror(errno) << endl;
 	}	
@@ -634,7 +633,6 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			
-	//export_formula(f, exp.str());
 	export_formula_crits(f, exp.str(), crits);	
 
 	if(shrink_alg == "dmuser"){
@@ -676,7 +674,7 @@ vector<bool> MSHandle::shrink_muser(string input, int hash2){
 	return mus;
 }
 
-//todo
+//todo, not supported yet
 vector<bool> MSHandle::shrink_dmuser(string input, int hash){
 	vector<bool> mus;
 	remove(input.c_str());

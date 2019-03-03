@@ -49,10 +49,9 @@ vector<int> Master::backbone_init(Formula &seed, Formula &implied, Formula &valu
 			vector<int> &variables_map, vector<int> &variables_map_inv, int c){
 	if(c >= 0)
 		backbone_simplify(seed, c, implied, values);	
-
 	get_backbones_bones(seed, implied, values, variables_map, variables_map_inv);
 
-	get_backbones(seed, implied, values, variables_map, variables_map_inv);
+	//get_backbones(seed, implied, values, variables_map, variables_map_inv);
 	int vars = satSolver->vars;
 	vector<int> violated;
 	for(int i = 0 ; i < dimension; i++){
@@ -168,7 +167,6 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 		violated = propagate_backbone(var, positive, lits_left, satisfied, top, singletons, seed, c1, influenced);
 		if(!violated.empty()) break;
 	}
-	//if(!violated.empty()){ cout << "skipped: " << count_ones(extra) << " out of: " << extra.size() << endl; }
 	return violated;
 }
 
@@ -192,7 +190,6 @@ int Master::seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<in
 		implied_literal(s, implied, lit, var, value);
 		if(lit == 0) continue; //this singleton is already satisfied, there is no unit literal in it
 		if(unit[var] >= 0 && unit_value[var] != value ){
-			//cout << "conflict seeked due to " << s << " " << unit[var] << endl;
 			if(!seed[s]){
 				if(!seed[unit[var]]){ seed[unit[var]] = true; added.push_back(unit[var]); }
 				return s;
@@ -235,6 +232,7 @@ vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 	vector<int> violated;
 	vector<vector<int>> influencing(dimension, vector<int>());
 	vector<int> added;
+	int iter = 0;
 	while(!singletons.empty()){
 		int singleton = singletons.back();
 		singletons.pop_back();
@@ -256,9 +254,8 @@ vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 			break;
 		}	
 	}
-	if(violated.empty())
+	if(violated.empty() || added.empty())
 		return violated;
-
 	//slicing
 	vector<int> must_stay;
 	for(auto c: influencing[ added[added.size() - 1] ])
@@ -269,7 +266,6 @@ vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 		auto c = added[i];
 		bool keep = false;
 		for(auto influenced: influencing[c]){
-		//	cout << influenced << " ";
 			if(seed[influenced] || count(violated.begin(), violated.end(), influenced) > 0){
 				keep = true;
 				break;
@@ -278,7 +274,6 @@ vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 		}
 		if(!keep && count(must_stay.begin(), must_stay.end(), c) == 0 ) seed[c] = false;
 	}
-
 	return violated;
 }
 
@@ -304,8 +299,16 @@ int Master::get_backbones_bones(Formula &seed, Formula &implied, Formula &values
 		}
 	}
 
-//	Bones b = Bones();
-//	b.get_backbones(cls);
+	Bones b = Bones();
+	vector<int> backbone_lits = b.get_backbones(cls);
+	for(auto lit: backbone_lits){
+		int var = (lit > 0)? lit : (-1 * lit);
+		int phase = (lit > 0)? 1: -1;
+		int olit = variables_map_inv[var] * phase;
+		int ovar = olit * phase - 1;
+		implied[ovar] = true;
+		values[ovar] = phase > 0; 
+	}
 	return 0;	
 }
 
@@ -437,19 +440,22 @@ void Master::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &
 	}
 }
 
-bool Master::backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1){
+void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1){
+	if(dimension > 50000) return;
 	vector<int> assumptions;
-	for(int i = 0; i < implied.size(); i++){
+/*	for(int i = 0; i < implied.size(); i++){
 		if(implied[i]){
 			int lit = ( values[i] )? i + 1 : (i + 1) * -1;
 			assumptions.push_back(lit);
 		}
 	}
-	bool sat = satSolver->solve(top, assumptions);
+*/	//bool sat = satSolver->solve(top, assumptions);
+	bool sat = is_valid(top, false, false);
+	cout << "before block down" << endl;
 	if(sat){
 		block_down(top);
 	}
-	return sat;
+	return;
 }
 
 int Master::backbone_mus_rotation(MUS &m1, Formula &top){
@@ -498,6 +504,7 @@ int Master::backbone_mus_rotation(MUS &m1, Formula &top){
 		}
 		Formula impliedc = implied;
 		Formula valuesc = values;
+		int inner_iter = 0;
 		while(true){
 			seed = m1.bool_mus;
 			seed[c] = false;
@@ -521,7 +528,9 @@ int Master::backbone_mus_rotation(MUS &m1, Formula &top){
 			implied = impliedc;
 			valuesc = values;
 		}
-		if(iter_rot == 0) backbone_check_reminder(implied, values, top, m1.bool_mus);
+		if(iter_rot == 0){ 
+			backbone_check_reminder(implied, values, top, m1.bool_mus);
+		}
 		top[c] = true;
 		if(extended){
 			for(int i = 0; i < dimension; i++)

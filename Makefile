@@ -19,12 +19,14 @@ BCOBJS	= $(wildcard $(BONES)/*.o)
 
 
 CXX	= g++
-#CFLAGS	= -O3 -w #-Wall
-CFLAGS 	= -w -std=c++11
+CFLAGS 	= -w -std=c++11 -g
+CFLAGS	+= -O3
+CFLAGS	+= -D NDEBUG
 
-mvc: $(COBJS) $(MCOBJS) $(BCOBJS)
+
+mvc2: $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@
-	$(CXX) -O3 -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
 %.o: %.cpp
 	@echo Compiling: $@
