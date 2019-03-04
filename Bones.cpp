@@ -11,22 +11,14 @@ Lit itoLitB(int i){
 	return ( i<0 ) ? ~mkLit(itoVar(i)) : mkLit(itoVar(i));
 }
 
+Bones::~Bones(){ }
+
+Bones::Bones(){ set_options(); }
 
 void Bones::set_options(){
       config.set_backbone_insertion(1);
       config.set_use_core_based(true);
       config.set_chunk_size(100);
-}
-
-void print_backbone(CoreBased& c, int max_var){
-	int count = 0;
-	for(int i = 1; i < max_var; i++){
-		Lit v = itoLitB(i);
-		if(c.is_backbone(v)){
-			count++;
-		}
-	}
-	cout << "Total backbones: " << count << ", i.e. " << (float(count) / max_var) << endl;
 }
 
 vector<int> backbone_literals(CoreBased& c, int max_var){
