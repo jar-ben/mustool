@@ -24,7 +24,7 @@ CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
 
 
-mvc2: $(COBJS) $(MCOBJS) $(BCOBJS)
+mvc: $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@
 	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 

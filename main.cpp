@@ -19,26 +19,26 @@ string add_line_breaks(string s, int len = 50){
 }
 
 void print_help(){
-	int args = 14;
+	int args = 13;
 		string help[args][4] = 
 		{
-			{"variant", "v", "VARIANT", "Algorithm to be used: 1 - ReMUS, 2 - TOME, 3 - simple algorithm. (default: 1)"},
+			{"variant", "v", "VARIANT", "Algorithm to be used: 1 - ReMUS, 2 - TOME, 3 - MARCO. (default: 1)"},
 			{"output-file", "o", "OUTPUT_FILE", "Output file. (default: None)"},
 			{"verbose", "i", "", "Verbose output. (default: None)"},
-			{"sat-solver", "n", "", "Choose satisfiability solver. Depends on the constraint domain. In the SAT domain: minisat (default), glucose. In the SMT domain: z3 (default). In the LTL domain: spot (default)"},
+			{"sat-solver", "n", "", "Choose satisfiability solver. Depends on the constraint domain. In the SAT domain: minisat (default). In the SMT domain: z3 (default). In the LTL domain: spot (default). [Currently, we support only one satisfiability solver in each domain.]"},
 			{"shrink-alg", "m", "ALG", "Choose algorithm for performing the shrink procedure. Depends on the constraint domain. In the SAT domain: muser (default), dmuser, custom. In the SMT domain: custom (default). In the LTL domain: 1 - custom (default)"},
-			{"max-recursion-depth", "d", "DEPTH", "Set the limit on the depth of recursion calls (maximal level of nesting). (default: 6)"},
-			{"dim-reduction-factor", "r", "FACTOR", "Factor of dimensionality reduction. For example, 0.8 means reduce the dimension by 20 percent in every recursion call. (default: 0.9)"},
+			{"max-recursion-depth", "d", "DEPTH", "ReMUS only. Set the limit on the depth of recursion calls(maximal level of nesting). (default: 6)"},
+			{"dim-reduction-factor", "r", "FACTOR", "ReMUS only. Factor of dimensionality reduction. For example, 0.8 means reduce the dimension by 20 percent in every recursion call. (default: 0.9)"},
 
-			{"verify-muses", "c", "","Experimental option. Verify each outputted MUS."},
-			{"extend-top-variant", "j", "VAR", "Experimental option."},
+			{"verify-muses", "c", "","Experimental option. Verify each outputted MUS for being a MUS."},
 			{"block-down-muses", "a", "", "Experimental option."},
 			{"mus-approximation", "s", "", "Experimental option. Enable MUS approximation."},
 			{"mus-approximation-treshold", "e", "TRE", "Experimental option. Threshold used to determine whether to use MUS approximation or not. (default: 0)"},
 			{"verify-approximated-muses", "f", "", "Experimental option. Check whether are approximated MUSes actually MUSes."},
 			{"help", "h", "", "Prints this help message."}
         	};
-	cout << "usage: ./mvc ";
+	cout << "usage: ./mvc <arguments> <input_file_name>" << endl;
+	cout << "Available arguments:" << endl;
 	int line_len;
 	for(auto &opt: help){
 		if(line_len > 50){
@@ -48,11 +48,10 @@ void print_help(){
 		cout << "[-" << opt[1] << ((opt[2].size() > 0)? " " : "") << opt[2] << "] ";
 		line_len += 5 + opt[2].size();
 	}
-	cout << endl << "input_file" << endl << endl;
-	cout << "Online MUS enumeration algorithm, implemented for SAT, SMT and LTL constraints." << endl << endl;
+	cout << endl << endl;
 
 	cout << "mandatory arguments:" << endl;
-	cout << "\t input_file \t\t input file, allowed formats: .cnf, .smt2, .ltl (see example input files in ./tests)" << endl << endl;
+	cout << "\t input_file_name \t\t input file, allowed formats: .cnf, .smt2, .ltl (see example input files in ./tests)" << endl << endl;
 
 	cout << "optional arguments:" << endl;
 
