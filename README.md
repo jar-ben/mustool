@@ -26,6 +26,8 @@ The -v argument determines the algorithm that should be used. In particular, 1 -
 
 For more options, invoke ./mvc -h.
 
+For trying our new heuristics, Backbone and Matchmaker, for in the SAT domain, use flag "-w 1" or "-w 2" for Backbone and Matchmaker, respectively.
+
 ## Final Note
 The tool is still under development and there is a lot of things that need to be done (or improved). In case of any troubles, please contact me at xbendik=at=fi.muni.cz.
 

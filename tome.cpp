@@ -41,13 +41,11 @@ void Master::find_all_muses_tome(){
 			MUS mus = MUS(bot, -1, muses.size()); //-1 duration means skipped shrink
 			muses.push_back(mus);
 			mark_MUS(mus);
-			if(variant == 21){
-				int rot = recursive_rotation_delta(mus, original_top, 0);
-				cout << "recursively rotated: " << rot << endl;
+			if(useMatchmaker){
+				recursive_rotation_delta(mus, original_top, 0);
 			}
-			if(variant == 22){
-				int rot = backbone_mus_rotation(mus, original_top);
-				cout << "recursively rotated: " << rot << endl;
+			else if(useBackbone){
+				backbone_mus_rotation(mus, original_top);
 			}
 			continue;
 		}	
@@ -59,13 +57,11 @@ void Master::find_all_muses_tome(){
 		mark_MUS(mus);
 		block_down(mss);
 	
-		if(variant == 21){
-			int rot = recursive_rotation_delta(mus, original_top, 0);
-			cout << "recursively rotated: " << rot << endl;
+		if(useMatchmaker){
+			recursive_rotation_delta(mus, original_top, 0);
 		}
-		if(variant == 22){
-			int rot = backbone_mus_rotation(mus, original_top);
-			cout << "recursively rotated: " << rot << endl;
+		else if(useBackbone){
+			backbone_mus_rotation(mus, original_top);
 		}
 	}
 }

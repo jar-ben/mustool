@@ -64,6 +64,7 @@ Master::Master(string filename, int var, bool vis, string s_solver){
 	satSolver->hash = hash;
 	used_backbones_count = 0;
 	original_backbones_count = 0;
+	useBackbone = useMatchmaker = false;
 }
 
 Master::~Master(){
@@ -229,22 +230,12 @@ void Master::enumerate(){
 
 	switch (variant) {
 		case 1:
-		case 10:
-		case 11:
-		case 12:
 			find_all_muses_duality_based_remus(Formula (dimension, true), Formula (dimension, false), 0);
 			break;						
 		case 2:
-		case 21:
-		case 22:
 			find_all_muses_tome();
 			break;
 		case 3:
-		case 30:
-		case 31:
-		case 32:
-		case 33:
-		case 34:
 			marco_base();
 			break;
 		default:

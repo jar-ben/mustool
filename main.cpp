@@ -19,7 +19,7 @@ string add_line_breaks(string s, int len = 50){
 }
 
 void print_help(){
-	int args = 13;
+	int args = 14;
 		string help[args][4] = 
 		{
 			{"variant", "v", "VARIANT", "Algorithm to be used: 1 - ReMUS, 2 - TOME, 3 - MARCO. (default: 1)"},
@@ -35,6 +35,7 @@ void print_help(){
 			{"mus-approximation", "s", "", "Experimental option. Enable MUS approximation."},
 			{"mus-approximation-treshold", "e", "TRE", "Experimental option. Threshold used to determine whether to use MUS approximation or not. (default: 0)"},
 			{"verify-approximated-muses", "f", "", "Experimental option. Check whether are approximated MUSes actually MUSes."},
+			{"heuristic", "w", "", "Only for SAT domain. Enable either Backbone (-w 1) or Matchmaker (-w 2) heuristic."},
 			{"help", "h", "", "Prints this help message."}
         	};
 	cout << "usage: ./mvc <arguments> <input_file_name>" << endl;
@@ -51,7 +52,7 @@ void print_help(){
 	cout << endl << endl;
 
 	cout << "mandatory arguments:" << endl;
-	cout << "\t input_file_name \t\t input file, allowed formats: .cnf, .smt2, .ltl (see example input files in ./tests)" << endl << endl;
+	cout << "\t input_file_name \t\t input file, allowed formats: .cnf, .smt2, .ltl (see example input files in ./examples/)" << endl << endl;
 
 	cout << "optional arguments:" << endl;
 
@@ -60,7 +61,7 @@ void print_help(){
 		cout << "\t-" << opt[1] << ", --" << opt[0] << " " << opt[2] << endl << "\t\t" << add_line_breaks(opt[3]) << endl << endl;
 	}
 
-	cout << endl << "example usage: ./mvc -v 1 ./tests/test.cnf" << endl << endl; 
+	cout << endl << "example usage: ./mvc -v 1 ./examples/test1.cnf" << endl << endl; 
 
 }
 
@@ -88,6 +89,8 @@ int main(int argc, char *argv[]){
 	bool test_rotation_unex = false;
 	int mus_size_limit = 10000;
 	int scope_limit = 1000000;
+	bool useBackbone = false;
+	bool useMatchmaker = false;
 
 	int c;
 	while(1){
@@ -109,11 +112,12 @@ int main(int argc, char *argv[]){
 			{"help",  no_argument,       0, 'h'},
 			{"visualize",  no_argument,       0, 't'},
 			{"model-rotation", no_argument, 	0, 'x'},
+			{"heuristic", required_argument, 0, 'w'},
 			{0, 0, 0, 0}
         	};
 
 		int option_index = 0;
-		c = getopt_long (argc, argv, "l:v:o:im:d:j:b:r:sace:fhn:xygt:zkqp:u", long_options, &option_index);
+		c = getopt_long (argc, argv, "l:v:o:im:d:j:b:r:sace:fhn:xygt:zkqp:uw:", long_options, &option_index);
 
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -171,6 +175,10 @@ int main(int argc, char *argv[]){
 			case 'p':
 				scope_limit = atoi(optarg);
 				break;
+			case 'w':
+				useBackbone = atoi(optarg) == 1;
+				useMatchmaker = atoi(optarg) == 2;
+				break;
 			case 'x':
 				model_rotation = true;
 				break;
@@ -223,7 +231,8 @@ int main(int argc, char *argv[]){
 	solver.explorer->test_rotation_unex = test_rotation_unex;
 	solver.explorer->mus_size_limit = mus_size_limit;
 	solver.scope_limit = scope_limit;
-
+	solver.useBackbone = useBackbone;
+	solver.useMatchmaker = useMatchmaker;
 	solver.enumerate();
 
 	

@@ -38,13 +38,11 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			if(explorer->test_rotation_unex){ rotation_top = explorer->get_top_unexplored(mus.bool_mus); }
 			mark_MUS(mus);
 
-			if(variant == 11){
-				int rot = recursive_rotation_delta(mus, original_top, 0);
-				cout << "recursively rotated: " << rot << endl;
+			if(useMatchmaker){
+				recursive_rotation_delta(mus, original_top, 0);
 			}
-			if(variant == 12){
-				int rot = backbone_mus_rotation(mus, original_top);
-				cout << "recursively rotated: " << rot << endl;
+			if(useBackbone){
+				backbone_mus_rotation(mus, original_top);
  			}
 
 			if(depth > depthMUS) continue;

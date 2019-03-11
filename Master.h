@@ -64,6 +64,9 @@ public:
 	float crits_treshold;
 	bool criticals_rotation;
 	string domain;
+	bool useMatchmaker;
+	bool useBackbone;
+
 
 	int hash;
 
