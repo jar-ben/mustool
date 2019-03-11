@@ -21,8 +21,8 @@ BCOBJS	= $(wildcard $(BONES)/*.o)
 #of minibones available at ./minibones_binary
 #the other option assume that you have src code of minibones available
 #see Bones.h and BonesBinary.h
-#MINIBONESTYPE = MINIBONES_BIN
-MINIBONESTYPE = MINIBONES_SRC
+MINIBONESTYPE = MINIBONES_BIN
+#MINIBONESTYPE = MINIBONES_SRC
 
 CXX	= g++
 CFLAGS 	= -w -std=c++11 -g

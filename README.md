@@ -21,6 +21,7 @@ If you have already installed the above mentioned tools, just run "make"
 
 ## Running the Tool
 To run the tool use: ./mvc -v 1 <path_to_input_file>
+
 The -v argument determines the algorithm that should be used. In particular, 1 - ReMUS, 2 - TOME, 3 - Marco. The name of the input file should end either as .cnf, .smt, or .ltl. See the example inputs in ./examples/
 
 For more options, invoke ./mvc -h.
