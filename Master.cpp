@@ -239,6 +239,7 @@ void Master::enumerate(){
 		case 22:
 			find_all_muses_tome();
 			break;
+		case 3:
 		case 30:
 		case 31:
 		case 32:

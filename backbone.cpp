@@ -1,10 +1,11 @@
 #include "Master.h"
 #include "misc.h"
-#include "Bones.h"
 #include <algorithm>
 #include <math.h>
 #include <functional>
 #include <random>
+#include "Bones.h"
+#include "BonesBinary.h"
 
 //return ids of violated clause if there is some
 vector<int> Master::propagate_backbone(int i, bool positive, vector<int> &lits_left, vector<bool> &satisfied, vector<bool> &top, vector<int> &singletons, Formula &seed, int c, 	vector<int> &influenced, bool mark_influenced){
@@ -451,7 +452,6 @@ void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula 
 	}
 */	//bool sat = satSolver->solve(top, assumptions);
 	bool sat = is_valid(top, false, false);
-	cout << "before block down" << endl;
 	if(sat){
 		block_down(top);
 	}

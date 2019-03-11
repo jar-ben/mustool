@@ -17,12 +17,18 @@ MCOBJS	= $(MCSRCS:.cc=.o)
 
 BCOBJS	= $(wildcard $(BONES)/*.o)
 
+#use one of the following two options. The first option requires you to have compiled binary 
+#of minibones available at ./minibones_binary
+#the other option assume that you have src code of minibones available
+#see Bones.h and BonesBinary.h
+#MINIBONESTYPE = MINIBONES_BIN
+MINIBONESTYPE = MINIBONES_SRC
 
 CXX	= g++
 CFLAGS 	= -w -std=c++11 -g
 CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
-
+CFLAGS 	+= -D $(MINIBONESTYPE)
 
 mvc: $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@

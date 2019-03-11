@@ -27,12 +27,10 @@ void Master::marco_base(){
 				auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
 				if(duration > 30 || muses.size() > 100){
 					int rot = recursive_rotation_delta(mus, original_top, 0);
-					cout << "recursively rotated: " << rot << endl;
 				}
 			}
 			if(variant == 32){
 				int rot = backbone_mus_rotation(mus, original_top);
-				cout << "recursively rotated: " << rot << endl;
 			}
 		}
 		top = explorer->get_unexplored(1, false);

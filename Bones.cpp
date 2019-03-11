@@ -1,3 +1,4 @@
+#ifdef MINIBONES_SRC
 #include "Bones.h"
 
 using namespace minibones;
@@ -59,4 +60,4 @@ std::vector<int> Bones::get_backbones(std::vector<std::vector<int>> &cls){
 	delete pcorebased;
 	return backbones; 
 }
-
+#endif
