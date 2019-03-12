@@ -5,7 +5,6 @@ BONES	= $(DIR)/minibones/src
 LIBD 	= -L/usr/lib -L/usr/local/lib
 LIBD 	+= -L$(BONES)/minisat/core
 LIBS 	= -lz -lspot -lz3
-LIBS	+= -lminisat
 USR 	= /usr/include
 INC 	= -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES)
 
@@ -23,6 +22,9 @@ BCOBJS	= $(wildcard $(BONES)/*.o)
 #see Bones.h and BonesBinary.h
 MINIBONESTYPE = MINIBONES_BIN
 #MINIBONESTYPE = MINIBONES_SRC
+
+#also, if you are using MINIBONES_SRC, you might need to uncomment the following line
+#LIBS	+= -lminisat
 
 CXX	= g++
 CFLAGS 	= -w -std=c++11 -g
