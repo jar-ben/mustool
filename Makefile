@@ -1,9 +1,10 @@
 DIR	= $(shell pwd)
 MINISAT	= $(DIR)/custom_minisat
 BONES	= $(DIR)/minibones/src
+MSAT	= libr
 
 LIBD 	= -L/usr/lib -L/usr/local/lib
-LIBD 	+= -L$(BONES)/minisat/core
+LIBD 	+= -L$(BONES)/minisat/build/release/lib
 LIBS 	= -lz -lspot -lz3
 LIBS	+= -lminisat
 USR 	= /usr/include
@@ -15,14 +16,10 @@ COBJS	= $(CSRCS:.cpp=.o)
 MCSRCS	= $(wildcard $(MINISAT)/*.cc)
 MCOBJS	= $(MCSRCS:.cc=.o)
 
-BCOBJS	= $(wildcard $(BONES)/*.o)
+BCSRCS	= $(wildcard $(BONES)/*.cc)
+BCOBJS	= $(BCSRCS:.cc=.o)
 
-#use one of the following two options. The first option requires you to have compiled binary 
-#of minibones available at ./minibones_binary
-#the other option assume that you have src code of minibones available
-#see Bones.h and BonesBinary.h
-MINIBONESTYPE = MINIBONES_BIN
-#MINIBONESTYPE = MINIBONES_SRC
+MINIBONESTYPE = MINIBONES_SRC
 
 CXX	= g++
 CFLAGS 	= -w -std=c++11 -g
@@ -30,7 +27,8 @@ CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
 CFLAGS 	+= -D $(MINIBONESTYPE)
 
-mvc: $(COBJS) $(MCOBJS) $(BCOBJS)
+
+mvc: m $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@
 	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
@@ -42,7 +40,14 @@ mvc: $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Compiling: $@
 	@$(CXX) $(CFLAGS) $(INC) -c -o $@ $<
 
+m:
+	@echo Making Minisat
+	export MROOT=$(BONES)/minisat ; cd $(BONES)/minisat; make CXX=$(CXX)
+
 print-%  : ; @echo $* = $($*)
 
 clean:
 	rm *.o
+	rm $(MINISAT)/*.o
+	rm $(BONES)/*.o
+	find $(BONES)/minisat/ -name '*.o' | xargs rm -f

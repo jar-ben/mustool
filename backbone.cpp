@@ -5,7 +5,6 @@
 #include <functional>
 #include <random>
 #include "Bones.h"
-#include "BonesBinary.h"
 
 //return ids of violated clause if there is some
 vector<int> Master::propagate_backbone(int i, bool positive, vector<int> &lits_left, vector<bool> &satisfied, vector<bool> &top, vector<int> &singletons, Formula &seed, int c, 	vector<int> &influenced, bool mark_influenced){

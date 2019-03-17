@@ -1,4 +1,4 @@
-#if defined(MINIBONES_SRC) && !defined(ReMUS_Bones_h)
+#if !defined(ReMUS_Bones_h)
 #define ReMUS_Bones_h
 
 #include "minibones/src/ToolConfig.hh"

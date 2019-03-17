@@ -1,7 +1,7 @@
 This is a so far unnamed tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO[1], TOME[2], and ReMUS[3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL.
 
 
-We distribute this source code under the MIT licence. See the file ./COPYRIGHTS for mode details.
+We distribute this source code under the MIT licence. See ./LICENSE for mode details.
 
 In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the developer of the tool, at xbendik=at=fi.muni.cz.
 
