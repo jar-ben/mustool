@@ -12,9 +12,7 @@ Besides our original code, the tool uses several external tools that we in some 
 * muser2[5] - muser2 is a SAT CNF single MUS extraction tool and we use it for an implementation of the shrinking procedure in the three MUS enumeration algorithms. We distribute only a linux complied binary of muser2 (./muser2-para) alongside our tool. The source code of muser2 is available at https://bitbucket.org/anton_belov/muser2. We recommend you, the user of our tool, download the source code of muser2 and build it on your own to make sure that you have a build that is suitable for your architecture.
 * z3[6] - we use the SMT satisfiability solver z3 as a satisfiability solver in the SMT domain. However, we do not distribute the code of z3 (and nor a binary); we include it as a C++ library and you have to download and install it on your own.
 * SPOT[7] - SPOT is a C++ library for LTL, omega-automata manipulation, and LTL model checking. We use SPOT as a satisfiability solver in the LTL domain. You have to download and install the library on your own.
-* MiniBones[8] - MiniBones is a tool for computing complete bakcbones of a given satisfiable SAT CNF formula. We use it as a subroutine in our heuristic called Backbone heuristic; the heuristic can be optionally used to speed up a MUS enumeration in the SAT domain. Unfortunately,
-the license of MiniBones is currently not precisely stated and thus we do not distribute it with our tool.
-You can download its binary from its author's webpage http://sat.inesc-id.pt/~mikolas/sw/minibones/. Name it minibones_binary and put it into this directory. Even a better option is to contact the author of MiniBones and ask him for a source code so that you can use MiniBones directly (it is faster). We provide a wrapper, Bones.h and Bones.cpp, for running MiniBones from source code. See Bones.h for the folder structure that needs to be set up to incorporate MiniBones from source code. Also, you have to change the MINIBONESTYPE flag in Makefile.
+* MiniBones[8] - MiniBones is a tool for computing complete bakcbones of a given satisfiable SAT CNF formula. We use it as a subroutine in our heuristic called Backbone heuristic; the heuristic can be optionally used to speed up a MUS enumeration in the SAT domain. We include minibone's source code (check the license file in ./minibones)
 
 ## Installation
 If you have already installed the above mentioned tools, just run "make"
@@ -31,6 +29,7 @@ For trying our new heuristics, Backbone and Matchmaker, for in the SAT domain, u
 ## Final Note
 The tool is still under development and there is a lot of things that need to be done (or improved). In case of any troubles, please contact me at xbendik=at=fi.muni.cz.
 
+## References
 * [1] Mark H. Liffiton, Alessandro Previti, Ammar Malik, João Marques-Silva: Fast, flexible MUS enumeration. Constraints 21(2), 2016.
 * [2] Jaroslav Bendík, Nikola Beneš, Ivana Černá, Jiří Barnat: Tunable Online MUS/MSS Enumeration. FSTTCS 2016.
 * [3] Jaroslav Bendík, Ivana Černá, Nikola Beneš: Recursive Online Enumeration of All Minimal Unsatisfiable Subsets. ATVA 2018.
