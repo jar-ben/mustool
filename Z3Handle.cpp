@@ -9,7 +9,9 @@ using namespace z3;
 
 
 Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
-	Z3_ast a = Z3_parse_smtlib2_file(ctx, filename.c_str(), 0, 0, 0, 0, 0, 0);    
+	Z3_ast_vector a_vec = Z3_parse_smtlib2_file(ctx, filename.c_str(), 0, 0, 0, 0, 0, 0);    
+	std::cout << "a_Vec: " << a_vec << std::endl;
+	Z3_ast a;
 	expr e(ctx, a);
 
 	if(e.num_args() == 0){

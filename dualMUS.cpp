@@ -4,6 +4,7 @@
 #include <math.h>
 #include <functional>
 #include <random>
+#include <unordered_set>
 
 vector<int> Master::minimal_hitting_set(vector<int> local_muses){
 	vector<int> hs;

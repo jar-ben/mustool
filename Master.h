@@ -1,7 +1,11 @@
 #include "MSHandle.h"
 #include "Explorer.h"
-#include "Z3Handle.h"
-#include "SpotHandle.h"
+#ifndef NOSMT
+	#include "Z3Handle.h"
+#endif
+#ifndef NOLTL 
+	#include "SpotHandle.h"
+#endif
 #include "NuxmvHandle.h"
 #include "types_h.h"
 #include <set>

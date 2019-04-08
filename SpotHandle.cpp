@@ -1,3 +1,4 @@
+#ifndef NOLTL
 #include "SpotHandle.h"
 
 using namespace std;
@@ -33,4 +34,4 @@ bool SpotHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
 	bool result = (bool) res;
 	return result;
 }
-
+#endif

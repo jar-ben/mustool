@@ -19,14 +19,24 @@ MCOBJS	= $(MCSRCS:.cc=.o)
 BCSRCS	= $(wildcard $(BONES)/*.cc)
 BCOBJS	= $(BCSRCS:.cc=.o)
 
-MINIBONESTYPE = MINIBONES_SRC
+USAT = YES
+USMT = NO
+ULTL = NO
 
 CXX	= g++
 CFLAGS 	= -w -std=c++11 -g
 CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
-CFLAGS 	+= -D $(MINIBONESTYPE)
 
+ifeq ($(USAT),NO)
+	CFLAGS += -D NOSAT
+endif
+ifeq ($(USMT),NO)
+	CFLAGS += -D NOSMT
+endif
+ifeq ($(ULTL),NO)
+	CFLAGS += -D NOLTL
+endif
 
 mvc: m $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@
