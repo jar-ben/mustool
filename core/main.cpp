@@ -3,6 +3,9 @@
 #include "Master.h"
 #include <getopt.h>
 #include <algorithm>
+#include <csignal>
+#include <experimental/filesystem>
+namespace fs = std::filesystem;
 
 string add_line_breaks(string s, int len = 50){
 	int pos = len;
@@ -65,8 +68,20 @@ void print_help(){
 
 }
 
+void signal_handler(int signal){
+	if(signal == 15){
+		cout << "the computation was interupted due to a timeout" << endl;
+		for (const auto & entry : fs::directory_iterator("./"))
+			std::cout << entry.path() << std::endl;
+	}
+	exit(1);
+}
+
 int main(int argc, char *argv[]){
-        int opt;
+
+	std::signal(SIGTERM, signal_handler);
+
+	int opt;
         int variant = 1;
         bool verbose = false;
         string input, output = "";

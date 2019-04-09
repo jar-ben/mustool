@@ -1,4 +1,6 @@
-#include "MSHandle.h"
+#include "core/Dimacs.h"
+#include "core/misc.h"
+#include "satSolvers/MSHandle.h"
 #include <sstream>
 #include <fstream>
 #include <sstream>
@@ -8,9 +10,7 @@
 #include <random>
 #include <stdlib.h>   
 #include <time.h>   
-#include "Dimacs.h"
 #include <cstdio>
-#include "misc.h"
 
 using namespace CustomMinisat;
 using namespace std;
@@ -689,8 +689,6 @@ vector<bool> MSHandle::shrink_mcsmus(string input, int hash){
 	int status = system(cmd.str().c_str());
 	vector<bool> mus = import_formula(imp.str());
 	cout << imp.str() << endl;
-//	int sat_calls = muser_output(muser_out.str());	
-//	checks += sat_calls;
 	remove(imp.str().c_str());
 	remove(muser_out.str().c_str());
 	remove(input.c_str());

@@ -1,12 +1,12 @@
-#include "MSHandle.h"
+#include "satSolvers/MSHandle.h"
 #include "Explorer.h"
 #ifndef NOSMT
-	#include "Z3Handle.h"
+	#include "satSolvers/Z3Handle.h"
 #endif
 #ifndef NOLTL 
-	#include "SpotHandle.h"
+	#include "satSolvers/SpotHandle.h"
+	#include "satSolvers/NuxmvHandle.h"
 #endif
-#include "NuxmvHandle.h"
 #include "types_h.h"
 #include <set>
 #include <list>

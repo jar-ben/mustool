@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
-#include "misc.h"
+#include "core/misc.h"
 using namespace z3;
 
 
