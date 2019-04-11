@@ -113,7 +113,7 @@ static void parse_DIMACS(std::string filename, std::vector<std::vector<int>>& cl
 	if(in == NULL)
 		print_err("could not open the file " + filename);
     	StreamBuffer ins(in);
-       	parse_DIMACS_main(ins, cls, ends_with); 
+       	parse_DIMACS_main(ins, cls, group); 
 	gzclose_r(in);
 }
 

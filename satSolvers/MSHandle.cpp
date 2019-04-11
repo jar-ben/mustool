@@ -682,15 +682,14 @@ vector<bool> MSHandle::shrink_dmuser(string input, int hash){
 }
 
 vector<bool> MSHandle::shrink_mcsmus(string input, int hash){
-	stringstream cmd, muser_out, imp;
-	muser_out << "./f_" << hash << "_output";
-	imp << "./f_" << hash << ".mus.1.cnf";
-	cmd << "./mcsmus -print-muses-cnf " << input << " > " << muser_out.str(); //" > /dev/null";
+	stringstream cmd, out, imp;
+	out << "./f_" << hash << "_output";
+	imp << "./f_" << hash << ".min.cnf";
+	cmd << "~/bin/mcsmus/build/release/bin/mcsmus -print-core " << input << " > /dev/null";
 	int status = system(cmd.str().c_str());
-	vector<bool> mus = import_formula(imp.str());
-	cout << imp.str() << endl;
+	vector<bool> mus = import_formula_crits(imp.str());
 	remove(imp.str().c_str());
-	remove(muser_out.str().c_str());
+	remove(out.str().c_str());
 	remove(input.c_str());
 	return mus;
 }
