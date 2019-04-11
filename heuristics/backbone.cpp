@@ -1,5 +1,5 @@
-#include "Master.h"
-#include "misc.h"
+#include "core/Master.h"
+#include "core/misc.h"
 #include <algorithm>
 #include <math.h>
 #include <functional>

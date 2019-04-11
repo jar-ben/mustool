@@ -6,11 +6,12 @@ MSAT	= libr
 LIBD 	= -L/usr/lib -L/usr/local/lib
 LIBD 	+= -L$(BONES)/minisat/build/release/lib
 LIBS 	= -lz -lspot -lz3
-LIBS	+= -lminisat
+LIBS	+= -lminisat -lstdc++fs
 USR 	= /usr/include
-INC 	= -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES)
+INC 	= -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES) -I $(DIR)
 
-CSRCS	= $(wildcard *.cpp)
+CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp) $(wildcard $(DIR)/heuristics/*.cpp)
+CSRCS	+= $(wildcard $(DIR)/satSolvers/*.cpp) $(wildcard $(DIR)/core/*.cpp)
 COBJS	= $(CSRCS:.cpp=.o)
 
 MCSRCS	= $(wildcard $(MINISAT)/*.cc)
@@ -19,14 +20,24 @@ MCOBJS	= $(MCSRCS:.cc=.o)
 BCSRCS	= $(wildcard $(BONES)/*.cc)
 BCOBJS	= $(BCSRCS:.cc=.o)
 
-MINIBONESTYPE = MINIBONES_SRC
+USAT = YES
+USMT = NO
+ULTL = NO
 
 CXX	= g++
-CFLAGS 	= -w -std=c++11 -g
+CFLAGS 	= -w -std=c++17 -g
 CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
-CFLAGS 	+= -D $(MINIBONESTYPE)
 
+ifeq ($(USAT),NO)
+	CFLAGS += -D NOSAT
+endif
+ifeq ($(USMT),NO)
+	CFLAGS += -D NOSMT
+endif
+ifeq ($(ULTL),NO)
+	CFLAGS += -D NOLTL
+endif
 
 mvc: m $(COBJS) $(MCOBJS) $(BCOBJS)
 	@echo Linking: $@
@@ -47,7 +58,7 @@ m:
 print-%  : ; @echo $* = $($*)
 
 clean:
-	rm *.o
-	rm $(MINISAT)/*.o
-	rm $(BONES)/*.o
+	rm -f $(COBJS)
+	rm -f $(MINISAT)/*.o
+	rm -f $(BONES)/*.o
 	find $(BONES)/minisat/ -name '*.o' | xargs rm -f

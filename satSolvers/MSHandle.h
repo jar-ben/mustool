@@ -2,18 +2,16 @@
 #define MSHANDLE_H
 
 #include "custom_minisat/Solver.h"
+#include "satSolvers/SatSolver.h"
 #include <string>
 #include <map>
 #include <vector>
-#include "SatSolver.h"
 #include <unordered_map>
 
-//#include "muser2_api.hh"
 
 class MSHandle: public SatSolver{
 public:
 	CustomMinisat::Solver* solver;
-//	std::vector<std::vector<int>> clauses;
 	std::map<std::vector<int>,int> clauses_map;
 	std::vector<std::string> clauses_str;
 	std::unordered_map<std::string, int> clauses_unique_map;

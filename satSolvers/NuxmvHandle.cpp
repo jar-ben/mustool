@@ -1,7 +1,7 @@
+#include "core/misc.h"
 #include "NuxmvHandle.h"
 #include <algorithm>
 #include <stdlib.h>
-#include "misc.h"
 
 using namespace std;
 

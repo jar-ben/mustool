@@ -1,3 +1,4 @@
+#ifndef NOLTL
 #include "SatSolver.h"
 #include <iostream>
 #include <fstream>
@@ -16,3 +17,4 @@ public:
 	~SpotHandle();
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
 };
+#endif

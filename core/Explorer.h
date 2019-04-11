@@ -1,7 +1,7 @@
 #ifndef EXPLORER_H
 #define EXPLORER_H
 
-#include "MSHandle.h"
+#include "satSolvers/MSHandle.h"
 #include "custom_minisat/Solver.h"
 #include <string>
 #include <map>

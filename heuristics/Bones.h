@@ -5,7 +5,7 @@
 #include "minibones/src/CoreBased.hh"
 #include "minibones/src/LitSet.hh"
 #include <iostream>
-#include "types_h.h"
+#include "core/types_h.h"
 
 
 class Bones{

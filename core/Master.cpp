@@ -11,18 +11,33 @@ Master::Master(string filename, int var, bool vis, string s_solver){
         variant = var;
 	sat_solver = s_solver;
 	if(ends_with(filename, "smt2")){
-		satSolver = new Z3Handle(filename); 
+		#ifdef NOSMT
+			std::cout << "working with smt is currently not enabled, plese build the tool with the flag USESMT=YES, e.g. 'make USESMT=YES'" << std::endl;
+			exit(1);
+		#else
+		satSolver = new Z3Handle(filename);
+	       	#endif	
 		domain = "smt";
 	}
 	else if(ends_with(filename, "cnf")){
+		#ifdef NOSAT
+			std::cout << "working with sat is currently not enabled, plese build the tool with the flag USESAT=YES, e.g. 'make USESAT=YES'" << std::endl;
+			exit(1);
+		#else
 		satSolver = new MSHandle(filename);
+		#endif
 		domain = "sat";
 	}
 	else if(ends_with(filename, "ltl")){
+		#ifdef NOLTL
+			std::cout << "working with ltl is currently not enabled, plese build the tool with the flag USELTL=YES, e.g. 'make USELTL=YES'" << std::endl;
+			exit(1);
+		#else
 		if(sat_solver == "nuxmv")
 			satSolver = new NuxmvHandle(filename); 
 		else
 			satSolver = new SpotHandle(filename);
+		#endif
 		domain = "ltl";
 	}
 	else
@@ -214,8 +229,9 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", rotated MUSes: " << rotated_muses << ", explicit seeds: " << explicit_seeds;
 	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", duration: " << f.duration;
-       	cout << ", used b: " << used_backbones_count << ", original b: " << original_backbones_count << endl;
-	cout << ((original_backbones_count > 0)? (used_backbones_count/float(original_backbones_count)) : 0 ) << endl;
+	cout << endl;
+//	cout << ", used b: " << used_backbones_count << ", original b: " << original_backbones_count << endl;
+//	cout << ((original_backbones_count > 0)? (used_backbones_count/float(original_backbones_count)) : 0 ) << endl;
 
 	if(output_file != "")
 		write_mus_to_file(f);
