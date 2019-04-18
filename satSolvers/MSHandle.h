@@ -41,6 +41,7 @@ public:
 	std::vector<bool> shrink_muser(std::string input, int hash2);
 	std::vector<bool> shrink_dmuser(std::string input, int hash2);
 	std::vector<bool> shrink_mcsmus(std::string input, int hash2);
+	std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 
 
 	std::vector<bool> shrink_api_muser(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());

@@ -1,6 +1,7 @@
 DIR	= $(shell pwd)
 MINISAT	= $(DIR)/custom_minisat
 BONES	= $(DIR)/minibones/src
+MCSMUS	= $(DIR)/mcsmus
 MSAT	= libr
 
 LIBD 	= -L/usr/lib -L/usr/local/lib
@@ -8,7 +9,7 @@ LIBD 	+= -L$(BONES)/minisat/build/release/lib
 LIBS 	= -lz -lspot -lz3
 LIBS	+= -lminisat -lstdc++fs
 USR 	= /usr/include
-INC 	= -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES) -I $(DIR)
+INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES) -I $(DIR) -I $(MCSMUS) 
 
 CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp) $(wildcard $(DIR)/heuristics/*.cpp)
 CSRCS	+= $(wildcard $(DIR)/satSolvers/*.cpp) $(wildcard $(DIR)/core/*.cpp)
@@ -20,9 +21,17 @@ MCOBJS	= $(MCSRCS:.cc=.o)
 BCSRCS	= $(wildcard $(BONES)/*.cc)
 BCOBJS	= $(BCSRCS:.cc=.o)
 
+MCSMUS_SRCS = $(wildcard $(MCSMUS)/minisat/core/*.cc) $(wildcard $(MCSMUS)/minisat/simp/*.cc) $(wildcard $(MCSMUS)/minisat/utils/*.cc) \
+		$(wildcard $(MCSMUS)/glucose/core/*.cc) $(wildcard $(MCSMUS)/glucose/simp/*.cc) $(wildcard $(MCSMUS)/glucose/utils/*.cc) \
+		$(wildcard $(MCSMUS)/mcsmus/*.cc)
+MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
+
+### 
+# The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USAT = YES
 USMT = NO
 ULTL = NO
+###
 
 CXX	= g++
 CFLAGS 	= -w -std=c++17 -g
@@ -39,9 +48,9 @@ ifeq ($(ULTL),NO)
 	CFLAGS += -D NOLTL
 endif
 
-mvc: m $(COBJS) $(MCOBJS) $(BCOBJS)
+mvc: m $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS)
 	@echo Linking: $@
-	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
 %.o: %.cpp
 	@echo Compiling: $@
@@ -58,6 +67,7 @@ m:
 print-%  : ; @echo $* = $($*)
 
 clean:
+	rm -f $(MCSMUS_OBJS)
 	rm -f $(COBJS)
 	rm -f $(MINISAT)/*.o
 	rm -f $(BONES)/*.o

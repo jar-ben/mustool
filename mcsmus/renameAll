@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# There are unfortunately multiple versions of minisat used in our MUS enumeration tool, which causes problems during linking. 
+# Thus, we rename minisat's header files to avoid the linking problems (to avoid a situation that there are different .h files with a same name).
+# Renames all minisat libraries with name "<name>.h" to "mcsmus_<name>.h", and alters the corresponding includes of the libraries
+
+for name in `find ./minisat/ -type f -name "*.h"`
+do
+	basename=`basename "$name"`
+	if ! [[ $basename == mcsmus* ]] ;
+	then
+		newbasename=mcsmus_"$basename"
+		newname=`dirname "$name"`/"$newbasename"
+		name=${name:2}
+		newname=${newname:2}
+		echo "$name"; 
+		echo "$newname"
+		mv "$name" "$newname"
+		name=${name:2}
+		newname=${newname:2}
+		grep -rl --include \*.h "$name" ./ | xargs sed -i "s@$name@$newname@g"
+		grep -rl --include \*.hh "$name" ./ | xargs sed -i "s@$name@$newname@g"
+		grep -rl --include \*.cc "$name" ./ | xargs sed -i "s@$name@$newname@g"
+	fi
+done

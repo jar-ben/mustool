@@ -639,7 +639,7 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 		return shrink_dmuser(exp.str(), hash);
 	}
 	if(shrink_alg == "mcsmus"){
-		return shrink_mcsmus(exp.str(), hash);
+		return shrink_mcsmus(f, crits);
 	}
 	else{
 		return shrink_muser(exp.str(), hash);

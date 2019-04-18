@@ -1,0 +1,108 @@
+================================================================================
+Quick Install
+
+- Decide where to install the files . The simplest approach is to use
+  GNU standard locations and just set a "prefix" for the root install
+  directory (reffered to as $PREFIX below). More control can be
+  achieved by overriding other of the GNU standard install locations
+  (includedir, bindir, etc). Configuring with just a prefix:
+
+  > make config prefix=$PREFIX
+
+- Compiling and installing:
+
+  > make install
+
+================================================================================
+Configuration
+
+- Multiple configuration steps can be joined into one call to "make
+  config" by appending multiple variable assignments on the same line.
+
+- The configuration is stored in the file "config.mk". Look here if
+  you want to know what the current configuration looks like.
+
+- To reset from defaults simply remove the "config.mk" file or call
+  "make distclean".
+
+- Recompilation can be done without the configuration step.
+
+Interesting configuration options:
+
+LGL_DIR  Set it to the directory where you have installed lingeling (the
+	 directory that contains liblgl.a). If you leave it empty, it will
+	 not build the lingeling backend.
+
+LTO
+AR       If you want to use link-time optimization (LTO), set LTO=-flto
+
+	 This slows down linking but may provide a small improvement
+	 in performance.  If you are using an older toolchain, this
+	 may also require setting AR=gcc-ar. If you link in lingeling,
+	 you can also compile lingeling with -flto (but notice that
+	 you have to modify it so that it uses gcc-ar to build
+	 liblgl.a)
+
+================================================================================
+Building
+
+mcsmus requires a c++14 capable compiler. GCC 5.3 or Clang 3.8 (or
+newer) will do.
+
+mcsmus will be built into the build/[release|debug|profile]/bin
+sub-directory. The executable is by default statically linked. A
+linkable library is also constructed in
+build/[release|debug|profile]/lib.
+
+You can use mcsmus without installing it.
+
+================================================================================
+Directory Overview:
+
+mcsmus/                 Main code of the muser as well as some utilities
+minisat/mtl/            Minisat's Mini Template Library
+minisat/utils/          Generic helper code (I/O, Parsing, CPU-time, etc)
+minisat/core/           Minisat core version (no preprocessing)
+minisat/simp/           Minisat version with preprocessing
+glucose/core/           Glucose core version (no preprocessing)
+glucose/simp/           Glucose version with preprocessing
+README
+LICENSE
+
+================================================================================
+Examples:
+
+Find a single (g)MUS:
+
+> mcsmus <cnf-file>|<gcnf-file>
+
+Find a single MUS, output it to a file <name>.min.cnf, and print the
+indices of the clauses in the MUS to stdout:
+
+> mcsmus -print-core -print-core-indices <cnf-file>|<gcnf-file>
+
+Same, but output is a group CNF file <name>.min.gcnf:
+
+> mcsmus -print-gmus -print-core-indices <cnf-file>|<gcnf-file>
+
+Enumerate all MUSes, printing a line at stdout every time a MUS or MCS
+is discovered:
+
+> mcsmus -all-cores -all-mcs-times -all-mus-times <cnf-file>|<gcnf-file>
+
+Same, but print the indices of every MCS and every MUS found to
+<name>.mcs and <name>.mus, respectively
+
+> mcsmus -all-cores -print-mcses -print-muses <cnf-file>|<gcnf-file>
+
+Same, but print each MSS and each MUS found to <name>.mss|mus.<num>.cnf
+
+> mcsmus -all-cores -print-mcses-cnf -print-muses-cnf <cnf-file>|<gcnf-file>
+
+Choose a different SAT solver:
+
+> mcsmus -backend=minisat-simp <cnf-file>|<gcnf-file>
+
+Make it more quiet:
+
+> mcsmus -verb=0 <cnf-file>|<gcnf-file>
