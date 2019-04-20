@@ -630,16 +630,15 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	}
 	if(shrink_alg == "api_muser")
 		return shrink_api_muser(f, crits);
-
+	if(shrink_alg == "mcsmus"){
+		return shrink_mcsmus(f, crits);
+	}
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			
 	export_formula_crits(f, exp.str(), crits);	
 
 	if(shrink_alg == "dmuser"){
 		return shrink_dmuser(exp.str(), hash);
-	}
-	if(shrink_alg == "mcsmus"){
-		return shrink_mcsmus(f, crits);
 	}
 	else{
 		return shrink_muser(exp.str(), hash);

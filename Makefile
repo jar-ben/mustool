@@ -43,9 +43,13 @@ ifeq ($(USAT),NO)
 endif
 ifeq ($(USMT),NO)
 	CFLAGS += -D NOSMT
+	CSRCS := $(filter-out $(DIR)/satSolvers/Z3Handle.cpp, $(CSRCS))
+	COBJS := $(filter-out $(DIR)/satSolvers/Z3Handle.o, $(COBJS))
 endif
 ifeq ($(ULTL),NO)
 	CFLAGS += -D NOLTL
+	CSRCS := $(filter-out $(DIR)/satSolvers/SpotHandle.cpp, $(CSRCS))
+	COBJS := $(filter-out $(DIR)/satSolvers/SpotHandle.o, $(COBJS))
 endif
 
 mvc: m $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS)
