@@ -96,9 +96,6 @@ int main(int argc, char *argv[]){
 	bool get_implies = false;
 	float crits_treshold = 0.9;
 	bool criticals_rotation = false;
-	bool unex_impl = false;
-	bool test_rotation_unex = false;
-	int mus_size_limit = 10000;
 	int scope_limit = 1000000;
 	bool useBackbone = false;
 	bool useMatchmaker = false;
@@ -135,16 +132,16 @@ int main(int argc, char *argv[]){
 			break;
 		switch (c){
 			case 'l':
-				mus_size_limit = atoi(optarg);
+				//FREE
 				break;
 			case 'a':
 				block_down_mus = true;
 				break;
 			case 'k':
-				test_rotation_unex = true;
+				//FREE
 				break;
 			case 'z':
-				unex_impl = true;
+				//FREE
 				break;
 			case 'c':
 				validate_mus = true;
@@ -238,9 +235,6 @@ int main(int argc, char *argv[]){
 	solver.get_implies = get_implies;
 	solver.crits_treshold = crits_treshold;
 	solver.criticals_rotation = criticals_rotation;
-	solver.explorer->use_implications = unex_impl;
-	solver.explorer->test_rotation_unex = test_rotation_unex;
-	solver.explorer->mus_size_limit = mus_size_limit;
 	solver.scope_limit = scope_limit;
 	solver.useBackbone = useBackbone;
 	solver.useMatchmaker = useMatchmaker;

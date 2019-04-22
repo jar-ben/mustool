@@ -76,3 +76,6 @@ clean:
 	rm -f $(MINISAT)/*.o
 	rm -f $(BONES)/*.o
 	find $(BONES)/minisat/ -name '*.o' | xargs rm -f
+
+cleanCore:
+	rm -f $(COBJS)

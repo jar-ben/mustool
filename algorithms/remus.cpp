@@ -34,8 +34,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 		if(!is_valid(top, true, true)){
 			streak = 0;
 			MUS mus = shrink_formula(top, crits);
-			Formula rotation_top;
-			if(explorer->test_rotation_unex){ rotation_top = explorer->get_top_unexplored(mus.bool_mus); }
 			mark_MUS(mus);
 
 			if(useMatchmaker){
