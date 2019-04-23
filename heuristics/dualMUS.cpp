@@ -49,12 +49,13 @@ int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 	unordered_set<vector<int>, OverlapHash> overlaps;	
 	vector<bool> already_used_mus(muses.size(), false);
 
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	int round = 0;
 	for(auto c1: m1.without_crits){
 		if(explorer->mus_intersection[c1]) continue;
 		vector<int> pairs;	
 		for(auto c: top_int){
-			if(is_hitting_pair(satSolver->clauses[c], satSolver->clauses[c1])){ pairs.push_back(c); }
+			if(is_hitting_pair(msSolver->clauses[c], msSolver->clauses[c1])){ pairs.push_back(c); }
 		}		
 		for(auto c2: pairs){			
 			for(auto mid: explorer->parent_muses[c2]){

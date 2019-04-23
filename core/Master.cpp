@@ -88,14 +88,7 @@ Master::~Master(){
 }
 
 void Master::write_mus_to_file(MUS& f){
-	if(satSolver->clauses_string.size() != dimension)
-		print_err("write_mus_to_file error");
-	ofstream outfile;
-	outfile.open(output_file, std::ios_base::app);
-	for(auto c: f.int_mus)
-		outfile << satSolver->clauses_string[c] << "\n";
-	outfile << "\n";
-	outfile.close(); 
+	satSolver->exportMUS(f.bool_mus, output_file);
 }
 
 // mark formula and all of its supersets as explored
@@ -185,7 +178,10 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);	
 		cout << "criticals before rot: " << count_ones(crits) << endl;	
-		if(criticals_rotation) satSolver->criticals_rotation(crits, f);
+		if(criticals_rotation){
+			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+			msSolver->criticals_rotation(crits, f);
+		}
 		cout << "criticals after rot: " << count_ones(crits) << endl;
 		float ones_crits = count_ones(crits);		 
 		if(f_size == ones_crits){ // each constraint in f is critical for f, i.e. it is a MUS 

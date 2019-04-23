@@ -52,7 +52,8 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			streak++;
 			vector<bool> model;
 			if(model_rotation){
-				model = satSolver->get_model();
+				MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+				model = msSolver->get_model();
 			}
 			block_down(top);	
 			vector<int> crit_all;
@@ -63,8 +64,9 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			if(crit_all.size() == 1){
 				crits[crit_all[0]] = true;
 				if(model_rotation){
+					MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 					vector<vector<bool>> model_extensions;
-					int rotated = satSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
+					int rotated = msSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
 					for(auto &extension: model_extensions){
 						block_down(extension);
 					}					

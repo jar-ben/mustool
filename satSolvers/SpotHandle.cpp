@@ -10,7 +10,6 @@ SpotHandle::SpotHandle(string filename):SatSolver(filename){
 	string tf;
 	while (getline(file, tf)){
 		formulae.push_back(spot::parse_formula(tf));
-		clauses_string.push_back(tf);
 	}
 	dimension = formulae.size();
 }

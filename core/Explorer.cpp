@@ -112,7 +112,6 @@ bool Explorer::block_down(Formula cl){
 	if(mcs.size() == 1){
 		critical[mcs[0]] = true;
 		criticals++;
-		//flip_edges[mcs[0]].clear(); //since mcs[0] is critical, it cannot be flipped (ommited) during mus rotation
 	}
 	for(auto &c: mcs){
 		maybe_critical[c] = true;

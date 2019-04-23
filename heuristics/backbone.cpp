@@ -9,11 +9,12 @@
 //return ids of violated clause if there is some
 vector<int> Master::propagate_backbone(int i, bool positive, vector<int> &lits_left, vector<bool> &satisfied, vector<bool> &top, vector<int> &singletons, Formula &seed, int c, 	vector<int> &influenced, bool mark_influenced){
 	vector<int> violated;
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	if(positive){//implied positive value of i-th literal
-		for(auto c1: satSolver->hitmap_pos[i]){ //clauses satisfied by implied positive value of i-th literal
+		for(auto c1: msSolver->hitmap_pos[i]){ //clauses satisfied by implied positive value of i-th literal
 			satisfied[c1] = true;
 		}
-		for(auto c1: satSolver->hitmap_neg[i]){ //trim clauses that contain negated i-th literal
+		for(auto c1: msSolver->hitmap_neg[i]){ //trim clauses that contain negated i-th literal
 			if(!top[c1] || satisfied[c1]) continue;
 			if(mark_influenced) influenced.push_back(c1);
 			lits_left[c1]--;
@@ -26,10 +27,10 @@ vector<int> Master::propagate_backbone(int i, bool positive, vector<int> &lits_l
 			}
 		}
 	}else{//implied negative value of i-th literal
-		for(auto c1: satSolver->hitmap_neg[i]){ //clauses satisfied by implied negative value of i-th literal
+		for(auto c1: msSolver->hitmap_neg[i]){ //clauses satisfied by implied negative value of i-th literal
 			satisfied[c1] = true;
 		}
-		for(auto c1: satSolver->hitmap_pos[i]){ //trim clauses that contain positive i-th literal
+		for(auto c1: msSolver->hitmap_pos[i]){ //trim clauses that contain positive i-th literal
 			if(!top[c1] || satisfied[c1]) continue;
 			lits_left[c1]--;
 			if(mark_influenced) influenced.push_back(c1);
@@ -47,15 +48,16 @@ vector<int> Master::propagate_backbone(int i, bool positive, vector<int> &lits_l
 
 vector<int> Master::backbone_init(Formula &seed, Formula &implied, Formula &values, vector<int> &lits_left, Formula &satisfied, vector<int> &singletons, Formula &top,
 			vector<int> &variables_map, vector<int> &variables_map_inv, int c){
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	if(c >= 0)
 		backbone_simplify(seed, c, implied, values);	
 	get_backbones_bones(seed, implied, values, variables_map, variables_map_inv);
 
 	//get_backbones(seed, implied, values, variables_map, variables_map_inv);
-	int vars = satSolver->vars;
+	int vars = msSolver->vars;
 	vector<int> violated;
 	for(int i = 0 ; i < dimension; i++){
-		lits_left[i] = satSolver->clauses[i].size() - 1; // -1 because there is the activation literal
+		lits_left[i] = msSolver->clauses[i].size() - 1; // -1 because there is the activation literal
 	}		
 	//propagate the backbone literals		
 	vector<int> influenced;
@@ -69,8 +71,9 @@ vector<int> Master::backbone_init(Formula &seed, Formula &implied, Formula &valu
 }
 
 vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula &values, Formula satisfied, vector<int> singletons, vector<int> lits_left, Formula &top){
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	int iters = 0;
-	int vars = satSolver->vars;
+	int vars = msSolver->vars;
 	vector<int> violated;
 	Formula seedc = seed;
 	Formula impliedc = implied;
@@ -91,8 +94,8 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 		if(!top[singleton]) continue;
 		//find the new implied literal
 		int lit = 0;
-		for(int lid = 0; lid < satSolver->clauses[singleton].size() - 1; lid++){
-			auto l = satSolver->clauses[singleton][lid];
+		for(int lid = 0; lid < msSolver->clauses[singleton].size() - 1; lid++){
+			auto l = msSolver->clauses[singleton][lid];
 			if( l > 0 && !implied[l - 1] ){	lit = l; break;	}
 			else if( l < 0 && !implied[(-1 * l) - 1] ){ lit = l; break; }
 		}
@@ -116,8 +119,8 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 		//first check whether the clause influence one of the violated clauses
 		for(auto c2: violated){			
 			if(c2 < 0) c2 = (c2 + 1) * -1;
-			for(int lid = 0; lid < satSolver->clauses[c2].size() - 1; lid++){
-				auto l = satSolver->clauses[c2][lid];
+			for(int lid = 0; lid < msSolver->clauses[c2].size() - 1; lid++){
+				auto l = msSolver->clauses[c2][lid];
 				if( -1 * l == unit_lits[c1] ){ influence = true; break; }
 			}
 			if(influence) break;
@@ -129,8 +132,8 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 		for(int j = i + 1; j < added_clauses.size(); j++){
 			auto c2 = added_clauses[j];	
 			if(!seed[c2]) continue;
-			for(int lid = 0; lid < satSolver->clauses[c2].size() - 1; lid++){
-				auto l = satSolver->clauses[c2][lid];
+			for(int lid = 0; lid < msSolver->clauses[c2].size() - 1; lid++){
+				auto l = msSolver->clauses[c2][lid];
 				if( -1 * l == unit_lits[c1] ){ influence = true; break; }
 			}
 			if(influence) break;
@@ -152,8 +155,8 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 		if(extra[i]) continue; 
 		//find the new implied literal
 		int lit = 0;
-		for(int lid = 0; lid < satSolver->clauses[c1].size() - 1; lid++){
-			auto l = satSolver->clauses[c1][lid];
+		for(int lid = 0; lid < msSolver->clauses[c1].size() - 1; lid++){
+			auto l = msSolver->clauses[c1][lid];
 			if( l > 0 && !implied[l - 1] ){	lit = l; break;	}
 			else if( l < 0 && !implied[(-1 * l) - 1] ){ lit = l; break; }
 		}
@@ -172,8 +175,9 @@ vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula 
 
 void Master::implied_literal(int cl, Formula &implied, int &lit, int &var, bool &value){
 	lit = 0;
-	for(int lid = 0; lid < satSolver->clauses[cl].size() - 1; lid++){
-		auto l = satSolver->clauses[cl][lid];
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	for(int lid = 0; lid < msSolver->clauses[cl].size() - 1; lid++){
+		auto l = msSolver->clauses[cl][lid];
 		if( l > 0 && !implied[l - 1] ){	lit = l; break;	}
 		else if( l < 0 && !implied[(-1 * l) - 1] ){ lit = l; break; }
 	}	
@@ -208,9 +212,9 @@ int Master::seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<in
 vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Formula values, Formula satisfied, vector<int> singletons, vector<int> lits_left, Formula &top){
 	// unit[i] = s means that the value of variable i is implied by the singleton s if s >= 0
 	// otherwise, the value of variable i is not implied yet.
-
-	vector<int> unit(satSolver->vars, -1);
-	vector<bool> unit_value(satSolver->vars, false);
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	vector<int> unit(msSolver->vars, -1);
+	vector<bool> unit_value(msSolver->vars, false);
 	vector<int> tmp_added;
 	int conflicting = seek_conflict(unit, unit_value, singletons, 0, singletons.size(), seed, top, implied, tmp_added);
 	if(conflicting >= -1)	
@@ -279,15 +283,16 @@ vector<int> Master::backbone_find_seed_beta(Formula &seed, Formula implied, Form
 
 int Master::get_backbones_bones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv){
 	vector<vector<int>> cls;
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	for(int i = 0;  i < dimension; i++){
 		if(seed[i]){
 			bool sat = false;
 			vector<int> lits;
-			for(auto lit: satSolver->clauses[i]){
+			for(auto lit: msSolver->clauses[i]){
 				int var = (lit > 0)? lit : (-1 * lit);
 				int phase = (lit > 0)? 1: -1;
 				bool value = phase == 1;
-				if(var <= satSolver->vars){
+				if(var <= msSolver->vars){
 					if( implied[var - 1] && values[var - 1] != value) continue;
 					else if( implied[var - 1] && values[var - 1] == value){ sat = true; break; }
 					else lits.push_back(variables_map[var] * phase);
@@ -315,16 +320,17 @@ int Master::get_backbones_bones(Formula &seed, Formula &implied, Formula &values
 int Master::get_backbones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv){
 
 	//export the seed
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	vector<vector<int>> cls;
 	for(int i = 0;  i < dimension; i++){
 		if(seed[i]){
 			bool sat = false;
 			vector<int> lits;
-			for(auto lit: satSolver->clauses[i]){
+			for(auto lit: msSolver->clauses[i]){
 				int var = (lit > 0)? lit : (-1 * lit);
 				int phase = (lit > 0)? 1: -1;
 				bool value = phase == 1;
-				if(var <= satSolver->vars){
+				if(var <= msSolver->vars){
 					if( implied[var - 1] && values[var - 1] != value) continue;
 					else if( implied[var - 1] && values[var - 1] == value){ sat = true; break; }
 					else lits.push_back(variables_map[var] * phase);
@@ -381,12 +387,13 @@ int Master::get_backbones(Formula &seed, Formula &implied, Formula &values, vect
 
 void Master::backbone_build_literal_map(Formula &seed, vector<int> &variables_map, vector<int> &variables_map_inv){
 	//build the variable ids map
-	vector<bool> variables (satSolver->vars + 1, false);
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);//
+	vector<bool> variables (msSolver->vars + 1, false);
 	for(int i = 0;  i < dimension; i++){
 		if(seed[i]){
-			for(auto lit: satSolver->clauses[i]){ //there are no trailing zeros in clause[i]		
+			for(auto lit: msSolver->clauses[i]){ //there are no trailing zeros in clause[i]		
 				int var = (lit > 0)? lit : (-1 * lit);
-				if(var <= satSolver->vars)
+				if(var <= msSolver->vars)
 					variables[var] = true;
 			}
 		}
@@ -405,14 +412,15 @@ void Master::backbone_build_literal_map(Formula &seed, vector<int> &variables_ma
 
 void Master::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &values){
 	vector<int> lits_left (dimension,0);
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	for(int i = 0 ; i < dimension; i++){
-		lits_left[i] = satSolver->clauses[i].size() - 1; // -1 because there is the activation literal
+		lits_left[i] = msSolver->clauses[i].size() - 1; // -1 because there is the activation literal
 	}
 	vector<bool> satisfied(dimension, false);
 	vector<int> singletons;
 	vector<int> influenced;
-	for(int lid = 0; lid < satSolver->clauses[c].size() - 1; lid++){
-		auto lit = satSolver->clauses[c][lid];
+	for(int lid = 0; lid < msSolver->clauses[c].size() - 1; lid++){
+		auto lit = msSolver->clauses[c][lid];
 		int var = (lit > 0)? lit - 1 : (-1 * lit) - 1;					
 		bool value = !(lit > 0);
 		implied[var] = true;
@@ -426,11 +434,11 @@ void Master::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &
 		singletons.pop_back();		
 		if(!seed[c]) continue;
 
-		for(int lid = 0; lid < satSolver->clauses[c].size() - 1; lid++){
-			auto lit = satSolver->clauses[c][lid];
+		for(int lid = 0; lid < msSolver->clauses[c].size() - 1; lid++){
+			auto lit = msSolver->clauses[c][lid];
 			if(lit == 0) continue;		
 			int var = (lit > 0)? lit - 1 : (-1 * lit) - 1;			
-			if(var > satSolver->vars || implied[var]) continue;
+			if(var > msSolver->vars || implied[var]) continue;
 			bool value = lit > 0;
 			implied[var] = true;
 			values[var] = value;
@@ -458,8 +466,9 @@ void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula 
 }
 
 int Master::backbone_mus_rotation(MUS &m1, Formula &top){
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	vector<int> local_muses;
-	int vars = satSolver->vars;	
+	int vars = msSolver->vars;	
 	vector<int> violated;
 	vector<int> variables_map;
 	vector<int> variables_map_inv;

@@ -12,10 +12,16 @@
 class MSHandle: public SatSolver{
 public:
 	CustomMinisat::Solver* solver;
+	std::vector<std::vector<int>> clauses;
 	std::map<std::vector<int>,int> clauses_map;
 	std::vector<std::string> clauses_str;
+	std::vector<std::string> clauses_string;
 	std::unordered_map<std::string, int> clauses_unique_map;
-		
+	int rotated_crits;	
+	int vars;
+
+	std::vector<std::vector<int>> hitmap_pos;
+	std::vector<std::vector<int>> hitmap_neg;
 
 	MSHandle(std::string filename);
 	~MSHandle();
@@ -25,6 +31,7 @@ public:
 	bool solve(std::vector<bool> &seed, std::vector<int> &assumptions);
 	void get_unsat_core(std::vector<bool> &core);
 
+	void exportMUS(std::vector<bool> mus, std::string outputFile){}
 
 	bool add_clause(std::vector<int> clause);
 	bool add_unit(int lit);
@@ -32,7 +39,6 @@ public:
 	int nClauses(){	return solver->nClauses(); }
 	bool parse_dimacs(std::string filename);
 	void add_flip_edge(std::vector<int> cl);
-	void compute_flip_edges(int c);
 
 	std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 	std::vector<bool> custom_shrink(std::vector<bool> f);
@@ -54,6 +60,11 @@ public:
 	int muser_output(std::string filename);
 
 	//model rotation
+	std::vector<bool> flip_edges_computed;
+	std::vector<std::vector<std::vector<int>>> flip_edges; // flip_edges[i][j][k] - i-th clause, j-th literal in the clause, k-th edge from i-th clause under j-th literal in the flip grap
+	std::vector<std::vector<int>> flip_edges_flatten;
+	void compute_flip_edges(int c);
+	
 	void build_flip_graph();
 	int model_rotation(std::vector<bool>& criticals, int critical, std::vector<bool>& subset,
 		std::vector<bool>& model, std::vector<std::vector<bool>>& model_extensions);
