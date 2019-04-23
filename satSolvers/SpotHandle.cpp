@@ -17,6 +17,16 @@ SpotHandle::SpotHandle(string filename):SatSolver(filename){
 SpotHandle::~SpotHandle(){
 }
 
+void exportMUS(std::vector<bool> mus, std::string filename){
+	ofstream file;
+	file.open(filename);
+	for(int i = 0; i < dimension; i++){
+		if(mus[i]){
+			cout << formulae[i] << "\n";
+		}
+	}
+	file.close();
+}
 
 bool SpotHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
 	checks++;

@@ -140,7 +140,6 @@ bool MSHandle::parse_dimacs(string path){
 	for(int i = 0; i < clauses_str.size(); i++)
 		solver->newVar(lbool(uint8_t(1)), true);	// control variables
 	for(size_t i = 0; i < clauses_str.size(); i++){
-		clauses_string.push_back(clauses_str[i]);
 		clause = convert_clause(clauses_str[i]);
 		clause.push_back(vars + i + 1);	//control variable
 		add_clause(clause); //add clause to the solver
@@ -301,23 +300,6 @@ int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implie
         return impl;
 }
 
-bool MSHandle::solve(vector<bool> &seed, vector<int> &assumptions){
-	checks++;
-	vec<Lit> lits;
-	for(auto a: assumptions)
-		lits.push(itoLit(a));
-
-	for(unsigned int i = 0; i < seed.size(); i++){
-		if(seed[i])
-			lits.push(itoLit((i + vars + 1) * (-1)));
-		else
-			lits.push(itoLit(i + vars + 1 ));
-	}
-
-
-	return solver->solve(lits);
-}
-
 void MSHandle::get_unsat_core(std::vector<bool> &core){
 	for (int i = 0 ; i < solver->conflict.size() ; i++){ 
 		int index = var(solver->conflict[i]) - vars;
@@ -332,10 +314,6 @@ void MSHandle::get_unsat_core(std::vector<bool> &core){
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
 bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
 	checks++;
-	if(sat_solver == "glucose")
-		return solve_glucose(controls, sat_improve, unsat_improve);
-	if(sat_solver == "lingeling")
-		return solve_lingeling(controls);
 	vec<Lit> lits;
 	for(unsigned int i = 0; i < controls.size(); i++){
 		if(controls[i])
@@ -387,61 +365,9 @@ vector<bool> MSHandle::get_model(){
 	return model;
 }
 
-// check formula for satisfiability using glucose
-// the core and grow variables controls whether to return an unsat core or model extension, respectively
-bool MSHandle::solve_glucose(vector<bool>& formula, bool sat_improve, bool unsat_improve){
-	std::cout << "using glucose" << std::endl;
-	std::string export_path = "exp.cnf";
-	std::string drup_path = "drup";
-	export_formula(formula, export_path);
-
-	stringstream cmd;	
-	if(unsat_improve)		
-		cmd << "./glucose-simp -certified -certified-output=" << drup_path << " " << export_path << " > /dev/null";
-	else
-		cmd << "./glucose-simp " << export_path << " > /dev/null";
-	int status = system(cmd.str().c_str());
-	//2560 -- satisfiable
-	//5120 -- unsatisfiable
-	bool sat = status == 2560;
-	if(status != 2560 && status != 5120)
-		print_err("invalid glucose return value: " + to_string(status));
-	if(!sat && unsat_improve){
-		std::string core_path = "core.cnf";
-		stringstream drup_cmd;
-		drup_cmd << "./drup-trim " << export_path << " " << drup_path << " -c " << core_path << " > /dev/null";
-		int core_status = system(drup_cmd.str().c_str());
-		//0 -- core found
-		//256 -- trivial unsat, no core returned		
-		std::cout << "drup-trim status: " << core_status << std::endl;
-		if(core_status == 0){
-			formula = import_formula(core_path);
-		}		
-	}
-		
-	return sat;
-}
-
-bool MSHandle::solve_lingeling(vector<bool>& formula){
-//	std::cout << "using lingeling" << std::endl;
-	std::string export_path = "exp.cnf";
-	std::string drup_path = "drup";
-	export_formula(formula, export_path);
-
-	stringstream cmd;
-	cmd << "./lingeling " << export_path << " > /dev/null";
-	int status = system(cmd.str().c_str());
-	//10 -- satisfiable
-	//20 -- unsatisfiable
-	bool sat = status == 2560;
-	return sat;
-}
-
-
-//
 // MUSer2 / dmuser helper functions
 //
-void MSHandle::export_formula(vector<bool> f, string filename){
+void MSHandle::exportMUS(vector<bool> f, string filename){
 	int formulas = std::count(f.begin(), f.end(), true);
 
 	ofstream file;
@@ -489,97 +415,25 @@ vector<bool> MSHandle::import_formula_crits(string filename){
 	}	
 	return f;
 }
-/*
-vector<bool> MSHandle::import_formula_crits(string filename, std::vector<std::vector<int>> &core){
-	ifstream file(filename, ifstream::in);
-	vector<bool> f(dimension,false);
-	vector<int> c;
-	string line;
-	string grp;	
-	while (getline(file, line))
-	{
-		if (line[0] == 'c' || line[0] == 'p' || line.empty())
-			continue;
-		c.clear();
-		for(int i = 0; i < line.length(); i++){
-			if(line[i] == '}'){
-				line.erase(0,i + 1);
-				break;
-			}
-		}
-		istringstream is(line);	
-		int lit;
-		while(is >> lit){
-			c.push_back(lit);
-		}
-		c.pop_back(); // the last literal in .cnf file is a dummy "0"
-		std::sort(c.begin(), c.end());
-		if(clauses_map.count(c))
-			f[clauses_map[c]] = true;		
-	}	
-	for(auto &cl: core)
-		f[cl[0]] = true;
-	return f;
-}*/
 
-vector<bool> MSHandle::import_formula(string filename){
-	ifstream file(filename, ifstream::in);
-	vector<bool> f(dimension,false);
-	vector<int> c;
-	string line;
-	string grp;	
-	while (getline(file, line))
-	{
-		if (line[0] == 'c' || line[0] == 'p' || line.empty())
-			continue;
-		c.clear();
-		istringstream is(line);	
-		int lit;
-		while(is >> lit){
-			c.push_back(lit);
-		}
-		c.pop_back(); // the last literal in .cnf file is a dummy "0"
-		std::sort(c.begin(), c.end());
-		f[clauses_map[c]] = true;		
-	}	
-	return f;
-}
-
-vector<bool> MSHandle::shrink_model_extension(std::vector<bool> &f, std::vector<bool> &crits, std::vector<std::vector<bool>>& extensions){
-	vector<bool> mus = f;
-	vector<bool> copy;
-	for(int i = 0; i < dimension; i++){
-		if(mus[i] && !crits[i]){
-			mus[i] = false;
-			if(solve(mus, true, false)){	
-				copy = mus;
-				for(int f = 0; f < dimension; f++){
-					if(!mus[f]){
-						for(int l = 0; l < clauses[f].size() - 1; l++){
-							if(clauses[f][l] > 0){
-								if(solver->model[clauses[f][l] - 1] == l_True){
-									copy[f] = true;
-									break;
-								}
-							}
-							else{
-								if(solver->model[-1 * clauses[f][l] - 1] == l_False){
-									copy[f] = true;
-									break;
-								}
-							}
-						}
-					}
-				}
-				extensions.push_back(copy);
-				mus[i] = true;
-			}//end if solve
-		}
+// implementation of the shrinking procedure
+// based on the value of basic_shrink employes either muser2 or dmuser
+vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
+	cout << "shrinking dimension " << std::count(f.begin(), f.end(), true) << endl;
+	if(shrink_alg == "custom"){
+		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
-	return mus;
+	if(shrink_alg == "mcsmus"){
+		return shrink_mcsmus(f, crits);
+	}
+	stringstream exp;			
+	exp << "./f_" << hash << ".cnf";			
+	export_formula_crits(f, exp.str(), crits);	
+
+	return shrink_muser(exp.str(), hash);
 }
 
-int MSHandle::muser_output(std::string filename){
+int muser_output(std::string filename){
 	ifstream file(filename, ifstream::in);
 	std::string line;
 	while (getline(file, line))
@@ -590,59 +444,6 @@ int MSHandle::muser_output(std::string filename){
 		}
 	}	
 	return 0;
-}
-
-vector<bool> MSHandle::shrink_api_muser(vector<bool> &f, vector<bool> crits){
-/*	cout << "shrinking api muser" << endl;
-	muser2 m;
-	m.init_all();
-	m.set_verbosity(0);
-
-	for(int i = 0; i < dimension; i++){
-		if(f[i]){
-			if(crits[i])
-				m.add_clause(&clauses[i][0], &clauses[i][clauses[i].size() - 2], 0); //clauses[i] contains the clause including the trailing control variable, thus that "-2"
-			else
-				m.add_clause(&clauses[i][0], &clauses[i][clauses[i].size() - 2], i + 1); //clauses[i] contains the clause including the trailing control variable, thus that "-2"
-		}
-	}
-
-	m.init_run();
-	m.compute_gmus();
-	m.reset_run();
-*/
-	vector<bool> mus(dimension, false);
-/*	const std::vector<muser2::gid>& gmus = m.gmus_gids();	
-	for(auto &cl: gmus)
-		mus[cl - 1] = true;
-	for(int i = 0; i < dimension; i++)
-		if(crits[i])
-			mus[i] = true;
-*/	return mus;
-}
-
-// implementation of the shrinking procedure
-// based on the value of basic_shrink employes either muser2 or dmuser
-vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
-	cout << "shrinking dimension " << std::count(f.begin(), f.end(), true) << endl;
-	if(shrink_alg == "custom"){
-		return SatSolver::shrink(f, crits); //shrink with unsat cores
-	}
-	if(shrink_alg == "api_muser")
-		return shrink_api_muser(f, crits);
-	if(shrink_alg == "mcsmus"){
-		return shrink_mcsmus(f, crits);
-	}
-	stringstream exp;			
-	exp << "./f_" << hash << ".cnf";			
-	export_formula_crits(f, exp.str(), crits);	
-
-	if(shrink_alg == "dmuser"){
-		return shrink_dmuser(exp.str(), hash);
-	}
-	else{
-		return shrink_muser(exp.str(), hash);
-	}
 }
 
 vector<bool> MSHandle::shrink_muser(string input, int hash2){
@@ -672,26 +473,4 @@ vector<bool> MSHandle::shrink_muser(string input, int hash2){
 
 	return mus;
 }
-
-//todo, not supported yet
-vector<bool> MSHandle::shrink_dmuser(string input, int hash){
-	vector<bool> mus;
-	remove(input.c_str());
-	return mus;
-}
-
-vector<bool> MSHandle::shrink_mcsmus(string input, int hash){
-	stringstream cmd, out, imp;
-	out << "./f_" << hash << "_output";
-	imp << "./f_" << hash << ".min.cnf";
-	cmd << "~/bin/mcsmus/build/release/bin/mcsmus -print-core " << input << " > /dev/null";
-	int status = system(cmd.str().c_str());
-	vector<bool> mus = import_formula_crits(imp.str());
-	remove(imp.str().c_str());
-	remove(out.str().c_str());
-	remove(input.c_str());
-	return mus;
-}
-
-
 

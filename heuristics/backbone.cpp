@@ -451,13 +451,6 @@ void Master::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &
 void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1){
 	if(dimension > 50000) return;
 	vector<int> assumptions;
-/*	for(int i = 0; i < implied.size(); i++){
-		if(implied[i]){
-			int lit = ( values[i] )? i + 1 : (i + 1) * -1;
-			assumptions.push_back(lit);
-		}
-	}
-*/	//bool sat = satSolver->solve(top, assumptions);
 	bool sat = is_valid(top, false, false);
 	if(sat){
 		block_down(top);

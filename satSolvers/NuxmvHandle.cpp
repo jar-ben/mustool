@@ -29,6 +29,17 @@ NuxmvHandle::NuxmvHandle(string filename):SatSolver(filename){
 NuxmvHandle::~NuxmvHandle(){
 }
 
+void NuxmvHandle::exportMUS(std::vector<bool> mus, std::string filename){
+	ofstream file;
+	file.open(filename);
+	for(int i = 0; i < dimension; i++){
+		if(mus[i]){
+			file << clauses_string[i] << "\n";
+
+		}
+	}
+	file.close();
+}
 
 void NuxmvHandle::build_nuxmv_model(){
 	stringstream model, filen;

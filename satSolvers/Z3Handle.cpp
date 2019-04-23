@@ -40,6 +40,18 @@ Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
 	dimension = clauses.size();
 }
 
+void Z3Handle::exportMUS(vector<bool> f, string filename){
+	ofstream file;
+	file.open(filename);
+					        
+	for(int i = 0; i < f.size(); i++){
+		if(f[i]){
+			file << clauses[i] << "\n";
+		}
+	}
+	file.close();												                }
+}
+
 // implements the shrinking procedure
 // exploits ability of z3 solver to return unsat cores
 std::vector<bool> Z3Handle::shrink(std::vector<bool> &formula, std::vector<bool> crits){

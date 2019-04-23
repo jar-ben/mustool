@@ -18,7 +18,7 @@ public:
 	void build_nuxmv_batch();
 	void build_nuxmv_batch_file(std::vector<bool> &controls);
 
-	void exportMUS(std::vector<bool> mus, std::string outputFile){}
+	void exportMUS(std::vector<bool> mus, std::string outputFile);
 	NuxmvHandle(std::string filename);
 	~NuxmvHandle();
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
