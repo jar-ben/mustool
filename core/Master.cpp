@@ -167,7 +167,7 @@ bool Master::is_valid(Formula &formula, bool core, bool grow){
 void Master::validate_mus(Formula &f){
 	if(is_valid(f))
 		print_err("the mus is SAT");
-	if(!explorer->checkValuation(f))
+	if(!explorer->isUnexplored(f))
 		print_err("this mus has been already explored");
 	for(int l = 0; l < f.size(); l++)
 		if(f[l]){
@@ -183,7 +183,7 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
-		explorer->get_implies(crits, f);	
+		explorer->getImplied(crits, f);	
 		cout << "criticals before rot: " << count_ones(crits) << endl;	
 		if(criticals_rotation) satSolver->criticals_rotation(crits, f);
 		cout << "criticals after rot: " << count_ones(crits) << endl;

@@ -66,8 +66,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 					vector<vector<bool>> model_extensions;
 					int rotated = satSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
 					for(auto &extension: model_extensions){
-						if(false && !explorer->checkValuation(extension)) explored_extensions++;
-						else block_down(extension);
+						block_down(extension);
 					}					
 				}
 				continue;
@@ -81,8 +80,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 				if(model_rotation){			
 					vector<vector<bool>> model_extensions;
 					for(auto &extension: model_extensions){
-						if(false && !explorer->checkValuation(extension)) explored_extensions++;
-						else block_down(extension);
+						block_down(extension);
 					}
 				}
 				find_all_muses_duality_based_remus(rec_subset, rec_crits, depth + 1);

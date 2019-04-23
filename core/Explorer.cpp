@@ -45,15 +45,6 @@ Explorer::~Explorer(){
 	delete topSolver;
 }
 
-bool Explorer::is_hitting_pair(int c1, int c2){
-	for(auto l1: satSolver->clauses[c1]){
-		for(auto l2: satSolver->clauses[c2]){
-			if(l1 == (-1 * l2)) return true;
-		}
-	}
-	return false;
-}
-
 bool Explorer::is_critical(int c, std::vector<bool> &subset){
 	if(critical[c]) return true;
 	if(maybe_critical[c]){		
@@ -85,39 +76,6 @@ bool Explorer::is_available(int c, std::vector<bool> &subset){
 		if(!covered) return false;
 	}	
 	return true;	
-}
-
-bool Explorer::check_maximality(std::vector<bool> &unex){
-	std::vector<int> avail;
-	for(int i = 0; i < dimension; i++)
-		if(!unex[i])
-			avail.push_back(i);
-	for(auto &c: avail)
-		if(is_available(c, unex))
-			return false;
-	return true;
-}
-
-bool Explorer::maximize_unex(std::vector<bool> &unex, int c1, int c2){
-	std::vector<int> avail;
-	for(int i = 0; i < dimension; i++)
-		if(!unex[i] && i != c1 && i != c2)
-			avail.push_back(i);
-	for(auto &c: avail)
-		if(is_available(c, unex))
-			unex[c] = true;
-
-	if(c1 >= 0  && is_available(c1, unex)){
-		cout << "conflict not preserved" << endl;
-		unex[c1] = true;
-		return false;
-	}
-	if(c2 >= 0  && is_available(c2, unex)){
-		cout << "conflict not preserved" << endl;
-		unex[c2] = true;
-		return false;
-	}
-	return true;
 }
 
 std::vector<bool> Explorer::get_unexplored(std::vector<bool> top, std::vector<bool> &mus){
@@ -318,7 +276,7 @@ std::vector<bool> Explorer::get_unexplored(uint8_t polarity, bool rnd_pol){
         return unexplored;
 }
 
-bool Explorer::checkValuation(vector<bool> valuation){
+bool Explorer::isUnexplored(vector<bool> valuation){
         vec<Lit> lits;
         for(unsigned int i = 0; i < dimension; i++){
                 if(valuation[i])
@@ -330,7 +288,7 @@ bool Explorer::checkValuation(vector<bool> valuation){
         return solver->solve(lits);
 }
 
-int Explorer::get_implies(std::vector<bool>& implied, std::vector<bool>& f){
+int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
         for(int i = 0; i < dimension; i++){
 		if(f[i] && is_critical(i, f))
 			implied[i] = true;
@@ -355,8 +313,4 @@ int Explorer::get_implies(std::vector<bool>& implied, std::vector<bool>& f){
 		}
         }
         return impl;
-}
-
-bool Explorer::easy_to_shrink(MUS &mus){
-	return true;
 }

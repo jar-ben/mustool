@@ -18,13 +18,11 @@
 class Explorer{
 public:
 	int dimension;
+	int vars;
 	CustomMinisat::Solver* solver;
 	CustomMinisat::Solver* botSolver;
 	CustomMinisat::Solver* topSolver;
 	SatSolver* satSolver;
-		
-	int vars;
-	std::vector<std::vector<int>> core; //the set of all critical constraints. for each c in c, c[0] = id of constraints. 
 
 	Explorer(int vars, bool verb = false);
 	~Explorer();
@@ -33,16 +31,12 @@ public:
 	std::vector<bool> get_unexplored(uint8_t polarity = 0, bool rnd_pol = false);
 	std::vector<bool> get_bot_unexplored(std::vector<bool>);
 	std::vector<bool> get_top_unexplored(std::vector<bool>);
-	std::vector<bool> solve(std::vector<int> assumptions);
-	bool checkValuation(std::vector<bool> valuation);
 	std::vector<bool> get_unexplored(std::vector<int> assumptions);
 	std::vector<bool> get_top_unexplored(std::vector<int> assumptions);
 	std::vector<bool> get_bot_unexplored(std::vector<int> assumptions);
-	int get_implies(std::vector<bool>& implied, std::vector<bool>& formula);
-	
-	bool is_hitting_pair(int c1, int c2);
 	std::vector<bool> get_unexplored(std::vector<bool> top, std::vector<bool>& mus);
-	bool maximize_unex(std::vector<bool> &unex, int c1 = -1, int c2 = -1);
+	bool isUnexplored(std::vector<bool> valuation);
+	int getImplied(std::vector<bool>& implied, std::vector<bool>& formula);
 	
 	std::vector<bool> mus_intersection;
 	std::vector<bool> mus_union;
@@ -60,13 +54,6 @@ public:
 	std::vector<MUS> muses;
 	std::vector<std::vector<int>> parent_muses; //parent_muses[c] holds ids of MUSes stored in muses_int
 	bool is_available(int c, std::vector<bool> &subset); // returns true if c is available for subset (can be added to it)
-
-
-	//rotation solver beta
-	bool easy_to_shrink(MUS &mus);
-	bool is_unexplored(std::vector<bool> seed);
-	bool is_unexplored(std::vector<bool> &m1, std::vector<bool> &m2, int c1, int c2);
-	bool check_maximality(std::vector<bool> &unex);
 };
 
 #endif

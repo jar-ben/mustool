@@ -6,6 +6,15 @@
 #include <random>
 #include <unordered_set>
 
+bool is_hitting_pair(vector<int> cl1, vector<int> cl2){
+	for(auto l1: cl1){
+		for(auto l2: cl2){
+			if(l1 == (-1 * l2)) return true;
+		}
+	}
+	return false;
+}
+
 vector<int> Master::minimal_hitting_set(vector<int> local_muses){
 	vector<int> hs;
 	for(auto mid: local_muses){
@@ -19,7 +28,6 @@ vector<int> Master::minimal_hitting_set(vector<int> local_muses){
 }
 
 int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
-	if(!explorer->easy_to_shrink(m1)) return 0;
 	int rotated = 0;
 	int mid_limit = muses.size() - scope_limit;
 	if(mid_limit < 0) mid_limit = 0;
@@ -46,13 +54,13 @@ int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 		if(explorer->mus_intersection[c1]) continue;
 		vector<int> pairs;	
 		for(auto c: top_int){
-			if(explorer->is_hitting_pair(c, c1)){ pairs.push_back(c); }
+			if(is_hitting_pair(satSolver->clauses[c], satSolver->clauses[c1])){ pairs.push_back(c); }
 		}		
 		for(auto c2: pairs){			
 			for(auto mid: explorer->parent_muses[c2]){
 				if(indicator[mid] != 1) continue;// || already_used_mus[mid]) continue;
 				auto &m2 = muses[mid];
-				if(m2.bool_mus[c1] || !explorer->easy_to_shrink(m2)) continue;
+				if(m2.bool_mus[c1]) continue;
 				round++;
 				vector<int> m1_overlap;
 				for(auto o: m2.without_crits)

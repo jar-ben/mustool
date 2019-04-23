@@ -458,7 +458,6 @@ void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula 
 }
 
 int Master::backbone_mus_rotation(MUS &m1, Formula &top){
-	if(!explorer->easy_to_shrink(m1)) return 0;
 	vector<int> local_muses;
 	int vars = satSolver->vars;	
 	vector<int> violated;
