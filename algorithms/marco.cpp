@@ -13,11 +13,6 @@ void Master::marco_base(){
 		if(is_valid(top, true, true)){
 			block_down(top);
 			unex_sat++;
-			if(model_rotation){
-				Formula model = satSolver->get_model();
-				int rotation_limit = 100;
-				int sat_rotated = explorer->sat_rotation(original_top, model, satSolver->clauses, rotation_limit);
-			}
 		}else{
 			MUS mus = shrink_formula(top);
 			mark_MUS(mus);

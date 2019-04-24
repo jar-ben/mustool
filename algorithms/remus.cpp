@@ -22,7 +22,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 	bool top_found = false;
 	while(true){
 		iteration++;
-		current_dimension = count_ones(subset);
 		if(!top_found) top = explorer->get_top_unexplored(assumptions);
 		top_found = false;
 		Formula original_top = top;
@@ -34,8 +33,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 		if(!is_valid(top, true, true)){
 			streak = 0;
 			MUS mus = shrink_formula(top, crits);
-			Formula rotation_top;
-			if(explorer->test_rotation_unex){ rotation_top = explorer->get_top_unexplored(mus.bool_mus); }
 			mark_MUS(mus);
 
 			if(useMatchmaker){
@@ -54,7 +51,8 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			streak++;
 			vector<bool> model;
 			if(model_rotation){
-				model = satSolver->get_model();
+				MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+				model = msSolver->get_model();
 			}
 			block_down(top);	
 			vector<int> crit_all;
@@ -65,11 +63,11 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			if(crit_all.size() == 1){
 				crits[crit_all[0]] = true;
 				if(model_rotation){
+					MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 					vector<vector<bool>> model_extensions;
-					int rotated = satSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
+					int rotated = msSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
 					for(auto &extension: model_extensions){
-						if(false && !explorer->checkValuation(extension)) explored_extensions++;
-						else block_down(extension);
+						block_down(extension);
 					}					
 				}
 				continue;
@@ -83,8 +81,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 				if(model_rotation){			
 					vector<vector<bool>> model_extensions;
 					for(auto &extension: model_extensions){
-						if(false && !explorer->checkValuation(extension)) explored_extensions++;
-						else block_down(extension);
+						block_down(extension);
 					}
 				}
 				find_all_muses_duality_based_remus(rec_subset, rec_crits, depth + 1);

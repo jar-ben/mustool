@@ -38,19 +38,18 @@ Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
 		clauses.push_back(e.arg(i));
 	}
 	dimension = clauses.size();
+}
 
-	//store individual formulas for possible output of MUSes to a file
-	std::stringstream cl;
-	std::string pom;
-	for(int i = 0; i < e.num_args(); i++){
-		cl.str( std::string() );
-		cl.clear();
-		cl << e.arg(i);
-		pom = cl.str();
-		trim(pom);
-		clauses_string.push_back(pom);
-		clauses_string_map[pom] = clauses_string.size() - 1;	
-	}	
+void Z3Handle::exportMUS(vector<bool> f, string filename){
+	ofstream file;
+	file.open(filename);
+					        
+	for(int i = 0; i < f.size(); i++){
+		if(f[i]){
+			file << clauses[i] << "\n";
+		}
+	}
+	file.close();												                }
 }
 
 // implements the shrinking procedure

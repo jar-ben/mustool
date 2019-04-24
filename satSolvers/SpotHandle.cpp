@@ -10,7 +10,6 @@ SpotHandle::SpotHandle(string filename):SatSolver(filename){
 	string tf;
 	while (getline(file, tf)){
 		formulae.push_back(spot::parse_formula(tf));
-		clauses_string.push_back(tf);
 	}
 	dimension = formulae.size();
 }
@@ -18,6 +17,16 @@ SpotHandle::SpotHandle(string filename):SatSolver(filename){
 SpotHandle::~SpotHandle(){
 }
 
+void exportMUS(std::vector<bool> mus, std::string filename){
+	ofstream file;
+	file.open(filename);
+	for(int i = 0; i < dimension; i++){
+		if(mus[i]){
+			cout << formulae[i] << "\n";
+		}
+	}
+	file.close();
+}
 
 bool SpotHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
 	checks++;
