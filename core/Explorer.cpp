@@ -293,23 +293,4 @@ int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
 			implied[i] = true;
 	}
 	return 0;
-
-	vec<Lit> assumptions;
-        for(int i = 0; i < dimension; i++){
-                if(!f[i])
-                        assumptions.push(itoLit2((i + 1) * (-1)));
-	}
-        vec<Lit> outvec;
-        solver->implies(assumptions, outvec, true);
-        int impl = 0;
-	int new_crits = 0;
-        for (int i = 0 ; i < outvec.size(); i++) {
-		if(Littoi2(outvec[i]) > 0){
-			if(implied[Littoi2(outvec[i]) - 1] != true)
-				new_crits++;
-			implied[Littoi2(outvec[i]) - 1] = true;
-			impl++;
-		}
-        }
-        return impl;
 }

@@ -47,24 +47,31 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 	std::unique_ptr<BaseSolver> s;
 	s = make_glucose_simp_solver();
 	MUSSolver mussolver(wcnf, s.get());
+	std::vector<int> constraintGroupMap;
 	int cnt = 0;
 	for(int i = 0; i < dimension; i++){
 		if(f[i]){
-			cnt++;
-			wcnf.addClause(intToLit(clauses[i]), cnt);
+			if(crits[i]){
+				wcnf.addClause(intToLit(clauses[i]), 0);
+			}else{
+				constraintGroupMap.push_back(i);
+				cnt++;
+				wcnf.addClause(intToLit(clauses[i]), cnt);
+			}
 		}
 	}
-
 	std::vector<Lit> mus_lits = do_solve(wcnf, mussolver);
-	std::vector<int> f_int;
-	for(int i = 0 ; i < dimension; i++){
-		if(f[i]){
-			f_int.push_back(i);
-		}
-	}
 	std::vector<bool> mus(dimension, false);
-	for (auto b : mus_lits){
-		mus[f_int[wcnf.bvarIdx(b) - 1]] = true;
+	for(auto b : mus_lits){
+		int gid = wcnf.bvarIdx(b);
+		if(gid > 0){
+			mus[constraintGroupMap[gid - 1]] = true;
+		}	
+	}
+	for(int i = 0; i < dimension; i++){
+		if(crits[i]){
+			mus[i] = true;
+		}
 	}
 	return mus;
 }

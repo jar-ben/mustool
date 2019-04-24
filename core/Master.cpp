@@ -102,6 +102,7 @@ void Master::validate_mus(Formula &f){
 
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
+	cout << "shrinking dimension: " << f_size << endl;
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
@@ -151,6 +152,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", rotated MUSes: " << rotated_muses;
 	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", duration: " << f.duration;
+	cout << ", shrinks: " << satSolver->shrinks;
 	cout << endl;
 
 	if(output_file != "")

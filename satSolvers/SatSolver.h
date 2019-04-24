@@ -14,8 +14,10 @@ public:
 	std::string sat_solver;
 	int checks;
 	int hash;
+	int shrinks;
+	int grows;
 
-	SatSolver(std::string filename): shrink_alg("default"), checks(0){}
+	SatSolver(std::string filename): shrink_alg("default"), checks(0), shrinks(0), grows(0){}
 	~SatSolver(){}
 	virtual void exportMUS(std::vector<bool> mus, std::string outputFile) = 0;
 	virtual bool solve(std::vector<bool> &f, bool core = false, bool grow = false) = 0;

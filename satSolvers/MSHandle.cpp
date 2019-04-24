@@ -420,7 +420,7 @@ vector<bool> MSHandle::import_formula_crits(string filename){
 // implementation of the shrinking procedure
 // based on the value of basic_shrink employes either muser2 or dmuser
 vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
-	cout << "shrinking dimension " << std::count(f.begin(), f.end(), true) << endl;
+	shrinks++;
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
