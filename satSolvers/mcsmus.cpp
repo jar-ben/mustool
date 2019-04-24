@@ -47,6 +47,16 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 	std::unique_ptr<BaseSolver> s;
 	s = make_glucose_simp_solver();
 	MUSSolver mussolver(wcnf, s.get());
+
+	
+	Control* control = getGlobalControl();;
+	control->verbosity = 0;
+	control->status_interval = 10;
+	mussolver.single_mus = true;
+	mussolver.initializeControl();
+	control->force_exit_on_interrupt();
+
+	//add the clauses
 	std::vector<int> constraintGroupMap;
 	int cnt = 0;
 	for(int i = 0; i < dimension; i++){
@@ -60,7 +70,12 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 			}
 		}
 	}
-	std::vector<Lit> mus_lits = do_solve(wcnf, mussolver);
+	
+	control->notify_on_interrupt();
+	std::vector<Lit> mus_lits;
+	wcnf.relax();
+	mussolver.find_mus(mus_lits, false);
+
 	std::vector<bool> mus(dimension, false);
 	for(auto b : mus_lits){
 		int gid = wcnf.bvarIdx(b);
