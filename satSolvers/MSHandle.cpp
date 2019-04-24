@@ -425,7 +425,7 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
 	if(shrink_alg == "mcsmus"){
-		return shrink_mcsmus(f, crits);
+		shrink_mcsmus(f, crits);
 	}
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			
