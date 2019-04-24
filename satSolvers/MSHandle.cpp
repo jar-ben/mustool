@@ -1,4 +1,4 @@
-#include "core/Dimacs.h"
+#include "satSolvers/Dimacs.h"
 #include "core/misc.h"
 #include "satSolvers/MSHandle.h"
 #include <sstream>
@@ -11,6 +11,7 @@
 #include <stdlib.h>   
 #include <time.h>   
 #include <cstdio>
+#include <assert.h>
 
 using namespace CustomMinisat;
 using namespace std;
@@ -411,7 +412,7 @@ vector<bool> MSHandle::import_formula_crits(string filename){
 		sort(cl.begin(), cl.end());
 		if(clauses_map.count(cl))
 			f[clauses_map[cl]] = true;
-		else { cout << "FF" << endl; exit(0); }		
+		else { assert(false); }		
 	}	
 	return f;
 }

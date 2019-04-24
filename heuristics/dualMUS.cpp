@@ -6,6 +6,18 @@
 #include <random>
 #include <unordered_set>
 
+
+struct OverlapHash{
+	public:
+		std::size_t operator()(std::vector<int> const& over) const{
+			std::size_t ret = over.size();
+			for(auto &c: over){
+				ret ^= c + 0x9e3779b9 + (ret << 6) + (ret >> 2);
+			}
+			return ret;
+		}
+};
+
 bool is_hitting_pair(vector<int> cl1, vector<int> cl2){
 	for(auto l1: cl1){
 		for(auto l2: cl2){

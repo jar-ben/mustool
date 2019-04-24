@@ -70,109 +70,6 @@ vector<int> Master::backbone_init(Formula &seed, Formula &implied, Formula &valu
 	return violated;
 }
 
-vector<int> Master::backbone_find_seed(Formula &seed, Formula &implied, Formula &values, Formula satisfied, vector<int> singletons, vector<int> lits_left, Formula &top){
-	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
-	int iters = 0;
-	int vars = msSolver->vars;
-	vector<int> violated;
-	Formula seedc = seed;
-	Formula impliedc = implied;
-	Formula valuesc = values;
-	Formula satisfiedc = satisfied;
-	vector<int> singletonsc = singletons;
-	vector<int> lits_leftc = lits_left;
-
-	//slicing structure
-	vector<int> unit_lits(dimension, 0);
-	vector<int> added_clauses;
-
-	vector<int> influenced;
-	while(!singletons.empty()){
-		iters++;
-		int singleton = singletons.back();
-		singletons.pop_back();
-		if(!top[singleton]) continue;
-		//find the new implied literal
-		int lit = 0;
-		for(int lid = 0; lid < msSolver->clauses[singleton].size() - 1; lid++){
-			auto l = msSolver->clauses[singleton][lid];
-			if( l > 0 && !implied[l - 1] ){	lit = l; break;	}
-			else if( l < 0 && !implied[(-1 * l) - 1] ){ lit = l; break; }
-		}
-		if(lit == 0) continue; // this singleton is already satisfied, i.e. there were two same singletons
-		seed[singleton] = true;
-		unit_lits[singleton] = lit;
-		added_clauses.push_back(singleton);
-
-		int var = (lit > 0)? lit - 1 : (-1 * lit) - 1;
-		int positive = lit > 0;
-		implied[var] = true;
-		values[var] = positive;
-		violated = propagate_backbone(var, positive, lits_left, satisfied, top, singletons, seed, singleton, influenced);
-		if(!violated.empty()) break;
-	}
-	vector<bool> extra(added_clauses.size(), false);
-	for(int i = added_clauses.size() - 1; i >= 0; i--){
-		auto c1 = added_clauses[i];
-
-		bool influence = false;
-		//first check whether the clause influence one of the violated clauses
-		for(auto c2: violated){			
-			if(c2 < 0) c2 = (c2 + 1) * -1;
-			for(int lid = 0; lid < msSolver->clauses[c2].size() - 1; lid++){
-				auto l = msSolver->clauses[c2][lid];
-				if( -1 * l == unit_lits[c1] ){ influence = true; break; }
-			}
-			if(influence) break;
-		}
-		if(influence) continue;
-
-		//49 50 51
-		//check the other clauses
-		for(int j = i + 1; j < added_clauses.size(); j++){
-			auto c2 = added_clauses[j];	
-			if(!seed[c2]) continue;
-			for(int lid = 0; lid < msSolver->clauses[c2].size() - 1; lid++){
-				auto l = msSolver->clauses[c2][lid];
-				if( -1 * l == unit_lits[c1] ){ influence = true; break; }
-			}
-			if(influence) break;
-		}
-		if(!influence){ seed[c1] = false; extra[i] = true; }
-	}
-
-	seed = seedc;
-	implied = impliedc;
-	values = valuesc;
-	satisfied = satisfiedc;
-	singletons = singletonsc;
-	lits_left = lits_leftc;
-
-	//check
-	for(int i = 0; i < extra.size(); i++){
-		auto c1 = added_clauses[i];
-
-		if(extra[i]) continue; 
-		//find the new implied literal
-		int lit = 0;
-		for(int lid = 0; lid < msSolver->clauses[c1].size() - 1; lid++){
-			auto l = msSolver->clauses[c1][lid];
-			if( l > 0 && !implied[l - 1] ){	lit = l; break;	}
-			else if( l < 0 && !implied[(-1 * l) - 1] ){ lit = l; break; }
-		}
-		if(lit == 0) continue; // this singleton is already satisfied, i.e. there were two same singletons
-		seed[c1] = true;
-
-		int var = (lit > 0)? lit - 1 : (-1 * lit) - 1;
-		int positive = lit > 0;
-		implied[var] = true;
-		values[var] = positive;
-		violated = propagate_backbone(var, positive, lits_left, satisfied, top, singletons, seed, c1, influenced);
-		if(!violated.empty()) break;
-	}
-	return violated;
-}
-
 void Master::implied_literal(int cl, Formula &implied, int &lit, int &var, bool &value){
 	lit = 0;
 	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
@@ -317,74 +214,6 @@ int Master::get_backbones_bones(Formula &seed, Formula &implied, Formula &values
 	return 0;	
 }
 
-int Master::get_backbones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, vector<int> &variables_map_inv){
-
-	//export the seed
-	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
-	vector<vector<int>> cls;
-	for(int i = 0;  i < dimension; i++){
-		if(seed[i]){
-			bool sat = false;
-			vector<int> lits;
-			for(auto lit: msSolver->clauses[i]){
-				int var = (lit > 0)? lit : (-1 * lit);
-				int phase = (lit > 0)? 1: -1;
-				bool value = phase == 1;
-				if(var <= msSolver->vars){
-					if( implied[var - 1] && values[var - 1] != value) continue;
-					else if( implied[var - 1] && values[var - 1] == value){ sat = true; break; }
-					else lits.push_back(variables_map[var] * phase);
-				}
-			}
-			if(!sat){
-				cls.push_back(lits);
-			}
-		}
-	}
-
-	stringstream ss;
-	ss << "p cnf " << variables_map_inv.size() << " " << cls.size() << "\n";
-	for(auto &cl: cls){
-		for(auto l: cl)
-			ss << l << " ";
-		ss << "0" << "\n";
-	}
-
-	ofstream file;
-	stringstream outputf;
-	outputf << "minibones_export" << hash << "_" << count_ones(seed) << ".cnf"; 
-	string filename = outputf.str();
-	file.open(filename);
-	file << ss.str();
-	file.close();
-
-	//compute the backbone (invoke minibones)
-	stringstream cmd;
-	cmd << "./minibones -e -i -c 100 " << filename << " 2> /dev/null";
-	string output = exec(cmd.str().c_str());	
-	stringstream oss(output);
-	string line;
-	while (getline(oss, line, '\n'))
-	{
-		if (line[0] != 'v')
-			continue;
-		istringstream is(line);	
-		is.ignore(1,' '); //ignore the initial 'v'
-		int lit;
-		while(is >> lit){
-			if(lit == 0) continue;
-			int var = (lit > 0)? lit : (-1 * lit);			
-			int phase = (lit > 0)? 1: -1;
-			int olit = variables_map_inv[var] * phase;
-			int ovar = olit * phase - 1;
-			implied[ovar] = true;
-			values[ovar] = phase > 0; 
-		}
-	}	
-	remove(filename.c_str());
-	return 0;
-}
-
 void Master::backbone_build_literal_map(Formula &seed, vector<int> &variables_map, vector<int> &variables_map_inv){
 	//build the variable ids map
 	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);//
@@ -448,7 +277,7 @@ void Master::backbone_simplify(Formula &seed, int c, Formula &implied, Formula &
 	}
 }
 
-void Master::backbone_check_reminder(Formula &implied, Formula &values, Formula &top, Formula &m1){
+void Master::backbone_check_remainer(Formula &implied, Formula &values, Formula &top, Formula &m1){
 	if(dimension > 50000) return;
 	vector<int> assumptions;
 	bool sat = is_valid(top, false, false);
@@ -529,7 +358,7 @@ int Master::backbone_mus_rotation(MUS &m1, Formula &top){
 			valuesc = values;
 		}
 		if(iter_rot == 0){ 
-			backbone_check_reminder(implied, values, top, m1.bool_mus);
+			backbone_check_remainer(implied, values, top, m1.bool_mus);
 		}
 		top[c] = true;
 		if(extended){

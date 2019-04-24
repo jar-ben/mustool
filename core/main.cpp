@@ -32,7 +32,6 @@ void print_help(){
 			{"dim-reduction-factor", "r", "FACTOR", "ReMUS only. Factor of dimensionality reduction. For example, 0.8 means reduce the dimension by 20 percent in every recursion call. (default: 0.9)"},
 
 			{"verify-muses", "c", "","Experimental option. Verify each outputted MUS for being a MUS."},
-			{"block-down-muses", "a", "", "Experimental option."},
 			{"mus-approximation", "s", "", "Experimental option. Enable MUS approximation."},
 			{"mus-approximation-treshold", "e", "TRE", "Experimental option. Threshold used to determine whether to use MUS approximation or not. (default: 0)"},
 			{"verify-approximated-muses", "f", "", "Experimental option. Check whether are approximated MUSes actually MUSes."},
@@ -83,12 +82,8 @@ int main(int argc, char *argv[]){
         string input, output = "";
 	int depthMUS = 6;
 	float dim_reduction = 0.9;
-	int extend_top_variant = 1;
-	bool hsd = false;
-	bool block_down_mus = false;
 	bool validate_mus = false;
 	float mus_approx = 0;
-	bool verify_approx = false;	
 	string sat_solver = "default";
 	string shrink_alg = "default";
 	bool visualize = false;
@@ -110,10 +105,8 @@ int main(int argc, char *argv[]){
 			{"sat-solver", required_argument,	0, 'n'},
 			{"shrink-alg",  required_argument,       0, 'm'},
 			{"max-recursion-depth",  required_argument,       0, 'd'},
-			{"extend-top-variant",  required_argument,       0, 'j'},
 			{"dim-reduction-coef",  required_argument,       0, 'r'},
 			{"mus-approximation",  no_argument,       0, 's'},
-			{"block-down-muses",  no_argument,       0, 'a'},
 			{"verify-muses",  no_argument,       0, 'c'},
 			{"mus-approximation-treshold",  required_argument,       0, 'e'},
 			{"verify-approximated-muses",  no_argument,       0, 'f'},
@@ -135,7 +128,7 @@ int main(int argc, char *argv[]){
 				//FREE
 				break;
 			case 'a':
-				block_down_mus = true;
+				//FREE
 				break;
 			case 'k':
 				//FREE
@@ -150,13 +143,13 @@ int main(int argc, char *argv[]){
 				mus_approx = stof(optarg);
 				break;
 			case 'f':
-				verify_approx = true;
+				//FREE
 				break;
 			case 's':
-				hsd = true;
+				//FREE
 				break;
 			case 'j':
-				extend_top_variant = atoi(optarg);
+				//FREE
 				break;
 			case 'r':
 				dim_reduction = stof(optarg);
@@ -223,12 +216,8 @@ int main(int argc, char *argv[]){
 	solver.verbose = verbose;
 	solver.depthMUS = (depthMUS >= 0)? depthMUS : solver.dimension;
 	solver.dim_reduction = dim_reduction;
-	solver.extend_top_variant = extend_top_variant;
-	solver.hsd = hsd;
-	solver.block_down_mus = block_down_mus;
 	solver.validate_mus_c = validate_mus;
 	solver.mus_approx = mus_approx;
-	solver.verify_approx = verify_approx;
 	solver.satSolver->sat_solver = sat_solver;
 	solver.satSolver->shrink_alg = shrink_alg;
 	solver.model_rotation = model_rotation;

@@ -22,7 +22,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 	bool top_found = false;
 	while(true){
 		iteration++;
-		current_dimension = count_ones(subset);
 		if(!top_found) top = explorer->get_top_unexplored(assumptions);
 		top_found = false;
 		Formula original_top = top;
