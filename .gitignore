@@ -1,0 +1,11 @@
+results*
+*.o
+mvc*
+out*
+f_*
+examples/*
+mcsmus/.clang-format
+mcsmus/.gitignore
+mcsmus/_Makefile
+mcsmus/mcsmus/.mcsmus.cc.swo
+.gitignore.swp
