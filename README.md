@@ -10,6 +10,9 @@ In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the dev
 Besides our original code, the tool uses several external tools that we in some form distribute with our code. Therefore, by using our tool, you are also using the third parties tools and it is your responsibility to obey the lincenses of these tools. In particular, our tool builds on the following third-party tools:
 * miniSAT[4] - miniSAT is a well-known SAT CNF solver. We use it in our tool as a satisfiability solver int the SAT domain and we also use it as a solver for maintaining the symbolic representation of the unexplored subsets during the MUS enumeration.
 * muser2[5] - muser2 is a SAT CNF single MUS extraction tool and we use it for an implementation of the shrinking procedure in the three MUS enumeration algorithms. We distribute only a linux complied binary of muser2 (./muser2-para) alongside our tool. The source code of muser2 is available at https://bitbucket.org/anton_belov/muser2. We recommend you, the user of our tool, download the source code of muser2 and build it on your own to make sure that you have a build that is suitable for your architecture.
+* mcsmus[9] - a yet another SAT CNF sinle MUS extraction tool that we use for the shrinking (user can choose whehter muser2 or mcsmus is used). We distribute mcsmus's source code (check the licence file in ./mcsmus).
+
+We distribute a source code taken from https://bitbucket.org/gkatsi/mcsmus. 
 * z3[6] - we use the SMT satisfiability solver z3 as a satisfiability solver in the SMT domain. However, we do not distribute the code of z3 (and nor a binary); we include it as a C++ library and you have to download and install it on your own.
 * SPOT[7] - SPOT is a C++ library for LTL, omega-automata manipulation, and LTL model checking. We use SPOT as a satisfiability solver in the LTL domain. You have to download and install the library on your own.
 * MiniBones[8] - MiniBones is a tool for computing complete bakcbones of a given satisfiable SAT CNF formula. We use it as a subroutine in our heuristic called Backbone heuristic; the heuristic can be optionally used to speed up a MUS enumeration in the SAT domain. We include minibone's source code (check the license file in ./minibones)
@@ -38,3 +41,4 @@ The tool is still under development and there is a lot of things that need to be
 * [6] https://github.com/Z3Prover/z3
 * [7] https://spot.lrde.epita.fr/
 * [8] http://sat.inesc-id.pt/~mikolas/sw/minibones/
+* [9] https://bitbucket.org/gkatsi/mcsmus
