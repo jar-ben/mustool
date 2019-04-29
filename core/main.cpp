@@ -18,10 +18,6 @@ int main(int argc, char *argv[]){
 
 	std::signal(SIGTERM, signal_handler);
 
-	int scope_limit = 1000000;
-	string input = "examples/bf1355-228.cnf";
-
-
 	try{
 		TCLAP::CmdLine cmd("Domain Agnostic MUS Enumeration Tool (DAMUSET), Jaroslav Bendik, 2019.", ' ', "");
 		vector<string> allowedAlgs {"remus", "tome", "marco"};
@@ -45,6 +41,8 @@ int main(int argc, char *argv[]){
 		TCLAP::SwitchArg matchmaker("","matchmaker","Available only in the SAT domain. Use the heuristic Matchmaker for finding seeds without explicitely checking subsets for satisfiability.", cmd, false);
 		TCLAP::SwitchArg modelRotation("","model-rotation","Available only in the SAT domain. Every time a subset is checked for satisfiability and find to be satisfiable, the corresponding model is rotated to identify additional satisfiable subsets. This technique is similar to the famous (recursive) model rotation for finding aditional critical constraints, i.e. singleton correction sets. In our case, we identify arbitrary correction sets.", cmd, false);
 
+		TCLAP::UnlabeledValueArg<string>  input( "input_file", "Input file, either .cnf, .smt2, or .ltl. See the ./examples/.", true, "", "input_file"  );
+		cmd.add(input);
 		cmd.parse(argc, argv);
 
 		if(output.getValue() != ""){
@@ -53,7 +51,7 @@ int main(int argc, char *argv[]){
 			ofs.close();
 		}
 
-		Master solver(input, algorithm.getValue());
+		Master solver(input.getValue(), algorithm.getValue());
 		solver.output_file = output.getValue();
 		solver.verbose = verbose.getValue();
 		solver.depthMUS = (recursionDepthLimit.getValue() >= 0)? recursionDepthLimit.getValue() : solver.dimension;
@@ -65,7 +63,7 @@ int main(int argc, char *argv[]){
 		solver.useBackbone = backbone.getValue();
 		solver.useMatchmaker = matchmaker.getValue();
 		
-		solver.scope_limit = scope_limit;
+		solver.scope_limit = 100000;
 		solver.criticals_rotation = true; //criticals_rotation;
 		
 		solver.enumerate();

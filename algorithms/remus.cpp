@@ -68,7 +68,9 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 					int rotated = msSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
 					for(auto &extension: model_extensions){
 						block_down(extension);
-					}					
+					}
+					cout << "rotated: " << rotated << endl;
+					cout << "extensions: " << model_extensions.size() << endl;					
 				}
 				continue;
 			}	

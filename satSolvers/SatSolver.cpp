@@ -1,4 +1,5 @@
 #include "SatSolver.h"
+#include <fstream>
 
 using namespace std;
 
@@ -32,3 +33,11 @@ vector<bool> SatSolver::grow(std::vector<bool> &f){
 	return s;
 }
 
+void SatSolver::exportMUS(std::vector<bool> mus, std::string outputFile){
+	exported_muses++;
+	ofstream file;
+	file.open(outputFile, std::ios_base::app);
+	file << "MUS #" << exported_muses << "\n";
+	file << toString(mus) << "\n";
+	file.close();
+}

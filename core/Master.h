@@ -1,3 +1,6 @@
+#ifndef REMUS_MASTER_H
+#define REMUS_MASTER_H
+
 #include "satSolvers/MSHandle.h"
 #include "Explorer.h"
 #ifndef NOSMT
@@ -25,7 +28,7 @@ using namespace std;
 class Master{
 public:
 	int dimension; //the number of constraints
-	int variant; //MUS enumeration algorithm to be used
+	string algorithm; //MUS enumeration algorithm to be used
 	int isValidExecutions;
 	bool verbose; //TODO: make it int based 
 	string output_file;
@@ -47,7 +50,7 @@ public:
 	SatSolver* satSolver; 
 	string sat_solver;
 
-	Master(string filename, int var = 1, bool vis = false, string sat_solver = "");
+	Master(string filename, string alg);
 	~Master();
 	bool is_valid(Formula &f, bool core = false, bool grow = false);
 	void block_down(Formula f);
@@ -101,3 +104,4 @@ public:
 	int seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<int> &singletons, int from, 
 			int to, Formula &seed, Formula &top, Formula &implied, vector<int> &added);
 };
+#endif

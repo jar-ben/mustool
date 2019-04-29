@@ -29,16 +29,15 @@ NuxmvHandle::NuxmvHandle(string filename):SatSolver(filename){
 NuxmvHandle::~NuxmvHandle(){
 }
 
-void NuxmvHandle::exportMUS(std::vector<bool> mus, std::string filename){
-	ofstream file;
-	file.open(filename);
+string NuxmvHandle::toString(vector<bool> &mus){
+	stringstream result;
 	for(int i = 0; i < dimension; i++){
 		if(mus[i]){
-			file << clauses_string[i] << "\n";
+			result << clauses_string[i] << "\n";
 
 		}
 	}
-	file.close();
+	return result.str();
 }
 
 void NuxmvHandle::build_nuxmv_model(){

@@ -23,7 +23,7 @@ public:
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
 	void get_unsat_core(std::vector<bool> &core);
 
-	void exportMUS(std::vector<bool> mus, std::string outputFile);
+	std::string toString(std::vector<bool> &mus);
 
 	bool add_clause(std::vector<int> clause);
 	bool add_unit(int lit);

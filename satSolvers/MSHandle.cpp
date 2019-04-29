@@ -366,19 +366,15 @@ vector<bool> MSHandle::get_model(){
 	return model;
 }
 
-// MUSer2 / dmuser helper functions
-//
-void MSHandle::exportMUS(vector<bool> f, string filename){
+string MSHandle::toString(vector<bool> &f){
 	int formulas = std::count(f.begin(), f.end(), true);
-
-	ofstream file;
-	file.open(filename);
-	file << "p cnf " << vars << " " << formulas << "\n";
+	stringstream result;
+	result << "p cnf " << vars << " " << formulas << "\n";
 	for(int i = 0; i < f.size(); i++)
 		if(f[i]){
-			file << clauses_str[i] << "\n";
+			result << clauses_str[i] << "\n";
 		}
-	file.close();
+	return result.str();
 }
 
 void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool> crits){
@@ -425,7 +421,7 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
 	if(shrink_alg == "mcsmus"){
-		shrink_mcsmus(f, crits);
+		return shrink_mcsmus(f, crits);
 	}
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			

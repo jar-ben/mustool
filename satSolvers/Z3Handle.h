@@ -15,9 +15,12 @@ public:
 	std::vector<z3::expr> clauses;
 	std::map<z3::expr, int> controls_map;
 
-	void exportMUS(std::vector<bool> mus, std::string outputFile);
 	Z3Handle(std::string);
 	~Z3Handle();
+	void addExpr(z3::expr &e);
+	void parseMultiple(Z3_ast_vector &a_vec, int size);
+	void parseAndFormula(Z3_ast_vector &a_vec);
 	std::vector<bool> shrink(std::vector<bool> &formula, std::vector<bool> crits = std::vector<bool>());	
 	bool solve(std::vector<bool> &formula, bool core = false, bool grow = false);
+	std::string toString(std::vector<bool> &mus);
 };

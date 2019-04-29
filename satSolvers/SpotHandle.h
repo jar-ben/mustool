@@ -13,7 +13,7 @@ class SpotHandle: public SatSolver{
 public:
 	std::vector<spot::formula> formulae;
 
-	void exportMUS(std::vector<bool> mus, std::string outputFile);
+	std::string toString(std::vector<bool> &mus);
 	SpotHandle(std::string filename);
 	~SpotHandle();
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);

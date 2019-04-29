@@ -6,10 +6,10 @@
 #include <random>
 
 
-Master::Master(string filename, int var, bool vis, string s_solver){
+Master::Master(string filename, string alg){
         isValidExecutions = 0;
-        variant = var;
-	sat_solver = s_solver;
+	algorithm = alg;
+	sat_solver = "default";
 	if(ends_with(filename, "smt2")){
 		#ifdef NOSMT
 			std::cout << "working with smt is currently not enabled, plese build the tool with the flag USESMT=YES, e.g. 'make USESMT=YES'" << std::endl;
@@ -109,10 +109,11 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 		explorer->getImplied(crits, f);	
 		cout << "criticals before rot: " << count_ones(crits) << endl;	
 		if(criticals_rotation){
+			int before = count_ones(crits);
 			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 			msSolver->criticals_rotation(crits, f);
+			cout << "rotated: " << (count_ones(crits) - before) << endl;
 		}
-		cout << "criticals after rot: " << count_ones(crits) << endl;
 		float ones_crits = count_ones(crits);		 
 		if(f_size == ones_crits){ // each constraint in f is critical for f, i.e. it is a MUS 
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
@@ -161,24 +162,22 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 
 void Master::enumerate(){
 	initial_time = chrono::high_resolution_clock::now();
-	cout << "running algorithm variant " << variant << endl;
+	cout << "running algorithm: " << algorithm << endl;
 	Formula whole(dimension, true);
 	if(is_valid(whole))
 		print_err("the input instance is satisfiable");
 
-	switch (variant) {
-		case 1:
-			find_all_muses_duality_based_remus(Formula (dimension, true), Formula (dimension, false), 0);
-			break;						
-		case 2:
-			find_all_muses_tome();
-			break;
-		case 3:
-			marco_base();
-			break;
-		default:
-			print_err("invalid algorithm chosen");
-			break;
+	if(algorithm == "remus"){
+		find_all_muses_duality_based_remus(Formula (dimension, true), Formula (dimension, false), 0);
+	}
+	else if(algorithm == "tome"){
+		find_all_muses_tome();
+	}
+	else if(algorithm == "marco"){
+		find_all_muses_tome();
+	}
+	else{
+		print_err("invalid algorithm chosen");
 	}
 	return;
 }

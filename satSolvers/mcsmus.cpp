@@ -58,7 +58,6 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 		}
 	}
 	
-	control->notify_on_interrupt();
 	std::vector<Lit> mus_lits;
 	wcnf.relax();
 	mussolver.find_mus(mus_lits, false);

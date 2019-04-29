@@ -7,49 +7,58 @@
 #include "core/misc.h"
 using namespace z3;
 
-
-Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
-	Z3_ast_vector a_vec = Z3_parse_smtlib2_file(ctx, filename.c_str(), 0, 0, 0, 0, 0, 0);    
-	std::cout << "a_Vec: " << a_vec << std::endl;
-	Z3_ast a;
-	expr e(ctx, a);
-
-	if(e.num_args() == 0){
-		std::cout << "z3 init error" << std::endl;
-		exit(1);
-	}
-
-	expr control = ctx.bool_const("ceasar0");
-	expr impl = implies(control, e.arg(0));
+void Z3Handle::addExpr(expr &e){
+	std::string control_name = "ceasar" + std::to_string(clauses.size()); //name and create control variables
+	expr control = ctx.bool_const(control_name.c_str());
+	expr impl = implies(control, e);
 	controls.push_back(control);
 	implications.push_back(impl);
-	clauses.push_back(e.arg(0));
-	
-	s = new solver(ctx);
-	s->add(impl);
-
-	for(int i = 1; i < e.num_args(); i++){
-		std::string control_name = "ceasar" + std::to_string(i); //name and create control variables
-		control = ctx.bool_const(control_name.c_str());		
-		impl = implies(control, e.arg(i)); //the need to satisfy individual formulas is controled by the control variables
-		s->add(impl);
-		controls.push_back(control);
-		implications.push_back(impl);
-		clauses.push_back(e.arg(i));
-	}
-	dimension = clauses.size();
+	clauses.push_back(e);
 }
 
-void Z3Handle::exportMUS(vector<bool> f, string filename){
-	ofstream file;
-	file.open(filename);
-					        
+
+void Z3Handle::parseMultiple(Z3_ast_vector &a_vec, int size){
+	for(int i = 0; i < size; i++){
+		expr e(ctx, Z3_ast_vector_get(ctx, a_vec, i));
+		addExpr(e);
+	}
+}
+
+void Z3Handle::parseAndFormula(Z3_ast_vector &a_vec){
+	Z3_ast a = Z3_ast_vector_get(ctx, a_vec, 0);
+	expr e(ctx, a);
+	for(int i = 1; i < e.num_args(); i++){
+		expr ei = e.arg(i);
+		addExpr(ei);
+	}
+}
+
+Z3Handle::Z3Handle(std::string filename): SatSolver(filename){
+	Z3_ast_vector a_vec = ctx.parse_file(filename.c_str());
+	int size = Z3_ast_vector_size(ctx, a_vec);
+	if(size == 1)
+		parseAndFormula(a_vec);
+	else if(size > 1)
+		parseMultiple(a_vec, size);
+	else{
+		std::cout << "cannot parse the input file" << std::endl;
+		exit(1);
+	}
+	dimension = clauses.size();
+	s = new solver(ctx);
+	for(auto &impl: implications)
+		s->add(impl);
+}
+
+
+std::string Z3Handle::toString(std::vector<bool> &f){	
+	solver sol(ctx);
 	for(int i = 0; i < f.size(); i++){
 		if(f[i]){
-			file << clauses[i] << "\n";
+			sol.add(clauses[i]);
 		}
 	}
-	file.close();												                }
+	return sol.to_smt2();
 }
 
 // implements the shrinking procedure

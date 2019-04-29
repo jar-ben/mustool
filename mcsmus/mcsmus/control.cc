@@ -58,6 +58,7 @@ mcsmus::Control::Control()
     set_interrupt_function = [&]() { interrupt(); };
     interrupt_function = [&]() {
         printf("\n"); printf("*** INTERRUPTED ***\n");
+	exit(0);
     };
 
     Minisat::sigTerm(SIGINT_interrupt);

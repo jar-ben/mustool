@@ -1,9 +1,4 @@
-(help-tactic)
 (set-logic QF_LIA)
-(set-info :source |
-Alberto Griggio
-
-|)
 (set-info :smt-lib-version 2.0)
 (set-info :category "random")
 (set-info :status unsat)
