@@ -93,6 +93,13 @@ bool is_subset(std::vector<bool> &a, std::vector<bool> &b){
 	return true;
 }
 
+bool is_disjoint(std::vector<bool> &a, std::vector<int> &b){
+	for(auto c: b)
+		if(a[c])
+			return false;
+	return true;
+}
+
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b){
 	int dimension = a.size();
 	std::vector<bool> res(dimension, false);

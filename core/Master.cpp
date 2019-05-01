@@ -82,7 +82,32 @@ void Master::block_down(Formula formula){
 // check formula for satisfiability
 // core and grow controls optional extraction of unsat core and model extension (replaces formula)
 bool Master::is_valid(Formula &formula, bool core, bool grow){
-	return satSolver->solve(formula, core, grow);
+	bool sat = satSolver->solve(formula, core, grow); 
+	if(sat && model_rotation){
+		MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+		Formula model = msSolver->get_model();
+		vector<bool> crits (dimension, false);
+		for(int i = 0; i < dimension; i++){
+			if(!formula[i] && !explorer->is_available(i, formula)){
+				crits[i] = true;
+			}
+		}
+		for(int i = 0; i < dimension; i++){
+			if(crits[i]){
+				vector<Formula> model_extensions;
+				int rotated = msSolver->model_rotation(crits, i, formula, model, model_extensions);
+				int fresh = 0;
+				for(auto &ext: model_extensions){
+					if(explorer->isUnexploredSat(ext)){
+						block_down(ext);
+						fresh++;
+					}
+				}
+				cout << "rotated: " << rotated << ", extensions: " << model_extensions.size() << ", fresh: " << fresh << endl;
+			}
+		}
+	}
+	return sat;
 }
 
 //verify if f is a MUS

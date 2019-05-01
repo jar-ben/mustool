@@ -36,6 +36,7 @@ public:
 	std::vector<bool> get_bot_unexplored(std::vector<int> assumptions);
 	std::vector<bool> get_unexplored(std::vector<bool> top, std::vector<bool>& mus);
 	bool isUnexplored(std::vector<bool> valuation);
+	bool isUnexploredSat(std::vector<bool> valuation);
 	int getImplied(std::vector<bool>& implied, std::vector<bool>& formula);
 	
 	std::vector<bool> mus_intersection;

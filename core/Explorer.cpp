@@ -287,6 +287,14 @@ bool Explorer::isUnexplored(vector<bool> valuation){
         return solver->solve(lits);
 }
 
+bool Explorer::isUnexploredSat(vector<bool> f){
+	for(auto &mcs: mcses){
+		if(is_disjoint(f, mcs))
+			return false;
+	}
+	return true;
+}
+
 int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
         for(int i = 0; i < dimension; i++){
 		if(f[i] && is_critical(i, f))
