@@ -6,7 +6,7 @@
  */
 #include "minisat_aux.hh"
 #include "Rotatable.hh"
-using Minisat::lit_Undef;
+using MinibonesMinisat::lit_Undef;
 Rotatable::Rotatable(const CNF& _input_cnf)
  : input_cnf(_input_cnf)
 {}

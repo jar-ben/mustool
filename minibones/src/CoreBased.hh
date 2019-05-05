@@ -11,10 +11,10 @@
 #include "Rotatable.hh"
 #include "BackboneInformation.hh"
 #include "LitBitSet.hh"
-using Minisat::MiniSatExt;
-using Minisat::Var;
-using Minisat::Lit;
-using Minisat::vec;
+using MinibonesMinisat::MiniSatExt;
+using MinibonesMinisat::Var;
+using MinibonesMinisat::Lit;
+using MinibonesMinisat::vec;
 
 #line 18 "CoreBased.nw"
 namespace minibones {

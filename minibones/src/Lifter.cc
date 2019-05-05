@@ -8,8 +8,8 @@
 #include "Lifter.hh"
 #include "minisat_aux.hh"
 #include "ClausesInversion.hh"
-using Minisat::lit_Undef;
-using Minisat::mkLit;
+using MinibonesMinisat::lit_Undef;
+using MinibonesMinisat::mkLit;
 
 Lifter::Lifter(const CNF& _formula)
 :formula(_formula) 

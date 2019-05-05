@@ -14,7 +14,7 @@
 #include "minisat_aux.hh" 
 using std::iterator;
 using std::ostream;
-using Minisat::toInt;
+using MinibonesMinisat::toInt;
 
 #define DBG_LITSET(t)
 

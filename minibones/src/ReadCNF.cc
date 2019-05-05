@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include <assert.h>
-using Minisat::lit_Undef;
+using MinibonesMinisat::lit_Undef;
 
 ReadCNF::ReadCNF(Reader& input_file)
 : in(input_file), mxid(0)

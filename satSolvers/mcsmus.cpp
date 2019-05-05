@@ -1,3 +1,5 @@
+#ifdef UMCSMUS
+
 #include <errno.h>
 #include <zlib.h>
 #include <iostream>
@@ -76,4 +78,4 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 	}
 	return mus;
 }
-
+#endif

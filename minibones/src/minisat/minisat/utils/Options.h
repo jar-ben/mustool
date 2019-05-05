@@ -29,7 +29,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/mtl/Vec.h"
 #include "minisat/utils/ParseUtils.h"
 
-namespace Minisat {
+namespace MinibonesMinisat {
 
 //==================================================================================================
 // Top-level option parse/help functions:

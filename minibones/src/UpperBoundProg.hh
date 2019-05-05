@@ -17,10 +17,10 @@
 #include "BackboneInformation.hh"
 #define UPPERBOUND_DBG(t)
 namespace minibones {
-  using Minisat::Solver;
-  using Minisat::Var;
-  using Minisat::Lit;
-  using Minisat::vec;
+  using MinibonesMinisat::Solver;
+  using MinibonesMinisat::Var;
+  using MinibonesMinisat::Lit;
+  using MinibonesMinisat::vec;
 
   /** Class for computing backbones with the upper bound approach. */
   class UpperBoundProg : public BackboneInformation {

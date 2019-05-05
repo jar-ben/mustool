@@ -13,11 +13,11 @@
 #include "heap.hh"
 #include "ClausesInversion.hh"
 using std::vector;
-using Minisat::lbool;
-using Minisat::sign;
-using Minisat::vec;
-using Minisat::Lit;
-using Minisat::lit_Undef;
+using MinibonesMinisat::lbool;
+using MinibonesMinisat::sign;
+using MinibonesMinisat::vec;
+using MinibonesMinisat::Lit;
+using MinibonesMinisat::lit_Undef;
 
 #define MR_LOG( t )  
 
@@ -74,7 +74,7 @@ struct LiteralScore {
   size_t    score;
   size_t    _index;
   inline LiteralScore(const LiteralScore& orig) : literal(orig.literal),score(orig.score),_index(orig._index) {}
-  inline LiteralScore() : literal(Minisat::lit_Undef), score(0), _index(0) {}
+  inline LiteralScore() : literal(MinibonesMinisat::lit_Undef), score(0), _index(0) {}
   inline LiteralScore(Lit _literal, size_t _occurrence, size_t __index)
     : literal(_literal), score(_occurrence), _index(__index) {}
   inline size_t& key()   { return score; }

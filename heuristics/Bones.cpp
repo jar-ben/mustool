@@ -36,7 +36,7 @@ vector<int> backbone_literals(CoreBased& c, int max_var){
 
 std::vector<int> Bones::get_backbones(std::vector<std::vector<int>> &cls){
 	CNF clauses;
-	Minisat::Var max_id = 0;
+	MinibonesMinisat::Var max_id = 0;
 	for(auto c: cls){
 		vector<Lit> literals;
 		for(auto l: c){

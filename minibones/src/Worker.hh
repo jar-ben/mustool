@@ -17,13 +17,13 @@
 #include "BackboneInformation.hh"
 #include "minisat/core/Solver.h"
 
-using Minisat::Solver;
-using Minisat::Lit;
-using Minisat::lbool;
-using Minisat::Var;
-using Minisat::toInt;
-using Minisat::sign;
-using Minisat::vec;
+using MinibonesMinisat::Solver;
+using MinibonesMinisat::Lit;
+using MinibonesMinisat::lbool;
+using MinibonesMinisat::Var;
+using MinibonesMinisat::toInt;
+using MinibonesMinisat::sign;
+using MinibonesMinisat::vec;
 using std::vector;
 using std::pair;
 

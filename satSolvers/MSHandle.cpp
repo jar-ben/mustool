@@ -420,9 +420,11 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
+#ifdef UMCSMUS
 	if(shrink_alg == "mcsmus"){
 		return shrink_mcsmus(f, crits);
 	}
+#endif
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			
 	export_formula_crits(f, exp.str(), crits);	

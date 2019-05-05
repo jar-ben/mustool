@@ -16,10 +16,10 @@
 #include "Rotatable.hh"
 #include "BackboneInformation.hh"
 namespace minibones {
-  using Minisat::MiniSatExt;
-  using Minisat::Var;
-  using Minisat::Lit;
-  using Minisat::vec;
+  using MinibonesMinisat::MiniSatExt;
+  using MinibonesMinisat::Var;
+  using MinibonesMinisat::Lit;
+  using MinibonesMinisat::vec;
 
   /** Class for computing backbones with the upper bound approach. */
   class Cores {

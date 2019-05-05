@@ -9,7 +9,7 @@
 #define	MINISATEXT_HH
 #include "minisat/core/Solver.h"
 
-namespace Minisat {
+namespace MinibonesMinisat {
   class MiniSatExt : public Solver {
   public:
     inline void bump(const Var var)        { varBumpActivity(var); }

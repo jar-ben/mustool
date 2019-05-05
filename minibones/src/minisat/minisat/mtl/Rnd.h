@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include "minisat/mtl/Vec.h"
 
-namespace Minisat {
+namespace MinibonesMinisat {
 
 // Generate a random double:
 static inline double drand(double& seed)
@@ -63,5 +63,5 @@ static void randomShuffle(double& seed, vec<vec<T> >& xs)
 
 
 //=================================================================================================
-} // namespace Minisat
+} // namespace MinibonesMinisat
 #endif

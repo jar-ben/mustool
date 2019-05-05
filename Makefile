@@ -33,10 +33,18 @@ USMT = YES
 ULTL = YES
 ###
 
+USEMCSMUS = YES
+
 CXX	= g++
 CFLAGS 	= -w -std=c++17 -g
 CFLAGS	+= -O3
 CFLAGS	+= -D NDEBUG
+
+ifeq ($(USEMCSMUS),YES)
+	CFLAGS += -D UMCSMUS
+else
+	MCSMUS_OBJS = 
+endif
 
 ifeq ($(USAT),NO)
 	CFLAGS += -D NOSAT

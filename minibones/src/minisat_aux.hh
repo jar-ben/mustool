@@ -12,17 +12,17 @@
 #include <ostream>
 using std::ostream;
 using std::vector;
-using Minisat::Solver;
-using Minisat::lbool;
-using Minisat::l_False;
-using Minisat::l_True;
-using Minisat::l_Undef;
-using Minisat::mkLit;
-using Minisat::sign;
-using Minisat::var;
-using Minisat::vec;
-using Minisat::Lit;
-using Minisat::Var;
+using MinibonesMinisat::Solver;
+using MinibonesMinisat::lbool;
+using MinibonesMinisat::l_False;
+using MinibonesMinisat::l_True;
+using MinibonesMinisat::l_Undef;
+using MinibonesMinisat::mkLit;
+using MinibonesMinisat::sign;
+using MinibonesMinisat::var;
+using MinibonesMinisat::vec;
+using MinibonesMinisat::Lit;
+using MinibonesMinisat::Var;
 typedef std::vector<Lit> LiteralVector;
 
 inline bool is_true(Lit l, const vec<lbool>& model) { 
@@ -38,7 +38,7 @@ ostream& operator << (ostream& outs, Lit lit);
 
 ostream& print(ostream& out, const vec<Lit>& lv);
 inline ostream& operator << (ostream& out, const vec<Lit>& lv) { return print(out,lv); }
-inline ostream& operator << (ostream& out, const Minisat::LSet& lv) { return print(out,lv.toVec()); }
+inline ostream& operator << (ostream& out, const MinibonesMinisat::LSet& lv) { return print(out,lv.toVec()); }
 
 inline size_t literal_index(Lit l) { 
   assert(var(l) > 0);
@@ -59,7 +59,7 @@ public:
 
 class Lit_hash {
 public:
-  inline size_t operator () (const Lit& l) const { return Minisat::toInt(l); }
+  inline size_t operator () (const Lit& l) const { return MinibonesMinisat::toInt(l); }
 };
 #endif	/* MINISAT_AUX_HH */
 

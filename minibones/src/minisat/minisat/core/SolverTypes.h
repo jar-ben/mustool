@@ -31,7 +31,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/mtl/Map.h"
 #include "minisat/mtl/Alloc.h"
 
-namespace Minisat {
+namespace MinibonesMinisat {
 
 //=================================================================================================
 // Variables, literals, lifted booleans, clauses:

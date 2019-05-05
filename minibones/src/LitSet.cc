@@ -6,8 +6,8 @@
  */
 #include "LitSet.hh"
 #include "minisat/mtl/Sort.h"
-using Minisat::sort;
-using Minisat::LessThan_default;
+using MinibonesMinisat::sort;
+using MinibonesMinisat::LessThan_default;
 LitSet::LitSet(const LiteralVector& lits) {
   const size_t vsz = lits.size();
   if (vsz==0) {
@@ -48,8 +48,8 @@ LitSet::~LitSet() {
 
 ostream& LitSet::print(ostream& out) const {
   FOR_EACH(i,*this) {
-    if (Minisat::sign(*i)) out << '-';
-    out<< Minisat::var(*i);
+    if (MinibonesMinisat::sign(*i)) out << '-';
+    out<< MinibonesMinisat::var(*i);
     out << ' ';
   }
   return out;
