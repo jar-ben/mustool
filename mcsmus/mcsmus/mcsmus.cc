@@ -2156,7 +2156,7 @@ int MUSSolver::modelRotate_(Solver& rotsolver, vector<Lit>& conflict,
 
     DBG
         for (auto q : vc) {
-            DOUT << q << model.value(ex2in(q)) << ' ';
+            DOUT << mkLit(q) << model.value(ex2in(q)) << ' ';
         }
     DOUT << "\n";
     DBG

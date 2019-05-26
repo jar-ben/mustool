@@ -197,16 +197,6 @@ std::pair<bool, CRef> SimpSolver::addClauseR_(vec<Lit>& ps)
         CRef          cr = a.second;
         const Clause& c  = ca[cr];
 
-        bool has_nonselectors{false};
-        for (Lit l : c) {
-            if (!isSelector(var(l))) {
-                has_nonselectors = true;
-                break;
-            }
-        }
-        if (!has_nonselectors)
-            return a;
-
         // NOTE: the clause is added to the queue immediately and then
         // again during 'gatherTouchedClauses()'. If nothing happens
         // in between, it will only be checked once. Otherwise, it may
