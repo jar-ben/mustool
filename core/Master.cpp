@@ -199,7 +199,7 @@ void Master::enumerate(){
 		find_all_muses_tome();
 	}
 	else if(algorithm == "marco"){
-		find_all_muses_tome();
+		marco_base();
 	}
 	else{
 		print_err("invalid algorithm chosen");

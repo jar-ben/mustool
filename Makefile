@@ -6,7 +6,7 @@ MSAT	= libr
 
 LIBD 	= -L/usr/lib -L/usr/local/lib
 LIBD 	+= -L$(BONES)/minisat/build/release/lib
-LIBS 	= -lz -lspot -lz3
+LIBS 	= -lz
 LIBS	+= -lminisat -lstdc++fs
 USR 	= /usr/include
 INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES) -I $(DIR) -I $(MCSMUS) 
@@ -30,7 +30,7 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USAT = YES
 USMT = YES
-ULTL = YES
+ULTL = NO
 ###
 
 USEMCSMUS = YES
@@ -53,11 +53,15 @@ ifeq ($(USMT),NO)
 	CFLAGS += -D NOSMT
 	CSRCS := $(filter-out $(DIR)/satSolvers/Z3Handle.cpp, $(CSRCS))
 	COBJS := $(filter-out $(DIR)/satSolvers/Z3Handle.o, $(COBJS))
+else
+	LIBS   += -lz3
 endif
 ifeq ($(ULTL),NO)
 	CFLAGS += -D NOLTL
 	CSRCS := $(filter-out $(DIR)/satSolvers/SpotHandle.cpp, $(CSRCS))
 	COBJS := $(filter-out $(DIR)/satSolvers/SpotHandle.o, $(COBJS))
+else
+	LIBS    += -lspot
 endif
 
 mvc: m $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS)

@@ -49,6 +49,8 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 		}
 		else{	//top is necessarily an MSS of subset
 			streak++;
+			//prevent getting stuck in a small subset
+			if(streak > 10 && depth > 0){ current_depth--; return; }
 			vector<bool> model;
 			if(model_rotation){
 				MSHandle *msSolver = static_cast<MSHandle*>(satSolver);

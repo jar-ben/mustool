@@ -67,11 +67,13 @@ std::vector<bool> Z3Handle::shrink(std::vector<bool> &formula, std::vector<bool>
 	if(crits.empty())
 		crits = std::vector<bool> (dimension, false);	
 	std::vector<bool> shrinked = formula;
+	int cores = 3;
 	for(int i = 0; i < formula.size(); i++){
 		if(shrinked[i] && !crits[i]){
 			shrinked[i] = false;
 			checks++;
-			shrinked[i] = solve(shrinked, true, false);				
+			shrinked[i] = solve(shrinked, cores > 0, false);
+			cores--;			
 		}
 	}
 	return shrinked;
@@ -95,7 +97,7 @@ bool Z3Handle::solve(std::vector<bool> &formula, bool core, bool grow){
 	}	
 
 	if(!result && core){ // extract unsat core
-		formula.resize(formula.size(), false);
+		std::fill(formula.begin(), formula.end(), false);
 		auto unsat_core = s->unsat_core();
 		for(int i = 0; i < unsat_core.size(); i++){
         		std::stringstream fname; fname << unsat_core[i];
