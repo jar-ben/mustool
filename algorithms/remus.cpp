@@ -41,6 +41,9 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			if(useBackbone){
 				backbone_mus_rotation(mus, original_top);
  			}
+			if(useMixedHeuristic){
+				mixed_mus_rotation(mus, original_top);
+			}
 
 			if(depth > depthMUS) continue;
 			Formula m = mus.bool_mus;

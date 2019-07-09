@@ -41,6 +41,7 @@ public:
 	string domain;
 	bool useMatchmaker;
 	bool useBackbone;
+	bool useMixedHeuristic;
 	int hash;
 	int unex_unsat;
 	int unex_sat;
@@ -103,5 +104,8 @@ public:
 	void implied_literal(int cl, Formula &implied, int &lit, int &var, bool &value);
 	int seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<int> &singletons, int from, 
 			int to, Formula &seed, Formula &top, Formula &implied, vector<int> &added);
+
+	//combiination of backbone and dualmus
+	int mixed_mus_rotation(MUS &m1, Formula &top);	
 };
 #endif

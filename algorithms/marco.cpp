@@ -29,6 +29,9 @@ void Master::marco_base(){
 			else if(useBackbone){
 				backbone_mus_rotation(mus, original_top);
 			}
+			else if(useMixedHeuristic){
+				mixed_mus_rotation(mus, original_top);
+			}
 		}
 		top = explorer->get_unexplored(1, false);
 	}

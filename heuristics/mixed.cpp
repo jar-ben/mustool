@@ -18,19 +18,7 @@ struct OverlapHash{
 		}
 };
 
-vector<int> Master::minimal_hitting_set(vector<int> local_muses){
-	vector<int> hs;
-	for(auto mid: local_muses){
-		auto &mus = muses[mid];
-		bool hitten = false;
-		for(auto c: hs){ if(mus.bool_mus[c]){ hitten = true; break; } }
-		if(hitten) continue;	
-		hs.push_back(mus.without_crits[0]);
-	}	
-	return hs;
-}
-
-int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
+int Master::mixed_mus_rotation(MUS &m1, Formula &top){
 	int rotated = 0;
 	int mid_limit = muses.size() - scope_limit;
 	if(mid_limit < 0) mid_limit = 0;
@@ -52,19 +40,35 @@ int Master::recursive_rotation_delta(MUS m1, Formula &top, int depth){
 	unordered_set<vector<int>, OverlapHash> overlaps;	
 	vector<bool> already_used_mus(muses.size(), false);
 
+	vector<int> variables_map;
+        vector<int> variables_map_inv;
+	backbone_build_literal_map(m1.bool_mus, variables_map, variables_map_inv);
+
 	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	int vars = msSolver->vars;
 	int round = 0;
 	for(auto c1: m1.without_crits){
 		if(explorer->mus_intersection[c1]) continue;
-		vector<int> pairs;	
-		for(auto c: top_int){
-			if(is_hitting_pair(msSolver->clauses[c], msSolver->clauses[c1])){ pairs.push_back(c); }
-		}		
+		vector<int> pairs;
+		Formula implied(vars, false);
+                Formula values(vars, false);
+		Formula seed = m1.bool_mus; seed[c1] = false;
+		backbone_simplify(seed, c1, implied, values);
+		get_backbones_bones(seed, implied, values, variables_map, variables_map_inv);	
+		for(int i = 0; i < vars; i++){
+			if(implied[i]){
+				vector<int> &hits = (values[i])? msSolver->hitmap_pos[i] : msSolver->hitmap_neg[i];
+				for(auto c2: hits)
+					if(!top[c2]) pairs.push_back(c2);
+			}
+		}
+
 		for(auto c2: pairs){			
 			for(auto mid: explorer->parent_muses[c2]){
 				if(indicator[mid] != 1) continue;// || already_used_mus[mid]) continue;
 				auto &m2 = muses[mid];
 				if(m2.bool_mus[c1]) continue;
+				cout << "rapsberry pie" << endl;
 				round++;
 				vector<int> m1_overlap;
 				for(auto o: m2.without_crits)

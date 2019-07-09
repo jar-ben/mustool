@@ -78,6 +78,15 @@ std::string convert_vec(std::vector<bool> node){
 	return result;
 }
 
+bool is_hitting_pair(std::vector<int> cl1, std::vector<int> cl2){
+	for(auto l1: cl1){
+		for(auto l2: cl2){
+			if(l1 == (-1 * l2)) return true;
+		}
+	}
+	return false;
+}
+
 bool is_subset(std::vector<int> &a, std::vector<bool> &b){
 	for(auto &constraint: a)
 		if(!b[constraint])
