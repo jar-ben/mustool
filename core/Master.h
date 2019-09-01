@@ -7,7 +7,7 @@
 	#include "satSolvers/Z3Handle.h"
 #endif
 #ifndef NOLTL 
-	#include "satSolvers/SpotHandle.h"
+//	#include "satSolvers/SpotHandle.h"
 	#include "satSolvers/NuxmvHandle.h"
 #endif
 #include "types_h.h"
@@ -76,6 +76,9 @@ public:
 
 	//MARCO algorithm functions
 	void marco_base();
+
+	//DAA algorithm functions
+	void daa_base();
 
 	//dualMUS heuristic functions
 	int scope_limit;

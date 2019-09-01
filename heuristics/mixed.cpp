@@ -47,8 +47,10 @@ int Master::mixed_mus_rotation(MUS &m1, Formula &top){
 	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 	int vars = msSolver->vars;
 	int round = 0;
-	for(auto c1: m1.without_crits){
+	int mainRound = 0;
+	for(auto c1: m1.without_crits){		
 		if(explorer->mus_intersection[c1]) continue;
+		if(++mainRound > 10) break;
 		vector<int> pairs;
 		Formula implied(vars, false);
                 Formula values(vars, false);
@@ -68,7 +70,6 @@ int Master::mixed_mus_rotation(MUS &m1, Formula &top){
 				if(indicator[mid] != 1) continue;// || already_used_mus[mid]) continue;
 				auto &m2 = muses[mid];
 				if(m2.bool_mus[c1]) continue;
-				cout << "rapsberry pie" << endl;
 				round++;
 				vector<int> m1_overlap;
 				for(auto o: m2.without_crits)

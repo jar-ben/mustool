@@ -33,10 +33,10 @@ Master::Master(string filename, string alg){
 			std::cout << "working with ltl is currently not enabled, plese build the tool with the flag USELTL=YES, e.g. 'make USELTL=YES'" << std::endl;
 			exit(1);
 		#else
-		if(sat_solver == "nuxmv")
+//		if(sat_solver == "nuxmv")
 			satSolver = new NuxmvHandle(filename); 
-		else
-			satSolver = new SpotHandle(filename);
+//		else
+//			satSolver = new SpotHandle(filename);
 		#endif
 		domain = "ltl";
 	}
@@ -127,8 +127,11 @@ void Master::validate_mus(Formula &f){
 
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
-	cout << "shrinking dimension: " << f_size << endl;
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
+	cout << "shrinking dimension: " << f_size << endl;
+	if(algorithm == "tome")
+		is_valid(f,true,true); //get core before shrink in the case of TOME
+	f_size = count_ones(f);
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);	
@@ -200,6 +203,9 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "marco"){
 		marco_base();
+	}
+	else if(algorithm == "daa"){
+		daa_base();
 	}
 	else{
 		print_err("invalid algorithm chosen");

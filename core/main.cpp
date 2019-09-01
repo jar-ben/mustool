@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("Domain Agnostic MUS Enumeration Tool (DAMUSET), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco"};
+		vector<string> allowedAlgs {"remus", "tome", "marco", "daa"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);
@@ -65,8 +65,9 @@ int main(int argc, char *argv[]){
 		solver.useMatchmaker = matchmaker.getValue();
 		solver.useMixedHeuristic = mixedHeuristic.getValue();
 
+		solver.sat_solver = "nuxmv";
 		solver.scope_limit = 100000;
-		solver.criticals_rotation = true; //criticals_rotation;
+		solver.criticals_rotation = false; //criticals_rotation;
 		
 		solver.enumerate();
 

@@ -30,7 +30,7 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USAT = YES
 USMT = YES
-ULTL = NO
+ULTL = YES
 ###
 
 USEMCSMUS = YES
@@ -56,13 +56,13 @@ ifeq ($(USMT),NO)
 else
 	LIBS   += -lz3
 endif
-ifeq ($(ULTL),NO)
-	CFLAGS += -D NOLTL
+#ifeq ($(ULTL),NO)
+#	CFLAGS += -D NOLTL
 	CSRCS := $(filter-out $(DIR)/satSolvers/SpotHandle.cpp, $(CSRCS))
 	COBJS := $(filter-out $(DIR)/satSolvers/SpotHandle.o, $(COBJS))
-else
-	LIBS    += -lspot
-endif
+#else
+#	LIBS    += -lspot
+#endif
 
 mvc: m $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS)
 	@echo Linking: $@

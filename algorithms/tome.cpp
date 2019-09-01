@@ -47,7 +47,9 @@ void Master::find_all_muses_tome(){
 			else if(useBackbone){
 				backbone_mus_rotation(mus, original_top);
 			}
-			mixed_mus_rotation(mus, original_top);
+			if(useMixedHeuristic){
+				mixed_mus_rotation(mus, original_top);
+			}
 			continue;
 		}	
 		diff =  std::count(top.begin(), top.end(), true) - std::count(bot.begin(), bot.end(), true);
