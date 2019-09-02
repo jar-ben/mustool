@@ -38,6 +38,7 @@ public:
 	bool isUnexplored(std::vector<bool> valuation);
 	bool isUnexploredSat(std::vector<bool> valuation);
 	int getImplied(std::vector<bool>& implied, std::vector<bool>& formula);
+	int getImpliedMiniSAT(std::vector<bool>& implied, std::vector<bool>& formula);
 	
 	std::vector<bool> mus_intersection;
 	std::vector<bool> mus_union;

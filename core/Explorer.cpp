@@ -302,3 +302,26 @@ int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
 	}
 	return 0;
 }
+
+int Explorer::getImpliedMiniSAT(std::vector<bool>& implied, std::vector<bool>& f){
+	vec<Lit> assumptions;
+	for(int i = 0; i < dimension; i++){
+		if(!f[i])
+			assumptions.push(itoLit2((i + 1) * (-1)));
+	}
+        vec<Lit> outvec;
+        solver->implies(assumptions, outvec, true);
+        int impl = 0;
+	int new_crits = 0;
+        for (int i = 0 ; i < outvec.size(); i++) {
+		if(Littoi2(outvec[i]) > 0){
+			if(implied[Littoi2(outvec[i]) - 1] != true)
+				new_crits++;
+			implied[Littoi2(outvec[i]) - 1] = true;
+			impl++;
+		}
+        }
+	int f_size =  std::count(f.begin(), f.end(), true);
+	std::cout << (f_size - impl) << ", size: " << f_size << ", implied: " << impl << ", new crits: " << new_crits << std::endl;
+	return impl;
+}

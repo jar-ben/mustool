@@ -133,8 +133,19 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 		is_valid(f,true,true); //get core before shrink in the case of TOME
 	f_size = count_ones(f);
 	if(crits.empty()) crits = explorer->critical;
-	if(get_implies){ //get the list of known critical constraints	
-		explorer->getImplied(crits, f);	
+	if(get_implies){ //get the list of known critical constraints
+		Formula copyCrits = crits;	
+		chrono::high_resolution_clock::time_point get1s = chrono::high_resolution_clock::now();
+		explorer->getImplied(crits, f);
+		chrono::high_resolution_clock::time_point get2s = chrono::high_resolution_clock::now();
+		explorer->getImpliedMiniSAT(copyCrits, f);
+		chrono::high_resolution_clock::time_point get3s = chrono::high_resolution_clock::now();
+		auto c1d = chrono::duration_cast<chrono::microseconds>( get2s - get1s ).count();
+		auto c2d = chrono::duration_cast<chrono::microseconds>( get3s - get2s ).count();
+		cout << "dim: " << f_size << ", wholeDim: " << dimension << ", ours: " << c1d << ", miniSAT: " << c2d << ", diff: ";
+	       	cout << ((c1d - c2d) / float(1000000));
+	        cout << ", ratio: " << (c2d/c1d)	<< ", mcses: " << explorer->mcses.size() << endl; 
+		cout << "criticals before rot MiniSAT: " << count_ones(copyCrits) << endl;	
 		cout << "criticals before rot: " << count_ones(crits) << endl;	
 		if(criticals_rotation){
 			int before = count_ones(crits);
