@@ -18,8 +18,10 @@ COBJS	= $(CSRCS:.cpp=.o)
 MCSRCS	= $(wildcard $(MINISAT)/*.cc)
 MCOBJS	= $(MCSRCS:.cc=.o)
 
-BCSRCS	= $(wildcard $(BONES)/*.cc)
-BCOBJS	= $(BCSRCS:.cc=.o)
+BONES_SRCS	= $(wildcard $(BONES)/*.cc)
+BONES_OBJS	= $(BONES_SRCS:.cc=.o)
+#BCSRCS	= $(wildcard $(BONES)/*.cc)
+#BCOBJS	= $(BCSRCS:.cc=.o)
 
 MCSMUS_SRCS = $(wildcard $(MCSMUS)/minisat/core/*.cc) $(wildcard $(MCSMUS)/minisat/simp/*.cc) $(wildcard $(MCSMUS)/minisat/utils/*.cc) \
 		$(wildcard $(MCSMUS)/glucose/core/*.cc) $(wildcard $(MCSMUS)/glucose/simp/*.cc) $(wildcard $(MCSMUS)/glucose/utils/*.cc) \
@@ -28,9 +30,9 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 
 ### 
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
-USAT = YES
-USMT = YES
-ULTL = YES
+USESAT = YES
+USESMT = NO
+USELTL = NO
 ###
 
 USEMCSMUS = YES
@@ -46,27 +48,29 @@ else
 	MCSMUS_OBJS = 
 endif
 
-ifeq ($(USAT),NO)
+ifeq ($(USESAT),NO)
 	CFLAGS += -D NOSAT
 endif
-ifeq ($(USMT),NO)
+ifeq ($(USESMT),NO)
 	CFLAGS += -D NOSMT
 	CSRCS := $(filter-out $(DIR)/satSolvers/Z3Handle.cpp, $(CSRCS))
 	COBJS := $(filter-out $(DIR)/satSolvers/Z3Handle.o, $(COBJS))
 else
 	LIBS   += -lz3
 endif
-#ifeq ($(ULTL),NO)
-#	CFLAGS += -D NOLTL
+ifeq ($(USELTL),NO)
+	CFLAGS += -D NOLTL
 	CSRCS := $(filter-out $(DIR)/satSolvers/SpotHandle.cpp, $(CSRCS))
 	COBJS := $(filter-out $(DIR)/satSolvers/SpotHandle.o, $(COBJS))
-#else
-#	LIBS    += -lspot
-#endif
+	COBJS := $(filter-out $(DIR)/satSolvers/NuxmvHandle.o, $(COBJS))
+	COBJS := $(filter-out $(DIR)/satSolvers/NuxmvHandle.cpp, $(COBJS))
+else
+	LIBS    += -lspot
+endif
 
-mvc: m $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS)
+mvc: m $(COBJS) $(MCOBJS) $(BONES_OBJS) $(MCSMUS_OBJS)
 	@echo Linking: $@
-	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BCOBJS) $(MCSMUS_OBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BONES_OBJS) $(MCSMUS_OBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
 %.o: %.cpp
 	@echo Compiling: $@

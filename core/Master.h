@@ -7,7 +7,7 @@
 	#include "satSolvers/Z3Handle.h"
 #endif
 #ifndef NOLTL 
-//	#include "satSolvers/SpotHandle.h"
+	#include "satSolvers/SpotHandle.h"
 	#include "satSolvers/NuxmvHandle.h"
 #endif
 #include "types_h.h"

@@ -33,10 +33,10 @@ Master::Master(string filename, string alg){
 			std::cout << "working with ltl is currently not enabled, plese build the tool with the flag USELTL=YES, e.g. 'make USELTL=YES'" << std::endl;
 			exit(1);
 		#else
-//		if(sat_solver == "nuxmv")
+		if(sat_solver == "nuxmv")
 			satSolver = new NuxmvHandle(filename); 
-//		else
-//			satSolver = new SpotHandle(filename);
+		else
+			satSolver = new SpotHandle(filename);
 		#endif
 		domain = "ltl";
 	}
