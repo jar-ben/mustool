@@ -53,11 +53,9 @@ Master::Master(string filename, string alg){
 	validate_mus_c = false;
 	current_depth = 0;
 	unex_sat = unex_unsat = 0;
-	rotated_muses = 0;
 	scope_limit = 100;	
         hash = random_number();
 	satSolver->hash = hash;
-	useBackbone = useMatchmaker = false;
 }
 
 Master::~Master(){
@@ -128,7 +126,7 @@ void Master::validate_mus(Formula &f){
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
-	cout << "shrinking dimension: " << f_size << endl;
+//	cout << "shrinking dimension: " << f_size << endl;
 	if(algorithm == "tome")
 		is_valid(f,true,true); //get core before shrink in the case of TOME
 	f_size = count_ones(f);
@@ -168,21 +166,22 @@ Formula Master::grow_formula(Formula &f){
 }
 
 
-void Master::mark_MUS(MUS& f, bool block_unex){	
+void Master::mark_MUS(MUS& f, bool block_unex, bool verbose){	
 	if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f);
 
-	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
-	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
-        cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
-	cout << ", checks: " << satSolver->checks << ", time: " << duration;
-	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
-	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
-	cout << ", rotated MUSes: " << rotated_muses;
-	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
-	cout << ", seed dimension: " << f.seed_dimension << ", duration: " << f.duration;
-	cout << ", shrinks: " << satSolver->shrinks;
-	cout << endl;
+	if(verbose){
+		chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
+		auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
+		cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
+		cout << ", checks: " << satSolver->checks << ", time: " << duration;
+		cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
+		cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
+		cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
+		cout << ", seed dimension: " << f.seed_dimension << ", duration: " << f.duration;
+		cout << ", shrinks: " << satSolver->shrinks;
+		cout << endl;
+	}
 
 	if(output_file != "")
 		write_mus_to_file(f);
@@ -206,6 +205,10 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "daa"){
 		daa_base();
+	}
+	else if(algorithm == "counter"){
+		xe = new XorExplorer(dimension, true);
+		counting(0.8, 0.2);
 	}
 	else{
 		print_err("invalid algorithm chosen");

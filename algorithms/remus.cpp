@@ -35,16 +35,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			MUS mus = shrink_formula(top, crits);
 			mark_MUS(mus);
 
-			if(useMatchmaker){
-				recursive_rotation_delta(mus, original_top, 0);
-			}
-			if(useBackbone){
-				backbone_mus_rotation(mus, original_top);
- 			}
-			if(useMixedHeuristic){
-				mixed_mus_rotation(mus, original_top);
-			}
-
 			if(depth > depthMUS) continue;
 			Formula m = mus.bool_mus;
 			extend_mus(origin_top, m);

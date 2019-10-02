@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("Domain Agnostic MUS Enumeration Tool (DAMUSET), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco", "daa"};
+		vector<string> allowedAlgs {"remus", "tome", "marco", "daa", "counter"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);

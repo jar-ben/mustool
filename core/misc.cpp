@@ -7,6 +7,7 @@
 #include <array>
 #include <random>
 #include <regex>
+#include <functional>
 
 using namespace std;
 
@@ -61,6 +62,11 @@ std::string exec(const char* cmd) {
             result += buffer.data();
     }
     return result;
+}
+
+bool random_bool(){
+	static auto gen = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());
+	return gen();
 }
 
 int random_number(){
