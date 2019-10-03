@@ -18,16 +18,19 @@ class XorExplorer{
 public:
 	int dimension;
 	int vars;
-	int iter;
+	int xorSize;
 
 	CMSat::SATSolver* solver;
-	XorExplorer(int vars, bool verb = false);
+	XorExplorer(int vars, std::vector<std::vector<CMSat::Lit>> &blocksDown, std::vector<std::vector<CMSat::Lit>> &blocksUp);
 	~XorExplorer();
-	bool block_up(MUS& mus);
-        bool block_down(std::vector<bool> formula);
-	Formula solve();
-	void add_xor(int m, std::vector<std::vector<int>> As, std::vector<bool> alfa);
-	bool temporary_block_up(Formula);
+	std::vector<CMSat::Lit> block_up(Formula &f);
+	std::vector<CMSat::Lit> block_down(Formula &f);
+	Formula solve(std::vector<CMSat::Lit> assumptions = std::vector<CMSat::Lit>());
+	Formula solve_subset(Formula &f);
+	void add_xor(int m, std::vector<std::vector<int>> &As);
+	bool block(Formula);
+	bool check(Formula &mus);
+	void checkUniformity();
 };
 
 #endif

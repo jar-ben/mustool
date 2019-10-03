@@ -25,7 +25,7 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USESAT = YES
 USESMT = NO
-USELTL = NO
+USELTL = YES
 ###
 
 USEMCSMUS = YES

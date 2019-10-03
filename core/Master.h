@@ -51,7 +51,6 @@ public:
 	vector<MUS> muses;
 	Explorer* explorer;
 	SatSolver* satSolver; 
-	XorExplorer* xe;
 	string sat_solver;
 
 	Master(string filename, string alg);
@@ -89,6 +88,11 @@ public:
 	int approxMC2Core(float tresh, int &nCells);
 	int counting(float e, float d);
 	int bsat(float tresh);
-	int bsat_xor(float tresh);
+	int bsat_xor(float tresh, XorExplorer &xe);
+	vector<vector<CMSat::Lit>> blocksDown;
+	vector<vector<CMSat::Lit>> blocksUp;
+	int logSATSearch(vector<vector<int>> &As, int tresh, int mPrev);
+	void initialBooster();
+	Formula xor_shrink(Formula &t, XorExplorer &xe, int &limit);
 };
 #endif

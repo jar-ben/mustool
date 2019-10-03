@@ -65,8 +65,7 @@ std::string exec(const char* cmd) {
 }
 
 bool random_bool(){
-	static auto gen = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());
-	return gen();
+	return random_number() % 2 == 1;
 }
 
 int random_number(){

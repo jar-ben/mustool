@@ -207,7 +207,6 @@ void Master::enumerate(){
 		daa_base();
 	}
 	else if(algorithm == "counter"){
-		xe = new XorExplorer(dimension, true);
 		counting(0.8, 0.2);
 	}
 	else{
