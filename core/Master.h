@@ -82,6 +82,9 @@ public:
 	//DAA algorithm functions
 	void daa_base();
 
+	//
+	void union_base();
+
 	//dualMUS heuristic functions
 	int scope_limit;
 

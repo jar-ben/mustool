@@ -49,6 +49,7 @@ bool XorExplorer::block(Formula f){
 		else
 			ban_solution.push_back(Lit(i, false));
 	}
+	std::cout << "dim: " << dimension << ", nVars: " << solver->nVars() << std::endl;
 	solver->add_clause(ban_solution);
 }
 

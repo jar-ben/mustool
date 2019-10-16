@@ -11,6 +11,13 @@
 
 using namespace std;
 
+vector<string> split(string s){
+	stringstream ss(s);
+	istream_iterator<string> begin(ss);
+	istream_iterator<string> end;
+	return vector<string> (begin, end);
+}
+
 void trim(string &f){
 	f.erase( remove(f.begin(), f.end(), '\n'), f.end() );
 	regex pattern("  ");

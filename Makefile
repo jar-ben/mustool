@@ -3,11 +3,11 @@ MINISAT	= $(DIR)/custom_minisat
 MCSMUS	= $(DIR)/mcsmus
 MSAT	= libr
 
-LIBD 	= -L/usr/lib -L/usr/local/lib
+LIBD 	= -L/usr/lib -L/usr/local/lib -L/home/xbendik/lib/lib
 LIBS 	= -lz -lcryptominisat5
 LIBS	+= -lstdc++fs
 USR 	= /usr/include
-INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(DIR) -I $(MCSMUS) 
+INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(DIR) -I $(MCSMUS) -I /home/xbendik/lib/include
 
 CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp)
 CSRCS	+= $(wildcard $(DIR)/satSolvers/*.cpp) $(wildcard $(DIR)/core/*.cpp) $(wildcard $(DIR)/counting/*.cpp)
@@ -25,7 +25,7 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USESAT = YES
 USESMT = NO
-USELTL = YES
+USELTL = NO
 ###
 
 USEMCSMUS = YES

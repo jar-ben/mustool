@@ -1,7 +1,4 @@
-c 3 MUSes: 2 of size 2, 1 of size 3
-p cnf 2 5
+p cnf 2 3
 1 0
--1 0
 2 0
--2 0
-1 2 0
+-1 0

@@ -209,9 +209,44 @@ void Master::enumerate(){
 	else if(algorithm == "counter"){
 		counting(0.8, 0.2);
 	}
+	else if(algorithm == "union"){
+		union_base();
+	}
 	else{
 		print_err("invalid algorithm chosen");
 	}
 	return;
 }
 
+void Master::union_base(){
+	Formula seed(dimension, true);
+	while(true){
+		MUS mus = shrink_formula(seed);
+		mark_MUS(mus);
+		ofstream file;
+		file.open("exp.cnf", std::ofstream::out);
+		Formula whole(dimension, true);				
+		file << satSolver->toString(whole);
+		for(int i = 0; i < dimension; i++)
+			if(explorer->mus_union[i])
+				file << "c " << i << endl;
+		file.close();
+		stringstream cmd;
+		cmd << "python cadet.py exp.cnf";
+		string result = exec(cmd.str().c_str());
+		if (result.find("UNSAT") != string::npos) {
+			vector<string> res = split(result);
+			assert(res[0] == "UNSAT:");
+			for(int i = 0; i < dimension; i++){
+				seed[i] = !explorer->mus_union[i];
+			}
+			for(int i = 1; i < res.size(); i++){
+				seed[stoi(res[i])] = true;
+			}
+		}else if(result.find("SAT") != string::npos){
+			break;
+		}else{
+			print_err("unexpected return value from cadet.py");
+		}
+	}
+}
