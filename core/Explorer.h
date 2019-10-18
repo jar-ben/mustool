@@ -1,7 +1,6 @@
 #ifndef EXPLORER_H
 #define EXPLORER_H
 
-#include "satSolvers/MSHandle.h"
 #include "custom_minisat/Solver.h"
 #include <string>
 #include <map>
@@ -22,7 +21,6 @@ public:
 	CustomMinisat::Solver* solver;
 	CustomMinisat::Solver* botSolver;
 	CustomMinisat::Solver* topSolver;
-	SatSolver* satSolver;
 
 	Explorer(int vars, bool verb = false);
 	~Explorer();
@@ -49,6 +47,8 @@ public:
 	std::vector<std::vector<int>> parent_mcses; //parent_mcses[c] holds ids of MCSes stored in mcses
 	bool is_critical(int c, std::vector<bool> &subset); // returns true if c is critical for subset
 	int criticals;
+
+	std::string toCnf();
 
 	//data structures for maintaining availables - the opposites of criticals
 	std::vector<bool> maybe_available; //available[c] = true iff c is a part of some MUS

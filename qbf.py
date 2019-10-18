@@ -113,7 +113,6 @@ def notClosestSubset(A, B, current):
         ZActs.append(current)
     al2 = CardEnc.atleast(lits=ZActs, bound=2, encoding=7, top_id = current)
     current = max(current, maxVar(al2.clauses))
-    print("al2 size: ", len(al2.clauses))
     supsetT, subsetTAct = tseitinOnCnf(supset, current)
     current = subsetTAct
     al2T, al2TAct = tseitinOnCnf(al2.clauses, current)
@@ -161,7 +160,30 @@ def sat(C, activators, current):
         cnf.append([-activators[i]] + [l for l in C[i]])
     return tseitinOnCnf(cnf, current)
 
-def exMUS(C):
+def sign(l):
+    if l > 0: return 1
+    else: return -1
+
+def parseUnex(filename, activators, current):
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        assert lines[0][0] == "p"
+        C = []
+        for line in lines[1:]:
+            line = line.split(" ")
+            if line[0] == "x":
+                lits = [int(i) for i in line[1:-1]]
+                lits = [sign(l) * activators[abs(l)-1] for l in lits]
+                cl, current = tseitinXOR(lits, current)
+                C += cl + [[current]]
+            else:
+                cl = [int(i) for i in line[:-1]]
+                if len(cl) > 0:
+                    C.append([sign(l) * activators[abs(l)-1] for l in cl])
+        return C, current
+
+def exMUS(constraints, unex):
+    C  = parse(constraints)
     Vars = variables(C) ##these are in the 2nd quantificator level and are Exists
     n = len(C)
     m = len(Vars)
@@ -179,12 +201,10 @@ def exMUS(C):
     primeActivators = [max(activators) + i + 1 for i in range(n)] ##these are in the 2nd quantificator level and are Exists
     current = primeActivators[-1]
 
-    print("vars: ", Vars)
-    print("primeVars: ", primeVars)
-    print("activators: ", activators)
-    print("primeActivators: ", primeActivators)
-
     main = []
+
+    unexAndXor, current = parseUnex(unex, activators, current)
+    main += unexAndXor
 
     ## the chosen subset X has to be unsat
     unsatCNF, unsatAct = unsat(C, activators, current)
@@ -203,12 +223,7 @@ def exMUS(C):
     noUnsatSubset, noUnsatSubsetAct = tseitinClause([satAct, subsetAct], current)    
     current = noUnsatSubsetAct
     main += noUnsatSubset
-
     main += [[unsatAct],[noUnsatSubsetAct]]
- 
-    print("subsetCNF: ", len(subsetCNF))
-    print("satCNF: ", len(satCNF))
-    print("noUnsatSUbset: ", len(noUnsatSubset))
 
     currents = [i for i in range(primeActivators[-1] + 1, current + 1)]
     print("p cnf {} {}\n".format(maxVar(main), len(main)))
@@ -220,50 +235,73 @@ def exMUS(C):
     for cl in main:
         result += " ".join([str(l) for l in cl]) + " 0\n"
     
-    return result
+    return result, activators
 
-
-def parse(file):
-    with open(file, "r") as f:
+def parse(filename):
+    with open(filename, "r") as f:
         lines = f.readlines()
         assert lines[0][0] == "p"
         C = []
         for line in lines[1:]:
             line = line.split(" ")
-            C.append([int(i) for i in line[:-1]])
+            cl = [int(i) for i in line[:-1]]
+            if len(cl) > 0:
+                C.append(cl)
         return C
 
 import subprocess as sp
 
-def compute(filename, C):
+def compute(filename, activators):
     cmd = "/home/xbendik/bin/caqe/target/release/caqe --qdo {}".format(filename)
     proc = sp.Popen([cmd], stdout=sp.PIPE, shell=True)
     (out, err) = proc.communicate()
     out = out.decode("utf-8")
 
-    print(out)
-##    
-##    assert "SAT" in out
-##    if "UNSAT" in out:
-##        cex = [int(v) for v in out.splitlines()[-1].split(" ")[1:]]
-##        K = list(filter(lambda x: x in activators, cex))
-##        res = []
-##        for i in range(len(activators)):
-##            if activators[i] in K:
-##                res.append(S[i])
-##        print ("UNSAT: {}".format(" ".join([str(c) for c in res])))
-##    else:
-##        print("SAT")
+    N = []
+    if "Satisfiable" in out:
+        Cids = [0 for _ in range(activators[-1] + 1)]
+        for i in range(len(activators)):
+            act = activators[i]
+            Cids[act] = i + 1
+        reading = False
+        N = []
+        for line in out.splitlines():
+            if reading:
+                if len(line) == 0 or line[0] != "V": break
+                cl = int(line.split(" ")[1])
+                if abs(cl) < len(Cids):
+                    N.append(sign(cl) * Cids[abs(cl)])
+            if "s cnf" in line:
+                reading = True
+        print("SOLUTION")
+        print(" ".join([str(n) for n in N]) + " 0")
+    else:
+        print("UNSATISFIABLE")
 
 
+def simplify(filename, result):
+    cmd = "/home/xbendik/bin/qbfrelay/qbfrelay.sh -p {} {} > /dev/null 2>&1".format(result, filename)
+    proc = sp.Popen([cmd], stdout=sp.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    print("simplified")
+
+
+def simplify2(filename, result):
+    cmd = "/home/xbendik/bin/qratpreplus/qratpre+ --print-formula {} > {}".format(filename, result)
+    proc = sp.Popen([cmd], stdout=sp.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    out = out.decode("utf-8")
+    print("simplified")
 
 import sys
 if __name__ == "__main__":
-    assert len(sys.argv) > 1
+    assert len(sys.argv) > 2
     filename = sys.argv[1]
-    C  = parse(filename)
-    encoding = exMUS(C)
+    unex = sys.argv[2]
+    encoding, activators = exMUS(filename, unex)
     qdimacs = "2exencoded.qdimacs"
+    simpl = "simplified_" + qdimacs
     with open(qdimacs, "w") as f:
         f.write(encoding)
-    compute(qdimacs, C)
+    simplify(qdimacs, simpl)
+    compute(simpl, activators)

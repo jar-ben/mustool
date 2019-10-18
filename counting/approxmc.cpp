@@ -28,37 +28,10 @@ int Master::bsat(float tresh){
 					cl.push_back(CMSat::Lit(i, true));
 			blocksUp.push_back(cl);
 			i++;
-			if(muses.size() % 100 == 0)
-				std::cout << "bsat muses size: " << muses.size() << std::endl;
 		}
 		top = explorer->get_unexplored(1, false);
 	}
 	return i;
-}
-
-Formula Master::xor_shrink(Formula &f, XorExplorer &xe, int &limit){
-	Formula top = xe.solve_subset(f);
-	while(!top.empty() && limit > 0){
-		Formula original = top;
-		if(is_valid(top,true,true)){
-			block_down(top);
-			blocksDown.push_back(xe.block_down(top));
-		}else{
-			limit--;
-			std::cout << count_ones(original) << " -> ";
-			MUS mus = shrink_formula(top);
-			mark_MUS(mus, true, false);
-			if(xe.check(mus.bool_mus)){
-				blocksUp.push_back(xe.block_up(mus.bool_mus));
-				return mus.bool_mus;
-			}
-			blocksUp.push_back(xe.block_up(mus.bool_mus));
-			Formula rec = xor_shrink(original, xe, limit);
-			if(!rec.empty()) return rec;		
-		}
-	}
-	std::cout << std::endl;
-	return Formula();
 }
 
 int Master::bsat_xor(float tresh, XorExplorer &xe){
@@ -76,38 +49,57 @@ int Master::bsat_xor(float tresh, XorExplorer &xe){
 		}
 	}
 	std::cout << "inherited MUSes: " << i << std::endl;
-
-	xe.solver->set_default_polarity(true);
-	Formula f = xe.solve();
-	int valid = 0;
-	int invalid = 0;
-	int least_distance = 1000000;
-	while(i < tresh && !f.empty()){
-		assert(xe.check(f));
-		xe.block(f);
-		Formula original = f;
-		if(is_valid(f, true, true)){
-			block_down(f);
-			blocksDown.push_back(xe.block_down(f));
-			valid++;
-		}else{
-			invalid++;
-			MUS mus = shrink_formula(f);
-			if(xe.check(mus.bool_mus) || mus.bool_mus == original){
-				i++;
-			}
-			mark_MUS(mus, true, false);
-			blocksUp.push_back(xe.block_up(mus.bool_mus));
-		}
-		f = xe.solve();
-		if((valid + invalid) % 200 == 0 || xe.xorSize > 100){
-		      	std::cout << "iter: " << (valid + invalid) << ", muses: " << i << ", valid: " << valid << ", invalid: " << invalid;
-	       		cout << "least diff: " << least_distance << std::endl;
-			cout << "f size: " << count_ones(f) << std::endl;
-		}
+	while(i <  tresh){
+		Formula f = counting_get_mus(xe);
+		if(f.empty()) 
+			return i;
+		i++;
+		validate_mus(f);
+		muses.push_back(MUS(f, -1, muses.size(), count_ones(f)));
+		mark_MUS(muses.back());
+		cout << i << " validated" << endl;
 	}
-	std::cout << "bananas: " << (invalid + valid) << ", muses: " << i << ", valid: " << valid << ", invalid: " << invalid << std::endl;
 	return i;
+}
+	
+Formula Master::counting_get_mus(XorExplorer &xe){
+	Formula whole(dimension, true);
+	string constraints_file = "constraints.cnf";
+	ofstream cfile;
+	cfile.open(constraints_file, ios::out);
+	cfile << satSolver->toString(whole);
+	cfile.close();
+
+	string unexXor_file = "unex.cnf";
+	ofstream file;
+	file.open(unexXor_file, ios::out);
+	file << "p cnf 0 0\n";
+	file << explorer->toCnf();
+	file << xe.export_xors();
+	file.close();
+
+	stringstream cmd;
+	cmd << "python qbf.py " << constraints_file << " " << unexXor_file;
+	string result = exec(cmd.str().c_str());
+
+	Formula f(dimension, false);	
+	vector<string> lines = getLines(result);
+	bool reading = false;
+	for(auto &line: lines){
+		if(reading){
+			vector<string> nums = split(line);
+			for(auto n: nums){
+				int i = stoi(n);
+				if(i == 0) return f;
+				if(i < 0) f[(-1 * i) - 1] = false;
+				else f[i - 1] = true;
+			}
+		}
+		if(line.find("SOLUTION") != std::string::npos){
+			reading = true;
+		}		
+	}
+	return Formula();
 }
 
 vector<vector<int>> generate_As(int dimension){
@@ -122,7 +114,6 @@ vector<vector<int>> generate_As(int dimension){
 		min = (min < a[i].size())? min : a[i].size();
 		a[i].push_back(random_bool()); //this is the initial a0
         }
-	std::cout << "min xor size: " << min << std::endl;
         return a;
 }
 
@@ -168,44 +159,16 @@ int Master::approxMC2Core(float tresh, int &nCells){
 	return bsat_xor(tresh, xe2);
 }
 
-void Master::initialBooster(){
-	Formula whole(dimension, true);
-	for(int i = 0; i < dimension; i++){
-		whole[i] = false;
-		Formula copy = whole;
-		if(is_valid(copy,true,true)){
-			block_down(copy);
-			vector<CMSat::Lit> cl;
-			for(int i = 0; i < dimension; i++)
-				if(!copy[i])
-					cl.push_back(CMSat::Lit(i, false));
-			blocksDown.push_back(cl);
-		}else{
-			MUS mus = shrink_formula(copy);
-			mark_MUS(mus, true, false);
-			vector<CMSat::Lit> cl;
-			for(int i = 0; i < dimension; i++)
-				if(mus.bool_mus[i])
-					cl.push_back(CMSat::Lit(i, true));
-			blocksUp.push_back(cl);
-		}
-		whole[i] = true;
-	}
-	std::cout << "unit crits: " << explorer->criticals << std:: endl;
-	bsat(200);
-	std::cout << "known MUSes after booster: " << muses.size() << std::endl;
-}
-
 int Master::counting(float e, float d){
-	//	initialBooster();
 	float tresh = 1 + 9.84 * (1 + (e / (1 + e)))*(1 + 1/e)*(1 + 1/e);
+	tresh = 10;
 	cout << "tresh: " << tresh << endl;
-	int y = bsat(tresh);
-	cout << "y: " << y << endl;
-	if(y < tresh){
-		cout << "y < tresh" << endl;
-		return y;
-	}
+//	int y = bsat(tresh);
+//	cout << "y: " << y << endl;
+//	if(y < tresh){
+//		cout << "y < tresh" << endl;
+//		return y;
+//	}
 	int t = ceil(17 * log2(3 / d));
 	cout << "t: " << t << endl;
 	vector<int> counts;

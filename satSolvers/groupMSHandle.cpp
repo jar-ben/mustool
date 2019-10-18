@@ -1,6 +1,6 @@
 #include "satSolvers/Dimacs.h"
 #include "core/misc.h"
-#include "satSolvers/MSHandle.h"
+#include "satSolvers/groupMSHandle.h"
 #include <sstream>
 #include <fstream>
 #include <sstream>
@@ -16,17 +16,17 @@
 using namespace CustomMinisat;
 using namespace std;
 
-Lit itoLit(int i){
+Lit gitoLit(int i){
 	bool sign = i < 0;
 	int var = (sign)? -i-1 : i-1;
 	return (sign) ? ~mkLit(var) : mkLit(var);
 }
 
-int Littoi(Lit l){
+int gLittoi(Lit l){
 	return (var(l)+1) * (sign(l) ? -1 : 1);
 }
 
-vector<int>  convert_clause(string clause){
+vector<int> gconvert_clause(string clause){
 	vector<int> ret;
 	istringstream is(clause);
 	int n;
@@ -36,7 +36,7 @@ vector<int>  convert_clause(string clause){
 	return ret;
 }
 
-MSHandle::MSHandle(string filename):SatSolver(filename){
+groupMSHandle::groupMSHandle(string filename):SatSolver(filename){
 	solver = new Solver();
 	vars = 0;
 	parse_dimacs(filename);
@@ -48,11 +48,11 @@ MSHandle::MSHandle(string filename):SatSolver(filename){
 	flip_edges_flatten.resize(dimension);
 }
 
-MSHandle::~MSHandle(){
+groupMSHandle::~groupMSHandle(){
 	delete solver;
 }
 
-void MSHandle::compute_flip_edges(int c){
+void groupMSHandle::compute_flip_edges(int c){
 	if(flip_edges_computed[c]) return;
 	flip_edges_computed[c] = true;
 
@@ -83,7 +83,7 @@ void MSHandle::compute_flip_edges(int c){
 			flip_edges_flatten[c].push_back(i);
 }
 
-bool MSHandle::add_clause(vector<int> cl){
+bool groupMSHandle::add_clause(vector<int> cl){
 	std::sort(cl.begin(), cl.end());
 	vector<int> copy = cl; 
 	copy.pop_back(); //get rid of control variable
@@ -91,7 +91,7 @@ bool MSHandle::add_clause(vector<int> cl){
 	clauses_map[copy] = clauses.size() - 1; //used for manipulation with single MUS extractions (muser2, dmuser)
 	vec<Lit> msClause;
 	for(auto &lit: cl)
-		msClause.push(itoLit(lit));		
+	msClause.push(gitoLit(lit));		
 
 	for(auto &lit: copy){
 		if(lit > 0)
@@ -102,11 +102,35 @@ bool MSHandle::add_clause(vector<int> cl){
 	return solver->addClause(msClause);
 }
 
-bool MSHandle::add_unit(int lit){
-	return solver->addClause(itoLit(lit));
+bool groupMSHandle::add_unit(int lit){
+	return solver->addClause(gitoLit(lit));
 }
 
-bool MSHandle::parse_dimacs(string path){
+bool groupMSHandle::add_base_clause(string line){
+	base_clauses_str.push_back(line);
+	line = split(line, "}")[1];
+	cout << "splitted: " << line << endl;
+	vector<int> clause = gconvert_clause(line);
+	vec<Lit> msClause;
+	for(auto &lit: clause)
+		msClause.push(gitoLit(lit));
+	return solver->addClause(msClause);
+}
+
+bool groupMSHandle::add_group_clause(string line){
+	if(clauses_unique_map.find(line) != clauses_unique_map.end()){
+		cout << "a duplicate clause found in the input formula" << endl;
+		return false;
+	}
+	clauses_str.push_back(line);
+	clauses_unique_map[line] = clauses_str.size() - 1;
+	solver->newVar(lbool(uint8_t(1)), true);
+	vector<int> clause = gconvert_clause(line);
+	clause.push_back(solver->nVars());	//control variable
+	return add_clause(clause); //add clause to the solver
+}
+
+bool groupMSHandle::parse_dimacs(string path){
         ifstream infile(path, ifstream::in);
         if (!infile.is_open())
 		print_err("wrong input file");
@@ -119,36 +143,30 @@ bool MSHandle::parse_dimacs(string path){
                 if (line[0] == 'p'){
 			istringstream is(line);
 			is >> pom;	// p
-			is >> pom;	// cnf
+			is >> pom;	// gcnf
 			is >> vars;	//number of variables	
+			hitmap_pos.resize(vars);
+			hitmap_neg.resize(vars);
+			for(int i = 0; i < vars; i++){
+				solver->newVar();	// clause variables
+			}
 		}
                 else if(line[0] == 'c')
 			continue;
-		else if(clauses_unique_map.find(line) != clauses_unique_map.end()){
-			cout << "a duplicate clause found in the input formula" << endl;
-			continue;		
-		}
-		else{
-			clauses_str.push_back(line);
-			clauses_unique_map[line] = clauses_str.size() - 1;
+		else if(contains(line, "{0}"))
+			add_base_clause(line);
+		else if(line[0] == '{'){
+			line = split(line, "}")[1];
+			cout << "splitted: " << line << endl;
+			add_group_clause(line);
+		}else{
+			add_group_clause(line);
 		}
         }
-	hitmap_pos.resize(vars);
-	hitmap_neg.resize(vars);
-	for(int i = 0; i < vars; i++){
-		solver->newVar();	// clause variables
-	}
-	for(int i = 0; i < clauses_str.size(); i++)
-		solver->newVar(lbool(uint8_t(1)), true);	// control variables
-	for(size_t i = 0; i < clauses_str.size(); i++){
-		clause = convert_clause(clauses_str[i]);
-		clause.push_back(vars + i + 1);	//control variable
-		add_clause(clause); //add clause to the solver
-	}
 	return true;
 }
 
-vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
+vector<bool> groupMSHandle::model_extension(vector<bool> subset, vector<bool> model){
 	int flipped = 0;
 	vector<bool> extension = subset;
 	for(int i = 0; i < extension.size(); i++){
@@ -171,7 +189,7 @@ vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
 	return extension;
 }
 
-void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
+void groupMSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 	vector<int> criticals_int;
 	for(int i = 0; i < dimension; i++)
 		if(criticals[i] && subset[i]) criticals_int.push_back(i);
@@ -195,7 +213,7 @@ void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 
 
 //checks only guaranteed edges
-int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>& subset, vector<bool>& model, vector<vector<bool>>& model_extensions){
+int groupMSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>& subset, vector<bool>& model, vector<vector<bool>>& model_extensions){
 	int rotated = 0;
 	compute_flip_edges(critical); //TODO: better encansulape
 	for(int i = 0; i < flip_edges[critical].size(); i++){
@@ -237,7 +255,7 @@ int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>
 }
 
 //post extension
-int MSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bool>& model, vector<int>& new_criticals){
+int groupMSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bool>& model, vector<int>& new_criticals){
 	int rotated = 0;
 	compute_flip_edges(critical); //TODO: better encansulape
 	for(int i = 0; i < flip_edges[critical].size(); i++){
@@ -271,19 +289,19 @@ int MSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bo
 	return rotated;
 }
 
-int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implied, std::vector<bool>& values){
+int groupMSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implied, std::vector<bool>& values){
 	vec<Lit> lits;	
 	for(unsigned int i = 0; i < controls.size(); i++){
 		if(controls[i])
-			lits.push(itoLit((i + vars + 1) * (-1)));
+			lits.push(gitoLit((i + vars + 1) * (-1)));
 		else
-			lits.push(itoLit(i + vars + 1 ));
+			lits.push(gitoLit(i + vars + 1 ));
 	}
         vec<Lit> outvec;
         bool res = solver->implies(lits, outvec, true);
         int impl = 0;
         for (int i = 0 ; i < outvec.size(); i++) {
-		int lit = Littoi(outvec[i]);
+		int lit = gLittoi(outvec[i]);
 		if(lit < 0){
 			int var = -1 * lit;
 			if(var <= vars){
@@ -301,7 +319,7 @@ int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implie
         return impl;
 }
 
-void MSHandle::get_unsat_core(std::vector<bool> &core){
+void groupMSHandle::get_unsat_core(std::vector<bool> &core){
 	for (int i = 0 ; i < solver->conflict.size() ; i++){ 
 		int index = var(solver->conflict[i]) - vars;
 		if(index >= 0)
@@ -313,14 +331,14 @@ void MSHandle::get_unsat_core(std::vector<bool> &core){
 
 // check formula for satisfiability using miniSAT
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
-bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
+bool groupMSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
 	checks++;
 	vec<Lit> lits;
 	for(unsigned int i = 0; i < controls.size(); i++){
 		if(controls[i])
-			lits.push(itoLit((i + vars + 1) * (-1)));
+			lits.push(gitoLit((i + vars + 1) * (-1)));
 		else
-			lits.push(itoLit(i + vars + 1 ));
+			lits.push(gitoLit(i + vars + 1 ));
 	}
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
@@ -353,7 +371,7 @@ bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improv
 	return sat;
 }
 
-vector<bool> MSHandle::get_model(){
+vector<bool> groupMSHandle::get_model(){
 	vector<bool> model(vars, false);
 	for(int i = 0; i < vars; i++){
 		if(solver->model[i] == l_True)
@@ -366,7 +384,7 @@ vector<bool> MSHandle::get_model(){
 	return model;
 }
 
-string MSHandle::toString(vector<bool> &f){
+string groupMSHandle::toString(vector<bool> &f){
 	int formulas = std::count(f.begin(), f.end(), true);
 	stringstream result;
 	result << "p cnf " << vars << " " << formulas << "\n";
@@ -377,7 +395,7 @@ string MSHandle::toString(vector<bool> &f){
 	return result.str();
 }
 
-void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool> crits){
+void groupMSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool> crits){
 	int formulas = std::count(f.begin(), f.end(), true);
 
 
@@ -385,11 +403,13 @@ void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool
 	file = fopen(filename.c_str(), "w");
 	if(file == NULL) cout << "failed to open " << filename << ", err: " << strerror(errno) << endl;
 	
-	fprintf(file, "p gcnf %d %d %d\n", vars, formulas, formulas);
+	fprintf(file, "p gcnf %d %d %d\n", vars, formulas + base_clauses_str.size(), formulas);
 	for(int i = 0; i < f.size(); i++)
 		if(f[i] && crits[i]){
 			fprintf(file, "{0} %s\n", clauses_str[i].c_str());
 		}
+	for(auto &c: base_clauses_str)
+		fprintf(file, "%s\n",c.c_str());
 	int group = 1;
 	for(int i = 0; i < f.size(); i++)
 		if(f[i] && !crits[i]){
@@ -400,7 +420,7 @@ void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool
 	}	
 }
 
-vector<bool> MSHandle::import_formula_crits(string filename){
+vector<bool> groupMSHandle::import_formula_crits(string filename){
 	vector<bool> f(dimension, false);
 	vector<vector<int>> cls;
 	ReMUS::parse_DIMACS(filename, cls);
@@ -415,7 +435,7 @@ vector<bool> MSHandle::import_formula_crits(string filename){
 
 // implementation of the shrinking procedure
 // based on the value of basic_shrink employes either muser2 or dmuser
-vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
+vector<bool> groupMSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	shrinks++;
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
@@ -428,11 +448,12 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	stringstream exp;			
 	exp << "./f_" << hash << ".cnf";			
 	export_formula_crits(f, exp.str(), crits);	
+	export_formula_crits(f, "exp.cnf", crits);
 
 	return shrink_muser(exp.str(), hash);
 }
 
-int muser_output(std::string filename){
+int gmuser_output(std::string filename){
 	ifstream file(filename, ifstream::in);
 	std::string line;
 	while (getline(file, line))
@@ -445,7 +466,8 @@ int muser_output(std::string filename){
 	return 0;
 }
 
-vector<bool> MSHandle::shrink_muser(string input, int hash2){
+vector<bool> groupMSHandle::shrink_muser(string input, int hash2){
+	cout << "muser" << endl;
 	stringstream cmd, muser_out, imp;
 	muser_out << "./f_" << hash << "_output";
 	imp << "./f_" << hash << "_mus";
@@ -457,19 +479,11 @@ vector<bool> MSHandle::shrink_muser(string input, int hash2){
 	}
 	imp << ".gcnf";
 	vector<bool> mus = import_formula_crits(imp.str());
-	int sat_calls = muser_output(muser_out.str());	
+	int sat_calls = gmuser_output(muser_out.str());	
 //	checks += sat_calls;
 	remove(imp.str().c_str());
 	remove(muser_out.str().c_str());
 	remove(input.c_str());
-	vector<bool> rotation_seed = mus;
-	for(int i = 0; i < dimension; i++){
-		if(mus[i]){
-			rotation_seed[i] = false; break;
-		}
-	}
-	//get_implies(rotation_seed);
-
 	return mus;
 }
 

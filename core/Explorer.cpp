@@ -1,5 +1,6 @@
 #include "Explorer.h"
 #include "misc.h"
+#include <sstream>
 
 using namespace CustomMinisat;
 using namespace std;
@@ -43,6 +44,21 @@ Explorer::~Explorer(){
 	delete solver;
 	delete botSolver;
 	delete topSolver;
+}
+
+string Explorer::toCnf(){
+	stringstream result;
+	for(auto &mcs: mcses){
+		for(auto l: mcs)	
+			result << (l + 1) << " ";
+		result << "0\n";
+	}
+	for(auto &mus: muses){
+		for(auto l: mus.int_mus)
+			result << (-1 * (l + 1)) << " ";
+		result << "0\n";
+	}
+	return result.str();
 }
 
 bool Explorer::is_critical(int c, std::vector<bool> &subset){

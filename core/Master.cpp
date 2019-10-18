@@ -20,12 +20,7 @@ Master::Master(string filename, string alg){
 		domain = "smt";
 	}
 	else if(ends_with(filename, "cnf")){
-		#ifdef NOSAT
-			std::cout << "working with sat is currently not enabled, plese build the tool with the flag USESAT=YES, e.g. 'make USESAT=YES'" << std::endl;
-			exit(1);
-		#else
-		satSolver = new MSHandle(filename);
-		#endif
+		satSolver = new groupMSHandle(filename);
 		domain = "sat";
 	}
 	else if(ends_with(filename, "ltl")){
@@ -45,7 +40,6 @@ Master::Master(string filename, string alg){
 	dimension = satSolver->dimension;	
 	cout << "Dimension:" << dimension << endl;
         explorer = new Explorer(dimension);	
-	explorer->satSolver = satSolver;
         verbose = false;
 	depthMUS = 0;
 	dim_reduction = 0.5;
@@ -82,7 +76,7 @@ void Master::block_down(Formula formula){
 bool Master::is_valid(Formula &formula, bool core, bool grow){
 	bool sat = satSolver->solve(formula, core, grow); 
 	if(sat && model_rotation){
-		MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+		groupMSHandle *msSolver = static_cast<groupMSHandle*>(satSolver);
 		Formula model = msSolver->get_model();
 		vector<bool> crits (dimension, false);
 		for(int i = 0; i < dimension; i++){
@@ -136,7 +130,7 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 		cout << "criticals before rot: " << count_ones(crits) << endl;	
 		if(criticals_rotation){
 			int before = count_ones(crits);
-			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+			groupMSHandle *msSolver = static_cast<groupMSHandle*>(satSolver);
 			msSolver->criticals_rotation(crits, f);
 			cout << "rotated: " << (count_ones(crits) - before) << endl;
 		}

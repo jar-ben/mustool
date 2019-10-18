@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "satSolvers/MSHandle.h"
+#include "satSolvers/groupMSHandle.h"
 #include "mcsmus/minisat-wrapper.hh"
 #include "mcsmus/glucose-wrapper.hh"
 #include "mcsmus/minisolver.hh"
@@ -19,9 +19,9 @@ using namespace mcsmus;
 
 std::vector<Lit> intToLit(std::vector<int> cls){
 	std::vector<Lit> lits;
-	//we are taking the clasue from the MSHandle class, and each clause contain additional control literal
+	//we are taking the clasue from the groupMSHandle class, and each clause contain additional control literal
 	//here we have to exclude the control literal
-	//TODO: we should not store the control literals in MSHandle.clauses, get rid of them
+	//TODO: we should not store the control literals in groupMSHandle.clauses, get rid of them
 	for(int i = 0; i < cls.size() - 1; i++){
 		auto l = cls[i];
 		int var = abs(l)-1;
@@ -30,7 +30,7 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 	return lits;
 }
 
-std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits){
+std::vector<bool> groupMSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits){
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;

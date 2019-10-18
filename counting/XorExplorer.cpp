@@ -1,9 +1,11 @@
 #include "XorExplorer.h"
 #include "core/misc.h"
 #include <random>
+#include <string>
+#include <sstream>
 
 using namespace CMSat;
-using std::vector;
+using namespace std;
 
 XorExplorer::XorExplorer(int v, vector<vector<Lit>> &blocksDown, vector<vector<Lit>> &blocksUp){
 	vars = v;
@@ -49,7 +51,6 @@ bool XorExplorer::block(Formula f){
 		else
 			ban_solution.push_back(Lit(i, false));
 	}
-	std::cout << "dim: " << dimension << ", nVars: " << solver->nVars() << std::endl;
 	solver->add_clause(ban_solution);
 }
 
@@ -61,11 +62,27 @@ void XorExplorer::add_xor(int m, std::vector<std::vector<int>> &As){
 			if(c < dimension)
 				new_xor.push_back(c);
 		}
-		bool rhs = As[i].back() == 1;
+		if(new_xor.size() == 0) continue; //this xor gives us no inormation
+		bool rhs = As[i].back() == 1;		
 		solver->add_xor_clause(new_xor, rhs);
+		new_xor.push_back((rhs)? 1 : 0);
+		xors.push_back(new_xor);
 	}
 	assert(xorSize == -1);
 	xorSize = m;
+}
+
+string XorExplorer::export_xors(){
+	stringstream result;
+	for(auto &xo: xors){
+		result << "x ";
+		int rhs = (xo[xo.size() - 1] == 1)? 1 : -1;
+		result << ((int)xo[0] + 1) * rhs << " ";	
+		for(int i = 1; i < xo.size() - 1; i++)
+			result << xo[i] + 1 << " ";
+		result << "0\n";
+	}
+	return result.str();
 }
 
 Formula randomF(int dimension){

@@ -11,6 +11,33 @@
 
 using namespace std;
 
+vector<string> getLines(string s){
+	vector<string> lines;
+	istringstream f(s);
+	string line;    
+	while (getline(f, line)){
+		lines.push_back(line);
+	}
+	return lines;
+}
+
+bool contains(string a, string b){
+	return a.find(b) != std::string::npos;
+}
+
+vector<string> split(string s, string delimiter){
+	size_t pos = 0;
+	vector<string> result;
+	std::string token;
+	while ((pos = s.find(delimiter)) != std::string::npos) {
+		token = s.substr(0, pos);
+		result.push_back(token);
+		s.erase(0, pos + delimiter.length());	
+	}
+	result.push_back(s);
+	return result;
+}
+
 vector<string> split(string s){
 	stringstream ss(s);
 	istream_iterator<string> begin(ss);

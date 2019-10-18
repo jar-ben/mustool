@@ -1,5 +1,5 @@
-#ifndef MSHANDLE_H
-#define MSHANDLE_H
+#ifndef GROUPMSHANDLE_H
+#define GROUPMSHANDLE_H
 
 #include "custom_minisat/Solver.h"
 #include "satSolvers/SatSolver.h"
@@ -9,23 +9,26 @@
 #include <unordered_map>
 
 
-class MSHandle: public SatSolver{
+class groupMSHandle: public SatSolver{
 public:
 	CustomMinisat::Solver* solver;
 	std::vector<std::vector<int>> clauses;
 	std::map<std::vector<int>,int> clauses_map;
 	std::vector<std::string> clauses_str;
+	std::vector<std::string> base_clauses_str;
 	std::unordered_map<std::string, int> clauses_unique_map;
 	int vars;
 
-	MSHandle(std::string filename);
-	~MSHandle();
+	groupMSHandle(std::string filename);
+	~groupMSHandle();
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
 	void get_unsat_core(std::vector<bool> &core);
 
 	std::string toString(std::vector<bool> &mus);
 
 	bool add_clause(std::vector<int> clause);
+	bool add_base_clause(std::string line);
+	bool add_group_clause(std::string line);
 	bool add_unit(int lit);
 	bool parse_dimacs(std::string filename);
 

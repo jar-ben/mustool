@@ -1,7 +1,7 @@
 #ifndef REMUS_MASTER_H
 #define REMUS_MASTER_H
 
-#include "satSolvers/MSHandle.h"
+#include "satSolvers/groupMSHandle.h"
 #include "Explorer.h"
 #ifndef NOSMT
 	#include "satSolvers/Z3Handle.h"
@@ -97,5 +97,6 @@ public:
 	int logSATSearch(vector<vector<int>> &As, int tresh, int mPrev);
 	void initialBooster();
 	Formula xor_shrink(Formula &t, XorExplorer &xe, int &limit);
+	Formula counting_get_mus(XorExplorer &xe);
 };
 #endif

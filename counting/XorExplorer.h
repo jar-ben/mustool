@@ -31,6 +31,8 @@ public:
 	bool block(Formula);
 	bool check(Formula &mus);
 	void checkUniformity();
+	std::vector<std::vector<uint32_t>> xors;
+	std::string export_xors();
 };
 
 #endif

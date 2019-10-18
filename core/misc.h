@@ -13,6 +13,7 @@ std::string exec(const char* cmd);
 int random_number();
 std::string convert_vec(std::vector<bool> node);
 
+bool contains(std::string a, std::string b);
 bool is_subset(std::vector<int> &a, std::vector<bool> &b);
 bool is_subset(std::vector<bool> &a, std::vector<bool> &b);
 bool is_disjoint(std::vector<bool> &a, std::vector<int> &b);
@@ -20,7 +21,8 @@ std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b);
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<int> &b);
 void trim(std::string &f);
 std::vector<std::string> split(std::string);
+std::vector<std::string> split(std::string s, std::string delimiter);
 bool is_hitting_pair(std::vector<int> cl1, std::vector<int> cl2);
 
 bool random_bool();
-
+std::vector<std::string> getLines(std::string s);
