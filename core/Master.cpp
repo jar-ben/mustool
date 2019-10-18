@@ -7,7 +7,8 @@
 
 
 Master::Master(string filename, string alg){
-        isValidExecutions = 0;
+	input_file = filename;
+	isValidExecutions = 0;
 	algorithm = alg;
 	sat_solver = "default";
 	if(ends_with(filename, "smt2")){

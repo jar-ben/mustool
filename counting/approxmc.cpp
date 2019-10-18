@@ -36,7 +36,6 @@ int Master::bsat(float tresh){
 
 int Master::bsat_xor(float tresh, XorExplorer &xe){
 	int i = 0;
-	std::cout << "muses size: " << muses.size() << std::endl;	
 	//first check already identifeis MUSes
 	for(auto &mus: muses){
 		if(xe.check(mus.bool_mus)){
@@ -44,11 +43,9 @@ int Master::bsat_xor(float tresh, XorExplorer &xe){
 			i++;
 		}
 		if(i >= tresh){
-			std::cout << "exceeds treshold via inhritance" << std::endl;       
 			return i;
 		}
 	}
-	std::cout << "inherited MUSes: " << i << std::endl;
 	while(i <  tresh){
 		Formula f = counting_get_mus(xe);
 		if(f.empty()) 
@@ -56,19 +53,13 @@ int Master::bsat_xor(float tresh, XorExplorer &xe){
 		i++;
 		validate_mus(f);
 		muses.push_back(MUS(f, -1, muses.size(), count_ones(f)));
-		mark_MUS(muses.back());
-		cout << i << " validated" << endl;
+		mark_MUS(muses.back(), true, false);
 	}
 	return i;
 }
 	
 Formula Master::counting_get_mus(XorExplorer &xe){
-	Formula whole(dimension, true);
-	string constraints_file = "constraints.cnf";
-	ofstream cfile;
-	cfile.open(constraints_file, ios::out);
-	cfile << satSolver->toString(whole);
-	cfile.close();
+	string constraints_file = input_file;
 
 	string unexXor_file = "unex.cnf";
 	ofstream file;
@@ -79,7 +70,7 @@ Formula Master::counting_get_mus(XorExplorer &xe){
 	file.close();
 
 	stringstream cmd;
-	cmd << "python qbf.py " << constraints_file << " " << unexXor_file;
+	cmd << "python gqbf.py " << constraints_file << " " << unexXor_file;
 	string result = exec(cmd.str().c_str());
 
 	Formula f(dimension, false);	
@@ -117,27 +108,29 @@ vector<vector<int>> generate_As(int dimension){
         return a;
 }
 
-int Master::logSATSearch(vector<vector<int>> &As, int tresh, int mPrev){
-	std::cout << "start of binary search" << std::endl;
+void Master::logSATSearch(vector<vector<int>> &As, int tresh, int &mPrev, int &finalCount){
 	int low = 0; 
 	int high = dimension - 1;
 	int m = mPrev;
+	vector<int> ys;
 	while((low + 1) != high){
-		std::cout << "m: " << m << ", l: " << low << ", h: " << high << std::endl;
 		XorExplorer xe(dimension, blocksDown, blocksUp);
 		xe.add_xor(m, As);
 		int y = bsat_xor(tresh, xe);
-		std::cout << "log y: " << y << std::endl;
+		ys.push_back(y);
 		if(y >= tresh){
 			low = m;
 		}
 		else{
+			finalCount = y;
 			high = m;
 		}
 		m = ceil((low + high)/2);					
-	}	
-	std::cout << "final m: " << m << std::endl;
-	return m;
+	}
+	for(auto y: ys)
+		cout << y << " ";
+	cout << endl;	
+	mPrev = m;
 }
 
 int Master::approxMC2Core(float tresh, int &nCells){
@@ -146,23 +139,20 @@ int Master::approxMC2Core(float tresh, int &nCells){
 /*	XorExplorer xe(dimension, blocksDown, blocksUp);	
 	xe.add_xor(dimension - 1, As);
 	int y = bsat_xor(tresh, xe);
-	std::cout << "precheck y: " << y << std::endl;
 	if(y >= tresh){
 		nCells = -1;
 		return -1;
 	}
 */	int mPrev = log2(nCells);
-	int m = logSATSearch(As, tresh, mPrev);
-	XorExplorer xe2(dimension, blocksDown, blocksUp);	
-	xe2.add_xor(m, As);
-	nCells = pow(2,m);
-	return bsat_xor(tresh, xe2);
+	int finalCount = -1;
+	logSATSearch(As, tresh, mPrev, finalCount);
+	nCells = pow(2,mPrev);
+	return nCells * finalCount;
 }
 
 int Master::counting(float e, float d){
 	float tresh = 1 + 9.84 * (1 + (e / (1 + e)))*(1 + 1/e)*(1 + 1/e);
 	tresh = 10;
-	cout << "tresh: " << tresh << endl;
 //	int y = bsat(tresh);
 //	cout << "y: " << y << endl;
 //	if(y < tresh){
@@ -170,14 +160,16 @@ int Master::counting(float e, float d){
 //		return y;
 //	}
 	int t = ceil(17 * log2(3 / d));
-	cout << "t: " << t << endl;
 	vector<int> counts;
 	int nCells = 2;
-	t = 10; //TOOD: just for testing purposes set to 3
+	int total = 0;
+	t = 30; //TOOD: just for testing purposes set to 3
 	for(int iter = 0; iter < t; iter++){
 		cout << "iteration: " << iter << endl;
 		counts.push_back(approxMC2Core(tresh, nCells));
+		total += counts.back();
 		cout << "muses in the last iteration: " << counts.back() << endl;
+		cout << "average: " << (total/(iter + 1)) << endl;
 	}
 	return 0 ;
 }

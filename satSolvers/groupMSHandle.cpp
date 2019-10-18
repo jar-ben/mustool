@@ -109,7 +109,6 @@ bool groupMSHandle::add_unit(int lit){
 bool groupMSHandle::add_base_clause(string line){
 	base_clauses_str.push_back(line);
 	line = split(line, "}")[1];
-	cout << "splitted: " << line << endl;
 	vector<int> clause = gconvert_clause(line);
 	vec<Lit> msClause;
 	for(auto &lit: clause)
@@ -157,7 +156,6 @@ bool groupMSHandle::parse_dimacs(string path){
 			add_base_clause(line);
 		else if(line[0] == '{'){
 			line = split(line, "}")[1];
-			cout << "splitted: " << line << endl;
 			add_group_clause(line);
 		}else{
 			add_group_clause(line);

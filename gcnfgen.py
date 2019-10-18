@@ -27,5 +27,9 @@ def generate(n):
         res += "{0} " + " ".join([str(l) for l in cl]) + " 0\n"
     return res
 
-with open("generated.gcnf", "w") as f:
-    f.write(generate(8))
+if __name__ == "__main__":
+    assert len(sys.argv) > 1
+
+    n = int(sys.argv[1])
+    with open("generated_{}.gcnf".format(n), "w") as f:
+        f.write(generate(n))

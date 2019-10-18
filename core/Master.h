@@ -34,6 +34,7 @@ public:
 	int isValidExecutions;
 	bool verbose; //TODO: make it int based 
 	string output_file;
+	string input_file;
 	bool validate_mus_c;
 	float mus_approx;
 	float crits_treshold;
@@ -94,7 +95,7 @@ public:
 	int bsat_xor(float tresh, XorExplorer &xe);
 	vector<vector<CMSat::Lit>> blocksDown;
 	vector<vector<CMSat::Lit>> blocksUp;
-	int logSATSearch(vector<vector<int>> &As, int tresh, int mPrev);
+	void logSATSearch(vector<vector<int>> &As, int tresh, int &m, int &finalCOunt);
 	void initialBooster();
 	Formula xor_shrink(Formula &t, XorExplorer &xe, int &limit);
 	Formula counting_get_mus(XorExplorer &xe);
