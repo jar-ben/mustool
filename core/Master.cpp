@@ -53,11 +53,8 @@ Master::Master(string filename, string alg){
 	validate_mus_c = false;
 	current_depth = 0;
 	unex_sat = unex_unsat = 0;
-	rotated_muses = 0;
-	scope_limit = 100;	
         hash = random_number();
 	satSolver->hash = hash;
-	useBackbone = useMatchmaker = false;
 }
 
 Master::~Master(){
@@ -83,6 +80,8 @@ void Master::block_down(Formula formula){
 // core and grow controls optional extraction of unsat core and model extension (replaces formula)
 bool Master::is_valid(Formula &formula, bool core, bool grow){
 	bool sat = satSolver->solve(formula, core, grow); 
+	if(sat) unex_sat++;
+	else unex_unsat++;
 	if(sat && model_rotation){
 		MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 		Formula model = msSolver->get_model();
@@ -178,9 +177,8 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
 	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
-	cout << ", rotated MUSes: " << rotated_muses;
 	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
-	cout << ", seed dimension: " << f.seed_dimension << ", duration: " << f.duration;
+	cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
 	cout << ", shrinks: " << satSolver->shrinks;
 	cout << endl;
 
@@ -203,9 +201,6 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "marco"){
 		marco_base();
-	}
-	else if(algorithm == "daa"){
-		daa_base();
 	}
 	else{
 		print_err("invalid algorithm chosen");

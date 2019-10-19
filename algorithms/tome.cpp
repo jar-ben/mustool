@@ -41,15 +41,6 @@ void Master::find_all_muses_tome(){
 			MUS mus = MUS(bot, -1, muses.size()); //-1 duration means skipped shrink
 			muses.push_back(mus);
 			mark_MUS(mus);
-			if(useMatchmaker){
-				recursive_rotation_delta(mus, original_top, 0);
-			}
-			else if(useBackbone){
-				backbone_mus_rotation(mus, original_top);
-			}
-			if(useMixedHeuristic){
-				mixed_mus_rotation(mus, original_top);
-			}
 			continue;
 		}	
 		diff =  std::count(top.begin(), top.end(), true) - std::count(bot.begin(), bot.end(), true);
@@ -59,16 +50,6 @@ void Master::find_all_muses_tome(){
 		MUS mus = shrink_formula(fmus); 		
 		mark_MUS(mus);
 		block_down(mss);
-	
-		if(useMatchmaker){
-			recursive_rotation_delta(mus, original_top, 0);
-		}
-		else if(useBackbone){
-			backbone_mus_rotation(mus, original_top);
-		}
-		if(useMixedHeuristic){
-			mixed_mus_rotation(mus, original_top);
-		}
 	}
 }
 

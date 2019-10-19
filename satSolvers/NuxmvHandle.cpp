@@ -53,8 +53,6 @@ void NuxmvHandle::build_nuxmv_model(){
 	file.close();	
 }
 
-
-
 void NuxmvHandle::build_nuxmv_batch(){
 	stringstream batch, filen;
 	batch << "read_model -i " << model_file << std::endl;

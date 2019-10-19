@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("Domain Agnostic MUS Enumeration Tool (DAMUSET), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco", "daa"};
+		vector<string> allowedAlgs {"remus", "tome", "marco"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);
@@ -37,9 +37,6 @@ int main(int argc, char *argv[]){
 		TCLAP::SwitchArg verify("c","verify-muses","Used for testing purposes. Verify that the outputted MUSes are indeed MUSes.", cmd, false);
 		TCLAP::SwitchArg getImplied("g","get-implied","Based on already found correction sets (satisfiable subsets), determines some critical constraints of seeds before shrinking and thus may speed up (or even completely avoid) the shrinking.", cmd, false);
 
-		TCLAP::SwitchArg mixedHeuristic("","mixed","Available only in the SAT domain. Use the mixed heuristic for finding seeds without explicitely checking subsets for satisfiability.", cmd, false);
-		TCLAP::SwitchArg backbone("","backbone","Available only in the SAT domain. Use the heuristic Backbone for finding seeds without explicitely checking subsets for satisfiability.", cmd, false);
-		TCLAP::SwitchArg matchmaker("","matchmaker","Available only in the SAT domain. Use the heuristic Matchmaker for finding seeds without explicitely checking subsets for satisfiability.", cmd, false);
 		TCLAP::SwitchArg modelRotation("","model-rotation","Available only in the SAT domain. Every time a subset is checked for satisfiability and find to be satisfiable, the corresponding model is rotated to identify additional satisfiable subsets. This technique is similar to the famous (recursive) model rotation for finding aditional critical constraints, i.e. singleton correction sets. In our case, we identify arbitrary correction sets.", cmd, false);
 
 		TCLAP::UnlabeledValueArg<string>  input( "input_file", "Input file, either .cnf, .smt2, or .ltl. See the ./examples/.", true, "", "input_file"  );
@@ -61,12 +58,6 @@ int main(int argc, char *argv[]){
 		solver.satSolver->shrink_alg = shrink.getValue();
 		solver.model_rotation = modelRotation.getValue();
 		solver.get_implies = getImplied.getValue();
-		solver.useBackbone = backbone.getValue();
-		solver.useMatchmaker = matchmaker.getValue();
-		solver.useMixedHeuristic = mixedHeuristic.getValue();
-
-		solver.sat_solver = "nuxmv";
-		solver.scope_limit = 100000;
 		solver.criticals_rotation = false; //criticals_rotation;
 		
 		solver.enumerate();

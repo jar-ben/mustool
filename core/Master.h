@@ -39,8 +39,6 @@ public:
 	bool get_implies;
 	bool criticals_rotation;
 	string domain;
-	bool useMatchmaker;
-	bool useBackbone;
 	bool useMixedHeuristic;
 	int hash;
 	int unex_unsat;
@@ -76,39 +74,5 @@ public:
 
 	//MARCO algorithm functions
 	void marco_base();
-
-	//DAA algorithm functions
-	void daa_base();
-
-	//dualMUS heuristic functions
-	int scope_limit;
-
-	//Matchmaker heuristic
-	int rotated_muses;
-	int recursive_rotation_delta(MUS m1, Formula &top, int depth);
-	vector<int> minimal_hitting_set(vector<int> local_muses);
-
-	//Backbone heuristic
-	int backbone_mus_rotation(MUS &m1, Formula &top);	
-	vector<int> propagate_backbone(int i, bool positive, vector<int> &lits_left, vector<bool> &satisfied, 
-			Formula &top, vector<int> &singletons, Formula &seed, int c, vector<int> &influenced, 
-			bool mark_influenced = false);
-	vector<int> backbone_find_seed_beta(Formula &seed, Formula implied, Formula values, Formula satisfied, 
-			vector<int> singletons, vector<int> lits_left, Formula &top);
-	vector<int> backbone_init(Formula &seed, Formula &implied, Formula &values, vector<int> &lits_left, 
-			Formula &satisfied, vector<int> &singletons, Formula &top,
-			vector<int> &variables_map, vector<int> &variables_map_inv, int c);
-	int get_backbones_bones(Formula &seed, Formula &implied, Formula &values, vector<int> &variables_map, 
-			vector<int> &variables_map_inv);
-	void backbone_build_literal_map(Formula &seed, vector<int> &variables_map, 
-			vector<int> &variables_map_inv);
-	void backbone_simplify(Formula &seed, int c, Formula &implied, Formula &values);
-	void backbone_check_remainer(Formula &implied, Formula &values, Formula &top, Formula &m1);
-	void implied_literal(int cl, Formula &implied, int &lit, int &var, bool &value);
-	int seek_conflict(vector<int> &unit, vector<bool> &unit_value, vector<int> &singletons, int from, 
-			int to, Formula &seed, Formula &top, Formula &implied, vector<int> &added);
-
-	//combiination of backbone and dualmus
-	int mixed_mus_rotation(MUS &m1, Formula &top);	
 };
 #endif

@@ -1,27 +1,21 @@
 DIR	= $(shell pwd)
 MINISAT	= $(DIR)/custom_minisat
-BONES	= $(DIR)/minibones/src
 MCSMUS	= $(DIR)/mcsmus
 MSAT	= libr
 
 LIBD 	= -L/usr/lib -L/usr/local/lib
-LIBD 	+= -L$(BONES)/minisat/build/release/lib
 LIBS 	= -lz
-LIBS	+= -lminisat -lstdc++fs
+LIBS	+= -lstdc++fs
 USR 	= /usr/include
-INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(BONES)/minisat/ -I $(BONES) -I $(DIR) -I $(MCSMUS) 
+INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(USR) -I /usr/local/include -I $(DIR) -I $(MCSMUS) 
 
-CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp) $(wildcard $(DIR)/heuristics/*.cpp)
+CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp)
 CSRCS	+= $(wildcard $(DIR)/satSolvers/*.cpp) $(wildcard $(DIR)/core/*.cpp)
 COBJS	= $(CSRCS:.cpp=.o)
 
 MCSRCS	= $(wildcard $(MINISAT)/*.cc)
 MCOBJS	= $(MCSRCS:.cc=.o)
 
-BONES_SRCS	= $(wildcard $(BONES)/*.cc)
-BONES_OBJS	= $(BONES_SRCS:.cc=.o)
-#BCSRCS	= $(wildcard $(BONES)/*.cc)
-#BCOBJS	= $(BCSRCS:.cc=.o)
 
 MCSMUS_SRCS = $(wildcard $(MCSMUS)/minisat/core/*.cc) $(wildcard $(MCSMUS)/minisat/simp/*.cc) $(wildcard $(MCSMUS)/minisat/utils/*.cc) \
 		$(wildcard $(MCSMUS)/glucose/core/*.cc) $(wildcard $(MCSMUS)/glucose/simp/*.cc) $(wildcard $(MCSMUS)/glucose/utils/*.cc) \
@@ -31,8 +25,8 @@ MCSMUS_OBJS = $(filter-out %Main.o, $(MCSMUS_SRCS:.cc=.o))
 ### 
 # The following 3 variables control whether a support for individual constraint domains, SAT, SMT, LTL, should be build. 
 USESAT = YES
-USESMT = NO
-USELTL = NO
+USESMT = YES
+USELTL = YES
 ###
 
 USEMCSMUS = YES
@@ -68,9 +62,9 @@ else
 	LIBS    += -lspot
 endif
 
-mvc: m $(COBJS) $(MCOBJS) $(BONES_OBJS) $(MCSMUS_OBJS)
+must: $(COBJS) $(MCOBJS) $(MCSMUS_OBJS)
 	@echo Linking: $@
-	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(BONES_OBJS) $(MCSMUS_OBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
 %.o: %.cpp
 	@echo Compiling: $@
@@ -80,18 +74,12 @@ mvc: m $(COBJS) $(MCOBJS) $(BONES_OBJS) $(MCSMUS_OBJS)
 	@echo Compiling: $@
 	@$(CXX) $(CFLAGS) $(INC) -c -o $@ $<
 
-m:
-	@echo Making Minisat
-	export MROOT=$(BONES)/minisat ; cd $(BONES)/minisat; make CXX=$(CXX)
-
 print-%  : ; @echo $* = $($*)
 
 clean:
 	rm -f $(MCSMUS_OBJS)
 	rm -f $(COBJS)
 	rm -f $(MINISAT)/*.o
-	rm -f $(BONES)/*.o
-	find $(BONES)/minisat/ -name '*.o' | xargs rm -f
 
 cleanCore:
 	rm -f $(COBJS)

@@ -21,13 +21,12 @@ public:
 	MSHandle(std::string filename);
 	~MSHandle();
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
-	void get_unsat_core(std::vector<bool> &core);
 
 	std::string toString(std::vector<bool> &mus);
 
 	bool add_clause(std::vector<int> clause);
 	bool add_unit(int lit);
-	bool parse_dimacs(std::string filename);
+	bool parse(std::string filename);
 
 	std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 	std::vector<bool> shrink_muser(std::string input, int hash2);
@@ -49,11 +48,7 @@ public:
 		std::vector<bool>& model, std::vector<std::vector<bool>>& model_extensions);
 	std::vector<bool> get_model();
 	std::vector<bool> model_extension(std::vector<bool> subset, std::vector<bool> model);
-
 	void criticals_rotation(std::vector<bool>& criticals, std::vector<bool> subset);
-	int critical_rotation(std::vector<bool>& criticals, int critical, std::vector<bool>& model, std::vector<int>& new_criticals);
-
-	int get_implied(std::vector<bool>& controls, std::vector<bool>& implied, std::vector<bool>& values);
 };
 
 

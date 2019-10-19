@@ -39,7 +39,7 @@ vector<int>  convert_clause(string clause){
 MSHandle::MSHandle(string filename):SatSolver(filename){
 	solver = new Solver();
 	vars = 0;
-	parse_dimacs(filename);
+	parse(filename);
 	dimension = clauses.size();
 	srand (time(NULL));
 	rotated_crits = 0;
@@ -106,7 +106,7 @@ bool MSHandle::add_unit(int lit){
 	return solver->addClause(itoLit(lit));
 }
 
-bool MSHandle::parse_dimacs(string path){
+bool MSHandle::parse(string path){
         ifstream infile(path, ifstream::in);
         if (!infile.is_open())
 		print_err("wrong input file");
@@ -235,81 +235,6 @@ int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>
 	}	
 	return rotated;
 }
-
-//post extension
-int MSHandle::critical_rotation(vector<bool>& criticals, int critical, vector<bool>& model, vector<int>& new_criticals){
-	int rotated = 0;
-	compute_flip_edges(critical); //TODO: better encansulape
-	for(int i = 0; i < flip_edges[critical].size(); i++){
-		int literal = clauses[critical][i];
-		int lit_index = (literal > 0)? (literal - 1) : ((-1 * literal) - 1);				
-		model[lit_index] = !model[lit_index]; //rotate model
-		vector<int> &literal_edges = flip_edges[critical][i]; //edges grouped by literals
-		int count = 0;
-		int last = -1;	
-		for(auto &c: literal_edges){ //individual edges
-			bool sat = false;
-			for(int j = 0; j < clauses[c].size() - 1; j++){ // be carefull of the "- 1", there is a control literal at the end of each clause
-				int lit = clauses[c][j];		
-				if(lit != literal * -1 && ((lit > 0 && model[lit - 1]) || (lit < 0 && !model[(-1 * lit) - 1]))){
-					sat = true;
-					break;
-				}
-			}
-			if(!sat){ count++; last = c; }
-		}
-		bool new_crit = std::find(new_criticals.begin(), new_criticals.end(), last) == new_criticals.end() && !criticals[last];
-		if(count == 1 && new_crit){			
-			new_criticals.push_back(last);
-			rotated_crits++;
-			rotated++;
-			rotated += critical_rotation(criticals, last, model, new_criticals);	
-		}
-		
-		model[lit_index] = !model[lit_index]; //undo rotation
-	}	
-	return rotated;
-}
-
-int MSHandle::get_implied(std::vector<bool>& controls, std::vector<bool>& implied, std::vector<bool>& values){
-	vec<Lit> lits;	
-	for(unsigned int i = 0; i < controls.size(); i++){
-		if(controls[i])
-			lits.push(itoLit((i + vars + 1) * (-1)));
-		else
-			lits.push(itoLit(i + vars + 1 ));
-	}
-        vec<Lit> outvec;
-        bool res = solver->implies(lits, outvec, true);
-        int impl = 0;
-        for (int i = 0 ; i < outvec.size(); i++) {
-		int lit = Littoi(outvec[i]);
-		if(lit < 0){
-			int var = -1 * lit;
-			if(var <= vars){
-				implied[var - 1] = true;
-				values[var - 1] = false;
-			}
-		}else{
-			int var = lit;
-			if(var <= vars){
-				implied[var - 1] = true;
-				values[var - 1] = true;
-			}
-		}
-        }
-        return impl;
-}
-
-void MSHandle::get_unsat_core(std::vector<bool> &core){
-	for (int i = 0 ; i < solver->conflict.size() ; i++){ 
-		int index = var(solver->conflict[i]) - vars;
-		if(index >= 0)
-			core[var(solver->conflict[i]) - vars] = true;
-
-	}	
-};
-
 
 // check formula for satisfiability using miniSAT
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
@@ -450,7 +375,6 @@ vector<bool> MSHandle::shrink_muser(string input, int hash2){
 	muser_out << "./f_" << hash << "_output";
 	imp << "./f_" << hash << "_mus";
 	cmd << "./muser2-para -grp -wf " << imp.str() << " " << input << " > " << muser_out.str();// */ " > /dev/null";
-//	std::cout << cmd.str() << endl;
 	int status = system(cmd.str().c_str());
 	if(status < 0){
 		std::cout << "Invalid muser return code" << std::endl; exit(0);
@@ -462,14 +386,6 @@ vector<bool> MSHandle::shrink_muser(string input, int hash2){
 	remove(imp.str().c_str());
 	remove(muser_out.str().c_str());
 	remove(input.c_str());
-	vector<bool> rotation_seed = mus;
-	for(int i = 0; i < dimension; i++){
-		if(mus[i]){
-			rotation_seed[i] = false; break;
-		}
-	}
-	//get_implies(rotation_seed);
-
 	return mus;
 }
 

@@ -34,17 +34,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			streak = 0;
 			MUS mus = shrink_formula(top, crits);
 			mark_MUS(mus);
-
-			if(useMatchmaker){
-				recursive_rotation_delta(mus, original_top, 0);
-			}
-			if(useBackbone){
-				backbone_mus_rotation(mus, original_top);
- 			}
-			if(useMixedHeuristic){
-				mixed_mus_rotation(mus, original_top);
-			}
-
 			if(depth > depthMUS) continue;
 			Formula m = mus.bool_mus;
 			extend_mus(origin_top, m);
@@ -74,8 +63,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 					for(auto &extension: model_extensions){
 						block_down(extension);
 					}
-					cout << "rotated: " << rotated << endl;
-					cout << "extensions: " << model_extensions.size() << endl;					
 				}
 				continue;
 			}	
@@ -99,7 +86,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 }
 	
 
-// helper funcion for the ReMUS algorithm (experimental, not fully integrated yet)
+// helper funcion for the ReMUS algorithm
 // modifies mus into a set S such that mus /subseteq S /subseteq top
 void Master::extend_mus(Formula &top, Formula &mus, int dMUS){
 	int origin_top_size = count_ones(top);
