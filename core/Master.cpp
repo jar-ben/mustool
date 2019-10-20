@@ -12,26 +12,19 @@ Master::Master(string filename, string alg){
 	sat_solver = "default";
 	if(ends_with(filename, "smt2")){
 		#ifdef NOSMT
-			std::cout << "working with smt is currently not enabled, plese build the tool with the flag USESMT=YES, e.g. 'make USESMT=YES'" << std::endl;
-			exit(1);
+			print_err("Working with SMT is currently not enabled. To enable it, run 'make cleanCore; make USESMT=YES'. For more info, see README.md.");
 		#else
 		satSolver = new Z3Handle(filename);
 	       	#endif	
 		domain = "smt";
 	}
 	else if(ends_with(filename, "cnf")){
-		#ifdef NOSAT
-			std::cout << "working with sat is currently not enabled, plese build the tool with the flag USESAT=YES, e.g. 'make USESAT=YES'" << std::endl;
-			exit(1);
-		#else
 		satSolver = new MSHandle(filename);
-		#endif
 		domain = "sat";
 	}
 	else if(ends_with(filename, "ltl")){
 		#ifdef NOLTL
-			std::cout << "working with ltl is currently not enabled, plese build the tool with the flag USELTL=YES, e.g. 'make USELTL=YES'" << std::endl;
-			exit(1);
+			print_err("Working with LTL is currently not enabled. To enable it, run 'make cleanCore; make USELTL=YES'. For more info, see README.md.");
 		#else
 		if(sat_solver == "nuxmv")
 			satSolver = new NuxmvHandle(filename); 
@@ -41,9 +34,9 @@ Master::Master(string filename, string alg){
 		domain = "ltl";
 	}
 	else
-		print_err("wrong input file");
+		print_err("The input file has to have one of these extensions: .smt2, .ltl, or .cnf. See example files in ./examples/ folder.");
 	dimension = satSolver->dimension;	
-	cout << "Dimension:" << dimension << endl;
+	cout << "Number of constraints in the input set:" << dimension << endl;
         explorer = new Explorer(dimension);	
 	explorer->satSolver = satSolver;
         verbose = false;
@@ -82,30 +75,6 @@ bool Master::is_valid(Formula &formula, bool core, bool grow){
 	bool sat = satSolver->solve(formula, core, grow); 
 	if(sat) unex_sat++;
 	else unex_unsat++;
-	if(sat && model_rotation){
-		MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
-		Formula model = msSolver->get_model();
-		vector<bool> crits (dimension, false);
-		for(int i = 0; i < dimension; i++){
-			if(!formula[i] && !explorer->is_available(i, formula)){
-				crits[i] = true;
-			}
-		}
-		for(int i = 0; i < dimension; i++){
-			if(crits[i]){
-				vector<Formula> model_extensions;
-				int rotated = msSolver->model_rotation(crits, i, formula, model, model_extensions);
-				int fresh = 0;
-				for(auto &ext: model_extensions){
-					if(explorer->isUnexploredSat(ext)){
-						block_down(ext);
-						fresh++;
-					}
-				}
-				cout << "rotated: " << rotated << ", extensions: " << model_extensions.size() << ", fresh: " << fresh << endl;
-			}
-		}
-	}
 	return sat;
 }
 
@@ -127,31 +96,22 @@ void Master::validate_mus(Formula &f){
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
-	cout << "shrinking dimension: " << f_size << endl;
-	if(algorithm == "tome")
-		is_valid(f,true,true); //get core before shrink in the case of TOME
+	if(verbose) cout << "shrinking dimension: " << f_size << endl;
 	f_size = count_ones(f);
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);	
-		cout << "criticals before rot: " << count_ones(crits) << endl;	
-		if(criticals_rotation){
+		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
+		if(criticals_rotation && domain == "sat"){
 			int before = count_ones(crits);
 			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 			msSolver->criticals_rotation(crits, f);
-			cout << "rotated: " << (count_ones(crits) - before) << endl;
+			if(verbose) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
 		}
-		float ones_crits = count_ones(crits);		 
-		if(f_size == ones_crits){ // each constraint in f is critical for f, i.e. it is a MUS 
+		if(count_ones(crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
 			return muses.back();
 		}		
-		if((ones_crits/f_size) > crits_treshold){
-			if(!is_valid(crits, false, false)){ 
-				muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
-				return muses.back();
-			}
-		}
 	}
 
 	Formula mus = satSolver->shrink(f, crits);
@@ -165,7 +125,6 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 Formula Master::grow_formula(Formula &f){
 	return satSolver->grow(f);
 }
-
 
 void Master::mark_MUS(MUS& f, bool block_unex){	
 	if(validate_mus_c) validate_mus(f.bool_mus);		
@@ -201,9 +160,6 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "marco"){
 		marco_base();
-	}
-	else{
-		print_err("invalid algorithm chosen");
 	}
 	return;
 }

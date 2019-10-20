@@ -5,7 +5,6 @@
 
 typedef std::vector<bool> Formula;
 typedef std::vector<int> Block;
-typedef std::tuple<int, int, int, int, int> triple; //m1, m2, c1, c2, size
 
 class MUS{
 	public:

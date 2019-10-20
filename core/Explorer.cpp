@@ -64,7 +64,6 @@ bool Explorer::is_critical(int c, std::vector<bool> &subset){
 
 bool Explorer::is_available(int c, std::vector<bool> &subset){
 	if(!maybe_available[c]) return true;	
-
 	for(auto &mus: parent_muses[c]){ //"mus" is an id of a mus
 		bool covered = false;
 		for(auto &c2: muses[mus].int_mus){
@@ -82,7 +81,6 @@ std::vector<bool> Explorer::get_unexplored(std::vector<bool> top, std::vector<bo
 	std::vector<int> top_int;
 	for(int i = 0; i < dimension; i++)
 		if(!top[i]) top_int.push_back(i);
-
 	bool found = false;
 	for(int i = 0; i < dimension; i++){
 		if(mus[i] && !is_critical(i, top)){
@@ -91,15 +89,10 @@ std::vector<bool> Explorer::get_unexplored(std::vector<bool> top, std::vector<bo
 			break;
 		}
 	}
-
 	if(!found)
 		return std::vector<bool>();
 	return top;
 }
-
-bool seeds_sort (const std::pair<std::vector<bool>, int> &s1, const std::pair<std::vector<bool>, int> &s2){ 
-	return std::count(s1.first.begin(), s1.first.end(), true) < std::count(s2.first.begin(), s2.first.end(), true);
-} 
 
 bool Explorer::block_down(Formula cl){
 	//add to local critical structures

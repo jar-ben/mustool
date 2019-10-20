@@ -34,8 +34,6 @@ public:
 	string output_file;
 	bool validate_mus_c;
 	float mus_approx;
-	float crits_treshold;
-	bool model_rotation;
 	bool get_implies;
 	bool criticals_rotation;
 	string domain;

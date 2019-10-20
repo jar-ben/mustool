@@ -194,48 +194,6 @@ void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 }
 
 
-//checks only guaranteed edges
-int MSHandle::model_rotation(vector<bool>& criticals, int critical, vector<bool>& subset, vector<bool>& model, vector<vector<bool>>& model_extensions){
-	int rotated = 0;
-	compute_flip_edges(critical); //TODO: better encansulape
-	for(int i = 0; i < flip_edges[critical].size(); i++){
-		vector<int> literal_edges = flip_edges[critical][i]; //edges grouped by literals
-		int literal = clauses[critical][i];
-		int count = 0;
-		vector<bool> extension_seed = subset;	
-		for(auto &c: literal_edges){ //individual edges
-			if(subset[c]){ //there is a flip edge from critical to c
-				count++;
-				extension_seed[c] = false;
-			}
-		}
-		int lit_index = (literal > 0)? (literal - 1) : ((-1 * literal) - 1);
-		model[lit_index] = !model[lit_index];
-		vector<bool> extension = model_extension(extension_seed, model);
-
-		// check if a critical was found
-		int count2 = 0;
-		int last = -1;
-		for(auto &c: literal_edges){ //individual edges
-			if(subset[c]){ //there is a flip edge from critical to c
-				if(!extension[c]){
-					count2++;
-					last = c;
-				}
-			}
-		}
-		if(count2 == 1 && !criticals[last]){ //new critical found
-			rotated_crits++;
-			rotated++;
-			criticals[last] = true;
-			rotated += model_rotation(criticals, last, subset, model, model_extensions);
-		}		
-		model_extensions.push_back(extension);
-		model[lit_index] = !model[lit_index];
-	}	
-	return rotated;
-}
-
 // check formula for satisfiability using miniSAT
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
 bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){

@@ -44,8 +44,6 @@ public:
 	std::vector<std::vector<std::vector<int>>> flip_edges; // flip_edges[i][j][k] - i-th clause, j-th literal in the clause, k-th edge from i-th clause under j-th literal in the flip grap
 	std::vector<std::vector<int>> flip_edges_flatten;
 	void compute_flip_edges(int c);
-	int model_rotation(std::vector<bool>& criticals, int critical, std::vector<bool>& subset,
-		std::vector<bool>& model, std::vector<std::vector<bool>>& model_extensions);
 	std::vector<bool> get_model();
 	std::vector<bool> model_extension(std::vector<bool> subset, std::vector<bool> model);
 	void criticals_rotation(std::vector<bool>& criticals, std::vector<bool> subset);

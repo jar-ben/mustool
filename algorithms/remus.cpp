@@ -44,10 +44,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			//prevent getting stuck in a small subset
 			if(streak > 10 && depth > 0){ current_depth--; return; }
 			vector<bool> model;
-			if(model_rotation){
-				MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
-				model = msSolver->get_model();
-			}
 			block_down(top);	
 			vector<int> crit_all;
 			for(int i = 0; i < dimension; i++)
@@ -56,14 +52,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 				}
 			if(crit_all.size() == 1){
 				crits[crit_all[0]] = true;
-				if(model_rotation){
-					MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
-					vector<vector<bool>> model_extensions;
-					int rotated = msSolver->model_rotation(crits, crit_all[0], subset, model, model_extensions);
-					for(auto &extension: model_extensions){
-						block_down(extension);
-					}
-				}
 				continue;
 			}	
 			if(depth > depthMUS) continue;		
@@ -72,12 +60,6 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 				rec_subset[crit] = true;
 				Formula rec_crits = crits;
 				rec_crits[crit] = true;
-				if(model_rotation){			
-					vector<vector<bool>> model_extensions;
-					for(auto &extension: model_extensions){
-						block_down(extension);
-					}
-				}
 				find_all_muses_duality_based_remus(rec_subset, rec_crits, depth + 1);
 			}
 		}

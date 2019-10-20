@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 	std::signal(SIGTERM, signal_handler);
 
 	try{
-		TCLAP::CmdLine cmd("Domain Agnostic MUS Enumeration Tool (DAMUSET), Jaroslav Bendik, 2019.", ' ', "");
+		TCLAP::CmdLine cmd("domain agnostic MUS enumeration Tool (MUST), Jaroslav Bendik, 2019.", ' ', "");
 		vector<string> allowedAlgs {"remus", "tome", "marco"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
@@ -35,9 +35,9 @@ int main(int argc, char *argv[]){
 		TCLAP::ValueArg<float> reductionCoeff("","dimension-reduction-coefficient","Affects only the algorithm ReMUS. Sets the dimension reduction coefficient used for the recursion calls of the algorithm.",false,0.9,"float 0-1");
 		cmd.add(reductionCoeff);
 		TCLAP::SwitchArg verify("c","verify-muses","Used for testing purposes. Verify that the outputted MUSes are indeed MUSes.", cmd, false);
-		TCLAP::SwitchArg getImplied("g","get-implied","Based on already found correction sets (satisfiable subsets), determines some critical constraints of seeds before shrinking and thus may speed up (or even completely avoid) the shrinking.", cmd, false);
+		TCLAP::SwitchArg getImplied("g","get-implied","Based on already found correction sets (satisfiable subsets), determines some critical constraints of seeds before shrinking and thus may speed up (or even completely avoid) the shrinking. Use this flag to disable it (not recommended).", cmd, true);
 
-		TCLAP::SwitchArg modelRotation("","model-rotation","Available only in the SAT domain. Every time a subset is checked for satisfiability and find to be satisfiable, the corresponding model is rotated to identify additional satisfiable subsets. This technique is similar to the famous (recursive) model rotation for finding aditional critical constraints, i.e. singleton correction sets. In our case, we identify arbitrary correction sets.", cmd, false);
+		TCLAP::SwitchArg criticalsRotation("","criticals-rotation","Available only in the SAT domain and used only if the flag -g is not set. Allows to find additional critical constraints based on the already found ones. Use this flag to turn the feature on.", cmd, false);
 
 		TCLAP::UnlabeledValueArg<string>  input( "input_file", "Input file, either .cnf, .smt2, or .ltl. See the ./examples/.", true, "", "input_file"  );
 		cmd.add(input);
@@ -56,9 +56,8 @@ int main(int argc, char *argv[]){
 		solver.dim_reduction = reductionCoeff.getValue();
 		solver.validate_mus_c = verify.getValue();
 		solver.satSolver->shrink_alg = shrink.getValue();
-		solver.model_rotation = modelRotation.getValue();
 		solver.get_implies = getImplied.getValue();
-		solver.criticals_rotation = false; //criticals_rotation;
+		solver.criticals_rotation = criticalsRotation.getValue(); //criticals_rotation;
 		
 		solver.enumerate();
 

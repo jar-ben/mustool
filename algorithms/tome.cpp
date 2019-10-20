@@ -47,6 +47,8 @@ void Master::find_all_muses_tome(){
 		auto locals = local_mus(bot, top, diff);
 		fmus = locals.second;
 		mss = locals.first;
+		if(domain == "sat" || domain == "smt")
+			is_valid(fmus, true, true); //get unsat core of fmus before shrinking
 		MUS mus = shrink_formula(fmus); 		
 		mark_MUS(mus);
 		block_down(mss);
