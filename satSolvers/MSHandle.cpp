@@ -304,12 +304,12 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
 #ifdef UMCSMUS
-	if(shrink_alg == "mcsmus"){
+	if(shrink_alg == "default"){
 		return shrink_mcsmus(f, crits);
 	}
 #endif
 	stringstream exp;			
-	exp << "./f_" << hash << ".cnf";			
+	exp << "./tmp/f_" << hash << ".cnf";			
 	export_formula_crits(f, exp.str(), crits);	
 
 	return shrink_muser(exp.str(), hash);
@@ -330,8 +330,8 @@ int muser_output(std::string filename){
 
 vector<bool> MSHandle::shrink_muser(string input, int hash2){
 	stringstream cmd, muser_out, imp;
-	muser_out << "./f_" << hash << "_output";
-	imp << "./f_" << hash << "_mus";
+	muser_out << "./tmp/f_" << hash << "_output";
+	imp << "./tmp/f_" << hash << "_mus";
 	cmd << "./muser2-para -grp -wf " << imp.str() << " " << input << " > " << muser_out.str();// */ " > /dev/null";
 	int status = system(cmd.str().c_str());
 	if(status < 0){

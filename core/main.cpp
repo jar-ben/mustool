@@ -28,7 +28,9 @@ int main(int argc, char *argv[]){
 		TCLAP::ValueArg<std::string> output("o","output-file","A file where the identified MUSes will be exported to.",false,"","string");
 		cmd.add(output);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
-		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine).",false,"default","string");
+		vector<string> allowedShrinks {"default", "muser"};
+		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
+		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
 		cmd.add(shrink);
 		TCLAP::ValueArg<int> recursionDepthLimit("","max-recursion-depth","Affects only the algorithm ReMUS. Sets the depth limit on recursion calls in the algorithm.",false,6,"N+ or -1 for unlimited.");
 		cmd.add(recursionDepthLimit);
@@ -43,6 +45,7 @@ int main(int argc, char *argv[]){
 		cmd.add(input);
 		cmd.parse(argc, argv);
 
+		//clear the output file
 		if(output.getValue() != ""){
 			std::ofstream ofs;
 			ofs.open(output.getValue(), std::ofstream::out | std::ofstream::trunc);
@@ -54,13 +57,14 @@ int main(int argc, char *argv[]){
 		solver.verbose = verbose.getValue();
 		solver.depthMUS = (recursionDepthLimit.getValue() >= 0)? recursionDepthLimit.getValue() : solver.dimension;
 		solver.dim_reduction = reductionCoeff.getValue();
-		solver.validate_mus_c = verify.getValue();
-		solver.satSolver->shrink_alg = shrink.getValue();
+		solver.validate_mus_c = verify.getValue();		
+		std::string shr = shrink.getValue();
+		if(solver.domain != "sat") shr = "default";
+		solver.satSolver->shrink_alg = shr;
 		solver.get_implies = getImplied.getValue();
 		solver.criticals_rotation = criticalsRotation.getValue(); //criticals_rotation;
 		
 		solver.enumerate();
-
 		
 		cout << "Enumeration completed" << endl;
 		cout << "Number of MUSes: " << solver.muses.size() << endl;
