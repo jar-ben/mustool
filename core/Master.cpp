@@ -108,10 +108,17 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			msSolver->criticals_rotation(crits, f);
 			if(verbose) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
 		}
-		if(count_ones(crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
+		float c_crits = count_ones(crits);
+		if(int(c_crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
 			return muses.back();
-		}		
+		}			
+		if((c_crits/f_size) > 0.5){
+			if(!is_valid(crits, false, false)){ 
+				muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
+				return muses.back();
+			}
+		}	
 	}
 
 	Formula mus = satSolver->shrink(f, crits);
