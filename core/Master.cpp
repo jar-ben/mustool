@@ -113,12 +113,10 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
 			return muses.back();
 		}			
-		if((c_crits/f_size) > 0.5){
-			if(!is_valid(crits, false, false)){ 
-				muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
-				return muses.back();
-			}
-		}	
+		if(!is_valid(crits, false, false)){ 
+			muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
+			return muses.back();
+		}
 	}
 
 	Formula mus = satSolver->shrink(f, crits);
