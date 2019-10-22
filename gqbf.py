@@ -75,6 +75,8 @@ def tseitinOnDnf(dnf, current):
 ## input: cl: a XOR represented as a set of literals
 ## output: tseitin representation of cl
 def tseitinXOR(cl, current):
+    if len(cl) == 1:
+        return [cl], current
     fst = cl[0]
     cnf = []
     for snd in cl[1:]:
