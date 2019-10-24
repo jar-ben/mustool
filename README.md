@@ -1,36 +1,85 @@
-This is a so far unnamed tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO[1], TOME[2], and ReMUS[3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL.
-
+# MUST
+MUST is a  tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO [1], TOME [2], and ReMUS [3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL.
 
 We distribute this source code under the MIT licence. See ./LICENSE for mode details.
 
-In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the developer of the tool, at xbendik=at=fi.muni.cz.
-
-## Third-party Tools
-
-Besides our original code, the tool uses several external tools that we in some form distribute with our code. Therefore, by using our tool, you are also using the third parties tools and it is your responsibility to obey the lincenses of these tools. In particular, our tool builds on the following third-party tools:
-* miniSAT[4] - miniSAT is a well-known SAT CNF solver. We use it in our tool as a satisfiability solver int the SAT domain and we also use it as a solver for maintaining the symbolic representation of the unexplored subsets during the MUS enumeration.
-* muser2[5] - muser2 is a SAT CNF single MUS extraction tool and we use it for an implementation of the shrinking procedure in the three MUS enumeration algorithms. We distribute only a linux complied binary of muser2 (./muser2-para) alongside our tool. The source code of muser2 is available at https://bitbucket.org/anton_belov/muser2. We recommend you, the user of our tool, download the source code of muser2 and build it on your own to make sure that you have a build that is suitable for your architecture.
-* mcsmus[9] - a yet another SAT CNF sinle MUS extraction tool that we use for the shrinking (user can choose whehter muser2 or mcsmus is used). We distribute mcsmus's source code (check the licence file in ./mcsmus).
-
-We distribute a source code taken from https://bitbucket.org/gkatsi/mcsmus. 
-* z3[6] - we use the SMT satisfiability solver z3 as a satisfiability solver in the SMT domain. However, we do not distribute the code of z3 (and nor a binary); we include it as a C++ library and you have to download and install it on your own.
-* SPOT[7] - SPOT is a C++ library for LTL, omega-automata manipulation, and LTL model checking. We use SPOT as a satisfiability solver in the LTL domain. You have to download and install the library on your own.
-* MiniBones[8] - MiniBones is a tool for computing complete bakcbones of a given satisfiable SAT CNF formula. We use it as a subroutine in our heuristic called Backbone heuristic; the heuristic can be optionally used to speed up a MUS enumeration in the SAT domain. We include minibone's source code (check the license file in ./minibones)
-
 ## Installation
-If you have already installed the above mentioned tools, just run "make"
 
-## Running the Tool
-To run the tool use: ./mvc -v 1 <path_to_input_file>
+To be able to deal with the three constraint domains, our tool employs several external libraries. In particular, we use:
+- miniSAT [4] and zlib library for dealing with the SAT domain
+- z3 [6] for dealing with the SMT domain
+- and SPOT [7] for dealing with the LTL domain.
 
-The -v argument determines the algorithm that should be used. In particular, 1 - ReMUS, 2 - TOME, 3 - Marco. The name of the input file should end either as .cnf, .smt, or .ltl. See the example inputs in ./examples/
+MiniSAT is packed directly with the source code of our tool; you do not install it separately. Zlib has to be installed. Finally, z3 and/or SPOT need to be installed only if you want to use our tool in the SMT and/or LTL domains. Note that installation of z3 and SPOT might take several hours.
 
-For more options, invoke ./mvc -h.
 
-For trying our new heuristics, Backbone and Matchmaker, for in the SAT domain, use flag "-w 1" or "-w 2" for Backbone and Matchmaker, respectively.
+### Installation of zlib
+Zlib is a part of the package zlib1g-dev, you should be able to install it with:
+```
+sudo apt install zlib1g-dev
+```
 
-## Final Note
-The tool is still under development and there is a lot of things that need to be done (or improved). In case of any troubles, please contact me at xbendik=at=fi.muni.cz.
+### Installation of z3
+z3 can be downloaded at [https://github.com/Z3Prover/z3](https://github.com/Z3Prover/z3)
+Please follow its README file for installation instructions. Basically, the following should do the trick:
+```
+python scripts/mk_make.py
+cd build; make
+sudo make install
+```
+
+
+### Installation of SPOT
+SPOT can be downloaded from [https://spot.lrde.epita.fr/](https://spot.lrde.epita.fr/)
+Again, follow installation instructions that are provided by its authors. 
+Basically, the following should do the trick:
+```
+./configure --disable-python
+make
+sudo make install
+sudo ldconfig
+```
+Note the "sudo ldconfig", that is important. Do not forget to run it, otherwise SPOT might not be visible for our tool.
+
+
+### Building our tool
+Building our tool requires at least zlib to be installed.
+To build our tool, go to its main directory (the one where is this README.md file) and run:
+```
+make
+```
+This will make our tool only with support for the SAT domain. If you want to support also the other domains, you have to install z3 and/or SPOT first. Then run one of the following:
+```
+make USESMT=YES
+make USELTL=YES
+make USESMT=YES USELTL=YES
+```
+If you run make repeatedly, e.g. if you have decided to allow another domain, run first "make clean" and then appropriate make.
+
+
+## Running our tool
+in the main directory, run "./must _file_" where _file_ is an input file of constraints. You can use one of our examples, e.g.:
+```
+./must examples/test.cnf
+./must examples/test.smt2
+./must examples/test.ltl
+./must examples/bf1355-228.cnf
+```
+To run the tool with a time limit (always recommended), use e.g.:
+```
+timeout 20 examples/bf1355-228.cnf
+```
+To save the identified MUSes into a file, run:
+```
+timeout 10 ./must -o output_file examples/test.cnf
+```
+To see all the available parameters, run:
+```
+./must -h
+```
+
+## Other Third-Party Tools
+Besides the above mentioned tools, we also use two single MUS extraction algorithms: muser2 [5] and mcsmus [8]. You do not have to install these. Muser2 is presented in our repo in a binary form, and mcsmus is compiled with our code. 
 
 ## References
 * [1] Mark H. Liffiton, Alessandro Previti, Ammar Malik, João Marques-Silva: Fast, flexible MUS enumeration. Constraints 21(2), 2016.
@@ -40,5 +89,7 @@ The tool is still under development and there is a lot of things that need to be
 * [5] https://bitbucket.org/anton_belov/muser2
 * [6] https://github.com/Z3Prover/z3
 * [7] https://spot.lrde.epita.fr/
-* [8] http://sat.inesc-id.pt/~mikolas/sw/minibones/
-* [9] https://bitbucket.org/gkatsi/mcsmus
+* [8] https://bitbucket.org/gkatsi/mcsmus
+
+## Contact
+In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the developer of the tool, at xbendik=at=fi.muni.cz.
