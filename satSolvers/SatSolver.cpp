@@ -20,11 +20,35 @@ vector<bool> SatSolver::shrink(std::vector<bool> &f, std::vector<bool> crits){
 }
 
 //basic, domain agnostic, implementation of the grow procedure
-vector<bool> SatSolver::grow(std::vector<bool> &f){
+vector<bool> SatSolver::grow2(std::vector<bool> &f, std::vector<std::vector<bool>> &unsats, std::vector<bool> conflicts){
 	grows++;
+	if(conflicts.empty())
+		conflicts = std::vector<bool> (dimension, false);
 	vector<bool> s = f;
 	for(int i = 0; i < dimension; i++){
-		if(!s[i]){
+		if(!s[i] && !conflicts[i]){
+			s[i] = true;
+			std::vector<bool> copy = s;
+			if(!solve(copy, true, true)){
+				unsats.push_back(s);
+				s[i] = false;
+			}else{
+				s = copy;
+			}
+		}
+	}
+	return s;
+}
+
+
+//basic, domain agnostic, implementation of the grow procedure
+vector<bool> SatSolver::grow(std::vector<bool> &f, std::vector<bool> conflicts){
+	grows++;
+	if(conflicts.empty())
+		conflicts = std::vector<bool> (dimension, false);
+	vector<bool> s = f;
+	for(int i = 0; i < dimension; i++){
+		if(!s[i] && !conflicts[i]){
 			s[i] = true;
 			if(!solve(s, false, true))
 				s[i] = false;
@@ -39,5 +63,14 @@ void SatSolver::exportMUS(std::vector<bool> mus, std::string outputFile){
 	file.open(outputFile, std::ios_base::app);
 	file << "MUS #" << exported_muses << "\n";
 	file << toString(mus) << "\n";
+	file.close();
+}
+
+void SatSolver::exportMSS(std::vector<bool> mss, std::string outputFile){
+	exported_msses++;
+	ofstream file;
+	file.open(outputFile, std::ios_base::app);
+	file << "MSS #" << exported_msses << "\n";
+	file << toString(mss) << "\n";
 	file.close();
 }

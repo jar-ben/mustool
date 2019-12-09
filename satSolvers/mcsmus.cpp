@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "satSolvers/MSHandle.h"
+#include "satSolvers/mcsmus_handle.h"
 #include "mcsmus/minisat-wrapper.hh"
 #include "mcsmus/glucose-wrapper.hh"
 #include "mcsmus/minisolver.hh"
@@ -30,7 +30,7 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 	return lits;
 }
 
-std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits){
+std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, std::vector<bool> crits){
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;
@@ -48,7 +48,7 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 	//add the clauses
 	std::vector<int> constraintGroupMap;
 	int cnt = 0;
-	for(int i = 0; i < dimension; i++){
+	for(int i = 0; i < f.size(); i++){
 		if(f[i]){
 			if(crits[i]){
 				wcnf.addClause(intToLit(clauses[i]), 0);
@@ -64,14 +64,14 @@ std::vector<bool> MSHandle::shrink_mcsmus(std::vector<bool> &f, std::vector<bool
 	wcnf.relax();
 	mussolver.find_mus(mus_lits, false);
 
-	std::vector<bool> mus(dimension, false);
+	std::vector<bool> mus(f.size(), false);
 	for(auto b : mus_lits){
 		int gid = wcnf.bvarIdx(b);
 		if(gid > 0){
 			mus[constraintGroupMap[gid - 1]] = true;
 		}	
 	}
-	for(int i = 0; i < dimension; i++){
+	for(int i = 0; i < f.size(); i++){
 		if(crits[i]){
 			mus[i] = true;
 		}

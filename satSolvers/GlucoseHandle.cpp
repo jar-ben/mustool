@@ -1,7 +1,6 @@
-#include "satSolvers/Dimacs.h"
-#include "satSolvers/mcsmus_handle.h"
 #include "core/misc.h"
-#include "satSolvers/MSHandle.h"
+#include "satSolvers/GlucoseHandle.h"
+#include "satSolvers/mcsmus_handle.h"
 #include <sstream>
 #include <fstream>
 #include <sstream>
@@ -14,20 +13,20 @@
 #include <cstdio>
 #include <assert.h>
 
-using namespace CustomMinisat;
+using namespace CustomGlucose;
 using namespace std;
 
-Lit itoLit(int i){
+Lit GLitoLit(int i){
 	bool sign = i < 0;
 	int var = (sign)? -i-1 : i-1;
 	return (sign) ? ~mkLit(var) : mkLit(var);
 }
 
-int Littoi(Lit l){
+int GLLittoi(Lit l){
 	return (var(l)+1) * (sign(l) ? -1 : 1);
 }
 
-vector<int>  convert_clause(string clause){
+vector<int>  GLconvert_clause(string clause){
 	vector<int> ret;
 	istringstream is(clause);
 	int n;
@@ -37,8 +36,9 @@ vector<int>  convert_clause(string clause){
 	return ret;
 }
 
-MSHandle::MSHandle(string filename):SatSolver(filename){
-	solver = new Solver();
+GlucoseHandle::GlucoseHandle(string filename):SatSolver(filename){
+	//solver = new Solver();
+	solver = new SimpSolver();
 	vars = 0;
 	parse(filename);
 	dimension = clauses.size();
@@ -49,11 +49,11 @@ MSHandle::MSHandle(string filename):SatSolver(filename){
 	flip_edges_flatten.resize(dimension);
 }
 
-MSHandle::~MSHandle(){
+GlucoseHandle::~GlucoseHandle(){
 	delete solver;
 }
 
-void MSHandle::compute_flip_edges(int c){
+void GlucoseHandle::compute_flip_edges(int c){
 	if(flip_edges_computed[c]) return;
 	flip_edges_computed[c] = true;
 
@@ -84,7 +84,7 @@ void MSHandle::compute_flip_edges(int c){
 			flip_edges_flatten[c].push_back(i);
 }
 
-bool MSHandle::add_clause(vector<int> cl){
+bool GlucoseHandle::add_clause(vector<int> cl){
 	std::sort(cl.begin(), cl.end());
 	vector<int> copy = cl; 
 	copy.pop_back(); //get rid of control variable
@@ -92,7 +92,7 @@ bool MSHandle::add_clause(vector<int> cl){
 	clauses_map[copy] = clauses.size() - 1; //used for manipulation with single MUS extractions (muser2, dmuser)
 	vec<Lit> msClause;
 	for(auto &lit: cl)
-		msClause.push(itoLit(lit));		
+		msClause.push(GLitoLit(lit));		
 
 	for(auto &lit: copy){
 		if(lit > 0)
@@ -103,11 +103,11 @@ bool MSHandle::add_clause(vector<int> cl){
 	return solver->addClause(msClause);
 }
 
-bool MSHandle::add_unit(int lit){
-	return solver->addClause(itoLit(lit));
+bool GlucoseHandle::add_unit(int lit){
+	return solver->addClause(GLitoLit(lit));
 }
 
-bool MSHandle::parse(string path){
+bool GlucoseHandle::parse(string path){
         ifstream infile(path, ifstream::in);
         if (!infile.is_open())
 		print_err("wrong input file");
@@ -140,16 +140,16 @@ bool MSHandle::parse(string path){
 		solver->newVar();	// clause variables
 	}
 	for(int i = 0; i < clauses_str.size(); i++)
-		solver->newVar(lbool(uint8_t(1)), true);	// control variables
+		solver->newVar(true, true);	// control variables
 	for(size_t i = 0; i < clauses_str.size(); i++){
-		clause = convert_clause(clauses_str[i]);
+		clause = GLconvert_clause(clauses_str[i]);
 		clause.push_back(vars + i + 1);	//control variable
 		add_clause(clause); //add clause to the solver
 	}
 	return true;
 }
 
-vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
+vector<bool> GlucoseHandle::model_extension(vector<bool> subset, vector<bool> model){
 	int flipped = 0;
 	vector<bool> extension = subset;
 	for(int i = 0; i < extension.size(); i++){
@@ -172,7 +172,7 @@ vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
 	return extension;
 }
 
-void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
+void GlucoseHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 	vector<int> criticals_int;
 	for(int i = 0; i < dimension; i++)
 		if(criticals[i] && subset[i]) criticals_int.push_back(i);
@@ -197,14 +197,14 @@ void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
 
 // check formula for satisfiability using miniSAT
 // the core and grow variables controls whether to return an unsat core or model extension, respectively
-bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
+bool GlucoseHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
 	checks++;
 	vec<Lit> lits;
 	for(unsigned int i = 0; i < controls.size(); i++){
 		if(controls[i])
-			lits.push(itoLit((i + vars + 1) * (-1)));
+			lits.push(GLitoLit((i + vars + 1) * (-1)));
 		else
-			lits.push(itoLit(i + vars + 1 ));
+			lits.push(GLitoLit(i + vars + 1 ));
 	}
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
@@ -237,7 +237,7 @@ bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improv
 	return sat;
 }
 
-vector<bool> MSHandle::get_model(){
+vector<bool> GlucoseHandle::get_model(){
 	vector<bool> model(vars, false);
 	for(int i = 0; i < vars; i++){
 		if(solver->model[i] == l_True)
@@ -250,7 +250,7 @@ vector<bool> MSHandle::get_model(){
 	return model;
 }
 
-string MSHandle::toString(vector<bool> &f){
+string GlucoseHandle::toString(vector<bool> &f){
 	int formulas = std::count(f.begin(), f.end(), true);
 	stringstream result;
 	result << "p cnf " << vars << " " << formulas << "\n";
@@ -261,7 +261,7 @@ string MSHandle::toString(vector<bool> &f){
 	return result.str();
 }
 
-void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool> crits){
+void GlucoseHandle::export_formula_crits(vector<bool> f, string filename, vector<bool> crits){
 	int formulas = std::count(f.begin(), f.end(), true);
 
 
@@ -284,39 +284,17 @@ void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool
 	}	
 }
 
-vector<bool> MSHandle::import_formula_crits(string filename){
-	vector<bool> f(dimension, false);
-	vector<vector<int>> cls;
-	ReMUS::parse_DIMACS(filename, cls);
-	for(auto cl: cls){
-		sort(cl.begin(), cl.end());
-		if(clauses_map.count(cl))
-			f[clauses_map[cl]] = true;
-		else { assert(false); }		
-	}	
-	return f;
-}
-
 // implementation of the shrinking procedure
 // based on the value of basic_shrink employes either muser2 or dmuser
-vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
+vector<bool> GlucoseHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	shrinks++;
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
-#ifdef UMCSMUS
-	if(shrink_alg == "default"){
-		return shrink_mcsmus(f, clauses, crits);
-	}
-#endif
-	stringstream exp;			
-	exp << "./tmp/f_" << hash << ".cnf";			
-	export_formula_crits(f, exp.str(), crits);	
-
-	return shrink_muser(exp.str(), hash);
+	return shrink_mcsmus(f, clauses, crits);
 }
 
-int muser_output(std::string filename){
+int GLmuser_output(std::string filename){
 	ifstream file(filename, ifstream::in);
 	std::string line;
 	while (getline(file, line))
@@ -328,89 +306,3 @@ int muser_output(std::string filename){
 	}	
 	return 0;
 }
-
-vector<bool> MSHandle::shrink_muser(string input, int hash2){
-	stringstream cmd, muser_out, imp;
-	muser_out << "./tmp/f_" << hash << "_output";
-	imp << "./tmp/f_" << hash << "_mus";
-	cmd << "./muser2-para -grp -wf " << imp.str() << " " << input << " > " << muser_out.str();// */ " > /dev/null";
-	int status = system(cmd.str().c_str());
-	if(status < 0){
-		std::cout << "Invalid muser return code" << std::endl; exit(0);
-	}
-	imp << ".gcnf";
-	vector<bool> mus = import_formula_crits(imp.str());
-	int sat_calls = muser_output(muser_out.str());	
-//	checks += sat_calls;
-	remove(imp.str().c_str());
-	remove(muser_out.str().c_str());
-	remove(input.c_str());
-	return mus;
-}
-
-std::vector<bool> MSHandle::grow(std::vector<bool> &f, std::vector<bool> conflicts){
-	grows++;
-	if(grow_alg == "default"){
-		return SatSolver::grow(f, conflicts);
-	}
-	return grow_cmp(f, conflicts);
-}
-
-std::vector<bool> MSHandle::grow_cmp(std::vector<bool> &f, std::vector<bool> &conflicts){
-	stringstream ex;			
-	ex << "./tmp/f_" << hash << ".wcnf";			
-	vector<int> mapa = export_formula_wcnf(f, conflicts, ex.str());
-	stringstream cmd;
-	cmd << "./cmp_linux -strategyCoMss=4 " << ex.str();
-	string result = exec(cmd.str().c_str());
-	
-	std::string line;    
-	bool reading = false;
-	std::vector<int> res_mcs;
-	std::istringstream res(result);
-	while (std::getline(res, line)) {
-		if (line.find("UNSATISFIABLE") != std::string::npos)
-			reading = true;			
-		else if(reading && line[0] == 'v'){
-			line.erase(0, 2);
-			res_mcs = convert_clause(line);
-		}
-	}
-	cout << "mcs size: " << res_mcs.size() << endl;
-	if(!reading)
-		print_err("cmp failed to find a mcs");
-	vector<bool> mss(dimension, true);
-	for(int i = 0; i < dimension; i++)
-		if(conflicts[i])
-			mss[i] = false;
-	for(auto l:res_mcs){
-		mss[mapa[l - 1]] = false;
-	}
-	return mss;
-}
-
-vector<int> MSHandle::export_formula_wcnf(std::vector<bool> f, std::vector<bool> &conflicts, std::string filename){
-	int formulas = dimension - std::count(conflicts.begin(), conflicts.end(), true);
-	int hard = std::count(f.begin(), f.end(), true);
-	int hh = dimension;
-
-	FILE *file;
-	file = fopen(filename.c_str(), "w");
-	if(file == NULL) cout << "failed to open " << filename << ", err: " << strerror(errno) << endl;
-	vector<int> mapa;	
-	fprintf(file, "p wcnf %d %d %d\n", vars, formulas, hh);
-	for(int i = 0; i < f.size(); i++){
-		if(f[i]){
-			fprintf(file, "%d %s\n", hh, clauses_str[i].c_str());
-			mapa.push_back(i);
-		}else if(!f[i] && !conflicts[i]){
-			fprintf(file, "1 %s\n", clauses_str[i].c_str());
-			mapa.push_back(i);
-		}
-	}
-	if (fclose(file) == EOF) {
-		cout << "error closing file: " << strerror(errno) << endl;
-	}
-	return mapa;	
-}
-

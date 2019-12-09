@@ -28,5 +28,26 @@ class MUS{
 	int id;
 };
 
+class MSS{
+	public:
+	MSS(Formula& f, float d, int idc, int seed_d = 1){
+		bool_mss = f;
+		for(int i = 0; i < f.size(); i++)
+			if(f[i])
+				int_mss.push_back(i);
+		without_conflicts = int_mss;		
+		dimension = int_mss.size();
+		duration = d;
+		id = idc;
+		seed_dimension = seed_d;
+	}
+	Formula bool_mss;
+	int seed_dimension;
+	std::vector<int> int_mss;
+	std::vector<int> without_conflicts;
+	int dimension;
+	float duration;
+	int id;
+};
 
 #endif

@@ -26,7 +26,7 @@ public:
 
 	Explorer(int vars, bool verb = false);
 	~Explorer();
-	bool block_up(MUS& mus);
+	bool block_up(std::vector<bool> formula);
         bool block_down(std::vector<bool> formula);
 	std::vector<bool> get_unexplored(uint8_t polarity = 0, bool rnd_pol = false);
 	std::vector<bool> get_bot_unexplored(std::vector<bool>);
@@ -38,6 +38,7 @@ public:
 	bool isUnexplored(std::vector<bool> valuation);
 	bool isUnexploredSat(std::vector<bool> valuation);
 	int getImplied(std::vector<bool>& implied, std::vector<bool>& formula);
+	int getConflicts(std::vector<bool>& conflicts, std::vector<bool>& formula);
 	
 	std::vector<bool> mus_intersection;
 	std::vector<bool> mus_union;
@@ -52,7 +53,7 @@ public:
 
 	//data structures for maintaining availables - the opposites of criticals
 	std::vector<bool> maybe_available; //available[c] = true iff c is a part of some MUS
-	std::vector<MUS> muses;
+	std::vector<std::vector<int>> muses;
 	std::vector<std::vector<int>> parent_muses; //parent_muses[c] holds ids of MUSes stored in muses_int
 	bool is_available(int c, std::vector<bool> &subset); // returns true if c is available for subset (can be added to it)
 };

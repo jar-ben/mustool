@@ -70,7 +70,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 
 // helper funcion for the ReMUS algorithm
 // modifies mus into a set S such that mus /subseteq S /subseteq top
-void Master::extend_mus(Formula &top, Formula &mus, int dMUS){
+void Master::extend_mus(Formula &top, Formula &mus){
 	int origin_top_size = count_ones(top);
 	int ones = count_ones(mus);
 	for(int i = 0; i < dimension; i++){

@@ -66,7 +66,7 @@ bool Explorer::is_available(int c, std::vector<bool> &subset){
 	if(!maybe_available[c]) return true;	
 	for(auto &mus: parent_muses[c]){ //"mus" is an id of a mus
 		bool covered = false;
-		for(auto &c2: muses[mus].int_mus){
+		for(auto &c2: muses[mus]){
 			if(c2 != c && !subset[c2]){
 				covered = true;
 				break;
@@ -120,29 +120,24 @@ bool Explorer::block_down(Formula cl){
         return solver->addClause(msClause) && botSolver->addClause(msClause);
 }
 
-bool Explorer::block_up(MUS& mus){
-	//add to local available structures
-	std::vector<int> mus_no_crit;
-	for(auto c: mus.int_mus)
-		if(!critical[c])
-			mus_no_crit.push_back(c);
-
-	mus.without_crits = mus_no_crit;
+bool Explorer::block_up(Formula cl){
+	//add to local critical structures
+	std::vector<int> mus; 
+        for(int i = 0; i < cl.size(); i++)
+                if(cl[i])
+			mus.push_back(i);
+	int mus_id = muses.size();
 	muses.push_back(mus);
-	for(auto &c: mus.int_mus){
-		if(critical[c]) continue;
+	for(auto &c: mus){		
 		maybe_available[c] = true;
-		parent_muses[c].push_back(mus.id);
-	}
+		parent_muses[c].push_back(mus_id);
+	}	
 
-	for(int i = 0; i < dimension; i++){
-		if(!mus.bool_mus[i]) mus_intersection[i] = false;
-		else mus_union[i] = true;
-	}
-
+	//add to SAT unex solver
         vec<Lit> msClause;
-	for(auto c: mus.without_crits)
-		msClause.push(~mkLit(c));
+        for(int i = 0; i < cl.size(); i++)
+                if(cl[i] && !critical[i])
+                        msClause.push(~mkLit(i));
         return solver->addClause(msClause) && topSolver->addClause(msClause);
 }
 
@@ -292,6 +287,14 @@ int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
         for(int i = 0; i < dimension; i++){
 		if(f[i] && is_critical(i, f))
 			implied[i] = true;
+	}
+	return 0;
+}
+
+int Explorer::getConflicts(std::vector<bool>& conflicts, std::vector<bool>& f){
+	for(int i = 0; i < dimension; i++){
+		if(!f[i] && !is_available(i, f))
+			conflicts[i] = true;
 	}
 	return 0;
 }
