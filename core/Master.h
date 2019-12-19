@@ -3,6 +3,7 @@
 
 #include "satSolvers/MSHandle.h"
 #include "satSolvers/GlucoseHandle.h"
+#include "satSolvers/CadicalHandle.h"
 #include "Explorer.h"
 #ifndef NOSMT
 	#include "satSolvers/Z3Handle.h"
@@ -28,6 +29,7 @@ using namespace std;
 
 class Master{
 public:
+	int bit;
 	int dimension; //the number of constraints
 	string algorithm; //MUS enumeration algorithm to be used
 	int isValidExecutions;
@@ -37,11 +39,14 @@ public:
 	float mus_approx;
 	bool get_implies;
 	bool criticals_rotation;
+	bool mss_rotation;
 	string domain;
 	bool useMixedHeuristic;
 	int hash;
 	int unex_unsat;
 	int unex_sat;
+	int guessed;
+	int rotated_msses;
 	chrono::high_resolution_clock::time_point initial_time;
 	vector<MUS> muses;
 	vector<MSS> msses;
@@ -49,20 +54,24 @@ public:
 	SatSolver* satSolver; 
 	string sat_solver;
 
-	Master(string filename, string alg);
+	Master(string filename, string alg, string ssolver);
 	~Master();
 	bool is_valid(Formula &f, bool core = false, bool grow = false);
 	void block_down(Formula f);
 	void block_up(Formula f);
 	void mark_MUS(MUS& m, bool block = true);
-	void mark_MSS(MSS& m, bool block = true);
+	void mark_MSS(MSS m, bool block = true);
 	MUS& shrink_formula(Formula& f, Formula crits = Formula());
-	MSS& grow_formula(Formula& f, Formula conflicts = Formula());
+	MSS grow_formula(Formula& f, Formula conflicts = Formula());
+	vector<MSS> grow_formulas(Formula& f, Formula conflicts = Formula(), int limit = 1);
+	void grow_combined(Formula &f, Formula conflicts = Formula());
 	void write_mus_to_file(MUS& f);
 	void write_mss_to_file(MSS& f);
 	void validate_mus(Formula &f);
 	void validate_mss(Formula &f);
 	void enumerate();
+
+	int rotateMSS(Formula mss);
 
 	//reMUS algorithm functions
 	int depthMUS;
@@ -74,6 +83,18 @@ public:
 	//duremus
 	void duremus(Formula subset, Formula crits, int depth);
 	void reduce_mss(Formula &bot, Formula &mss);
+	void duremus_booster(int limit);
+
+	//unibase
+	void unibase();
+	vector<bool> unibase_union(int limit);
+	void unibase2();
+	void unibase2_rec(Formula subset, Formula used);
+
+	//unimus
+	void unimus();
+	std::vector<int> extendCS(MSS&, Formula&, Formula&);
+
 
 	//TOME algorithm functions
 	void find_all_muses_tome();

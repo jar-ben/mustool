@@ -39,6 +39,9 @@ public:
 	std::vector<int> export_formula_wcnf(std::vector<bool> f, std::vector<bool> &conflicts, std::string filename);
 	std::vector<bool> grow_cmp(std::vector<bool> &f, std::vector<bool> &conflicts);
 	std::vector<bool> grow(std::vector<bool> &f, std::vector<bool> conflicts = std::vector<bool>());
+	std::vector<bool> grow_uwrmaxsat(std::vector<bool> &f, std::vector<bool> &conflicts);
+	std::vector<bool> satisfied(std::vector<int> &valuation);
+	std::vector<std::vector<bool>> growMultiple(std::vector<bool> &f, std::vector<bool> conflicts = std::vector<bool>(), int limit = 1);
 
 	//model rotation
 	int rotated_crits;	

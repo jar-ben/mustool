@@ -6,9 +6,10 @@
 #include <random>
 
 
-Master::Master(string filename, string alg){
+Master::Master(string filename, string alg, string ssolver){
         isValidExecutions = 0;
 	algorithm = alg;
+	sat_solver = ssolver;
 	if(ends_with(filename, "smt2")){
 		#ifdef NOSMT
 			print_err("Working with SMT is currently not enabled. To enable it, run 'make cleanCore; make USESMT=YES'. For more info, see README.md.");
@@ -18,8 +19,11 @@ Master::Master(string filename, string alg){
 		domain = "smt";
 	}
 	else if(ends_with(filename, "cnf")){
+		cout << "solver: " << sat_solver << endl;
 		if(sat_solver == "glucose"){
 			satSolver = new GlucoseHandle(filename);
+		}else if(sat_solver == "cadical"){
+			satSolver = new CadicalHandle(filename);
 		}else{
 			satSolver = new MSHandle(filename);
 		}
@@ -51,6 +55,9 @@ Master::Master(string filename, string alg){
 	unex_sat = unex_unsat = 0;
         hash = random_number();
 	satSolver->hash = hash;
+	bit = 0;
+	guessed = 0;
+	rotated_msses = 0;
 }
 
 Master::~Master(){
@@ -94,7 +101,7 @@ void Master::validate_mus(Formula &f){
 	for(int l = 0; l < f.size(); l++)
 		if(f[l]){
 			f[l] = false;
-			if(!is_valid(f))
+			if(!satSolver->solve(f, false, false))
 				print_err("the mus has an unsat subset");	
 			f[l] = true;
 		}	
@@ -109,10 +116,42 @@ void Master::validate_mss(Formula &f){
 	for(int l = 0; l < f.size(); l++)
 		if(!f[l]){
 			f[l] = true;
-			if(is_valid(f))
+			if(satSolver->solve(f, false, false))
 				print_err("the ms has a sat superset");	
 			f[l] = false;
 		}	
+}
+
+int Master::rotateMSS(Formula mss){
+	int rots = 0;
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	for(int c = 0; c < dimension; c++){
+		if(!mss[c]){
+			msSolver->compute_flip_edges(c); //TODO: better encansulape
+			for(auto &lit_group: msSolver->flip_edges[c]){
+				vector<int> flip_c;
+				for(auto c2: lit_group){
+					if(mss[c2]) flip_c.push_back(c2);
+				}
+				if(flip_c.size() < 10){
+					bool ok = true;
+					Formula copy = mss;
+					copy[c] = true;
+					for(auto c2: flip_c){
+						if(!explorer->is_critical(c2, copy)) { copy[c2] = false; }
+						else{ ok = false; break; }
+					}
+					if(ok){
+						grow_combined(copy);
+						mark_MSS(MSS(copy, -1, msses.size(), count_ones(copy)));
+						rotated_msses++;
+						rots++;
+					}
+				}
+			}	
+		}
+	}
+	return rots;
 }
 
 MUS& Master::shrink_formula(Formula &f, Formula crits){
@@ -148,11 +187,46 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	return muses.back();
 }
 
+
+vector<MSS> Master::grow_formulas(Formula &f, Formula conflicts, int limit){
+	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
+	if(conflicts.empty()) conflicts.resize(dimension, false);
+	explorer->getConflicts(conflicts, f);	
+	int f_size = count_ones(f);
+	float c_conflicts = count_ones(conflicts);
+	if(int(c_conflicts) == (dimension - f_size)){ // each constraint in f is critical for f, i.e. it is a MUS 
+		guessed++;
+		msses.push_back(MSS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
+		return vector<MSS> (1, msses.back());
+	}		
+	int diff = (dimension - f_size) - c_conflicts;
+	float ratio = c_conflicts / (dimension - f_size);	
+	if(ratio > 0.95 || diff < 3){
+		Formula extended = f;
+		for(int i = 0; i < dimension; i++) if(!conflicts[i]) extended[i] = true;
+		if(is_valid(extended, true, false)){ 
+			msses.push_back(MSS(extended, -1, msses.size(), f_size));//-1 duration means skipped shrink
+			guessed++;
+			return vector<MSS> (1, msses.back());
+		}else{
+			block_up(extended);
+		}
+	}
+	
+	vector<Formula> resMSSes = satSolver->growMultiple(f, conflicts, limit);
+	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
+	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
+	duration = duration / resMSSes.size();
+	vector<MSS> result;
+	for(auto &m: resMSSes){		
+		result.push_back(MSS(m, duration, msses.size(), f_size));
+	}
+	return result;
+}
+
 //grow formula into a MSS
-MSS& Master::grow_formula(Formula &f, Formula conflicts){
+MSS Master::grow_formula(Formula &f, Formula conflicts){
 	int cs = count_ones(conflicts);
-	//if(cs > 0)
-	//	cout << "conflicts: " << cs << endl;
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	if(verbose) cout << "growing dimension: " << f_size << endl;
@@ -165,8 +239,7 @@ MSS& Master::grow_formula(Formula &f, Formula conflicts){
 		float c_conflicts = count_ones(conflicts);
 		if(verbose) cout << "# of known conflicting constraints before growing: " << int(c_conflicts) << endl;	
 		if(int(c_conflicts) == (dimension - f_size)){ // each constraint in f is critical for f, i.e. it is a MUS 
-			msses.push_back(MSS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
-			return msses.back();
+			return MSS(f, -1, muses.size(), f_size);
 		}		
 		int diff = (dimension - f_size) - c_conflicts;
 		float ratio = c_conflicts / (dimension - f_size);	
@@ -175,39 +248,66 @@ MSS& Master::grow_formula(Formula &f, Formula conflicts){
 		 	for(int i = 0; i < dimension; i++)
 				if(!conflicts[i]) extended[i] = true;
 			if(is_valid(extended, true, false)){ 
-				msses.push_back(MSS(extended, -1, msses.size(), f_size));//-1 duration means skipped shrink
-				return msses.back();
+				return MSS(extended, -1, msses.size(), f_size);
 			}else{
 				block_up(extended);
 			}
 		}
 	}
 
-	Formula mss = satSolver->grow(f, conflicts);
+	Formula mss;
+	if(satSolver->grow_alg == "combined"){
+		grow_combined(f, conflicts);
+		mss = f;
+	}else{
+		mss = satSolver->grow(f, conflicts);
+	}
 	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
-	msses.push_back(MSS(mss, duration, msses.size(), f_size));
-	return msses.back();
+	return MSS(mss, duration, msses.size(), f_size);
 }
 
-void Master::mark_MSS(MSS& f, bool block_unex){	
+void Master::grow_combined(Formula &f, Formula conflicts){
+	if(conflicts.empty())
+		conflicts.resize(dimension, false);
+	satSolver->grows++;
+	Formula mss = f;
+	for(int i = 0; i < dimension; i++){
+		if(!mss[i] && !conflicts[i] && explorer->is_available(i, mss)){
+			mss[i] = true;
+			Formula copyMss = mss;
+			if(!satSolver->solve(copyMss, true, true)){
+				mss[i] = false;
+				block_up(copyMss);
+			}else{
+				mss = copyMss;
+			}
+		}
+	}
+	f = mss;
+}
+
+void Master::mark_MSS(MSS f, bool block_unex){	
+	msses.push_back(f);
 	if(validate_mus_c) validate_mss(f.bool_mss);		
 	explorer->block_down(f.bool_mss);
-
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
         cout << "Found MSS #" << msses.size() <<  ", mss dimension: " << f.dimension;
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
-	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
-	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
+	cout << ", intersection: " << count_ones(explorer->mus_intersection);
+	cout << ", union: " << count_ones(explorer->mus_union) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", grow duration: " << f.duration;
 	cout << ", grows: " << satSolver->grows << ", depth: " << current_depth;
-	cout << ", sats: " << explorer->mcses.size() << ", unsats: " << explorer->muses.size();
+	cout << ", sats: " << explorer->mcses.size() << ", unsats: " << explorer->muses.size() << ", bit: " << bit << ", guessed: " << guessed;
+	cout << ", exp calls: " << explorer->calls << ", rotated msses: " << rotated_msses;
 	cout << endl;
 
 	if(output_file != "")
 		write_mss_to_file(f);
+	if(mss_rotation)
+		rotateMSS(f.bool_mss);
 }
 
 void Master::mark_MUS(MUS& f, bool block_unex){	
@@ -216,7 +316,8 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
-        cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
+        if(algorithm == "unibase2") return;
+	cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
 	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
@@ -247,6 +348,15 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "marco"){
 		marco_base();
+	}
+	else if(algorithm == "unibase"){
+		unibase();
+	}
+	else if(algorithm == "unibase2"){
+		unibase2();
+	}
+	else if(algorithm == "unimus"){
+		unimus();
 	}
 	return;
 }

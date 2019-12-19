@@ -208,6 +208,7 @@ bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improv
 	}
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
+		int initSize = count_ones(controls);
 		for(int f = 0; f < controls.size(); f++){
 			if(!controls[f]){
 				for(int l = 0; l < clauses[f].size() - 1; l++){
@@ -226,6 +227,7 @@ bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improv
 				}
 			}
 		}
+		int finalSize = count_ones(controls);
 	}			
 	else if(!sat && unsat_improve){ // extract unsat core
 		vector<bool> core = vector<bool> (dimension, false);		
@@ -352,16 +354,19 @@ std::vector<bool> MSHandle::grow(std::vector<bool> &f, std::vector<bool> conflic
 	grows++;
 	if(grow_alg == "default"){
 		return SatSolver::grow(f, conflicts);
+	}else if(grow_alg == "uwr"){
+		return grow_uwrmaxsat(f, conflicts);
 	}
 	return grow_cmp(f, conflicts);
 }
 
 std::vector<bool> MSHandle::grow_cmp(std::vector<bool> &f, std::vector<bool> &conflicts){
+	cout << "growing cmp" << endl;
 	stringstream ex;			
 	ex << "./tmp/f_" << hash << ".wcnf";			
 	vector<int> mapa = export_formula_wcnf(f, conflicts, ex.str());
 	stringstream cmd;
-	cmd << "./cmp_linux -strategyCoMss=4 " << ex.str();
+	cmd << "./cmp_linux -strategyCoMss=" << growStrategy << " " << ex.str();
 	string result = exec(cmd.str().c_str());
 	
 	std::string line;    
@@ -389,10 +394,79 @@ std::vector<bool> MSHandle::grow_cmp(std::vector<bool> &f, std::vector<bool> &co
 	return mss;
 }
 
+std::vector<bool> MSHandle::satisfied(std::vector<int> &valuation){
+	std::vector<bool> result(dimension, false);
+	for(auto l: valuation){
+		if(l > 0){
+			for(auto c: hitmap_pos[l - 1]){
+				result[c] = true;
+			}
+		}else{
+			for(auto c: hitmap_neg[(-1 * l) - 1]){
+				result[c] = true;
+			}
+		}	
+	}
+	return result;
+}
+
+std::vector<bool> MSHandle::grow_uwrmaxsat(std::vector<bool> &f, std::vector<bool> &conflicts){
+	stringstream ex;			
+	ex << "./tmp/uwr_" << hash << ".wcnf";			
+	vector<int> mapa = export_formula_wcnf(f, conflicts, ex.str());
+	stringstream cmd;
+	cmd << "./uwrmaxsat -no-msu -m -v0 " << ex.str();
+	string result = exec(cmd.str().c_str());
+	
+	std::string line;    
+	std::vector<int> res_vars;
+	std::istringstream res(result);
+	while (std::getline(res, line)) {
+		if(line[0] == 'v' && line[1] == ' '){
+			line.erase(0, 2);
+			istringstream is(line);
+			int n;
+			while(is >> n)
+				res_vars.push_back(n);
+		}
+	}
+	return satisfied(res_vars);	
+}
+
+std::vector<std::vector<bool>> MSHandle::growMultiple(std::vector<bool> &f, std::vector<bool> conflicts, int limit){
+	vector<bool> original = f;
+	stringstream ex;			
+	ex << "./tmp/mcsls_" << hash << ".wcnf";			
+	vector<int> mapa = export_formula_wcnf(f, conflicts, ex.str());
+	stringstream cmd;
+	cmd << "./mcsls -num " << limit << " " << mcslsArgs << " " << ex.str();
+	cout << cmd.str() << endl;
+	string result = exec(cmd.str().c_str());
+	
+	std::string line;    
+	std::vector<std::vector<bool>> res_msses;
+	std::istringstream res(result);
+	while (std::getline(res, line)) {
+		if(starts_with(line, "c MCS")){
+			vector<bool> mss(dimension, true);
+			for(int  i = 0; i < dimension; i++)
+				if(conflicts[i]) mss[i] = false;
+			line.erase(0, 6);
+			istringstream is(line);
+			int n;
+			while(is >> n)				
+				mss[mapa[n - 1]] = false;
+		res_msses.push_back(mss);	
+		}
+	}
+	grows += res_msses.size();
+	return res_msses;
+}
+
 vector<int> MSHandle::export_formula_wcnf(std::vector<bool> f, std::vector<bool> &conflicts, std::string filename){
 	int formulas = dimension - std::count(conflicts.begin(), conflicts.end(), true);
 	int hard = std::count(f.begin(), f.end(), true);
-	int hh = dimension;
+	int hh = dimension * dimension;
 
 	FILE *file;
 	file = fopen(filename.c_str(), "w");

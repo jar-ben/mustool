@@ -124,7 +124,7 @@ Solver::Solver() :
 
 // Parameters (user settable):
 //
-verbosity(0)
+verbosity(-1)
 , showModel(0)
 , K(opt_K)
 , R(opt_R)
@@ -1645,7 +1645,7 @@ lbool Solver::search(int nof_conflicts) {
                 decisions++;
                 next = pickBranchLit();
                 if(next == lit_Undef) {
-                    printf("c last restart ## conflicts  :  %d %d \n", conflictC, decisionLevel());
+                    //printf("c last restart ## conflicts  :  %d %d \n", conflictC, decisionLevel());
                     // Model found:
                     return l_True;
                 }

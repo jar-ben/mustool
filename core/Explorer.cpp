@@ -37,6 +37,7 @@ Explorer::Explorer(int v, bool verb){
 	parent_muses.resize(dimension, std::vector<int>());
 	mus_intersection.resize(dimension, true);
 	mus_union.resize(dimension, false);
+	calls = 0;
 }
 
 Explorer::~Explorer(){
@@ -78,6 +79,7 @@ bool Explorer::is_available(int c, std::vector<bool> &subset){
 }
 
 std::vector<bool> Explorer::get_unexplored(std::vector<bool> top, std::vector<bool> &mus){
+	calls++;
 	std::vector<int> top_int;
 	for(int i = 0; i < dimension; i++)
 		if(!top[i]) top_int.push_back(i);
@@ -123,9 +125,12 @@ bool Explorer::block_down(Formula cl){
 bool Explorer::block_up(Formula cl){
 	//add to local critical structures
 	std::vector<int> mus; 
-        for(int i = 0; i < cl.size(); i++)
+        for(int i = 0; i < cl.size(); i++){
                 if(cl[i])
 			mus.push_back(i);
+		else
+			mus_intersection[i] = false;
+	}
 	int mus_id = muses.size();
 	muses.push_back(mus);
 	for(auto &c: mus){		
@@ -143,6 +148,7 @@ bool Explorer::block_up(Formula cl){
 
 
 vector<bool> Explorer::get_bot_unexplored(vector<bool> top){
+	calls++;
         botSolver->rnd_pol = false;
         for(int i = 0; i < vars; i++)
                 botSolver->setPolarity(i, lbool(uint8_t(0)));
@@ -165,8 +171,32 @@ vector<bool> Explorer::get_bot_unexplored(vector<bool> top){
         return unexplored;
 }
 
+vector<bool> Explorer::get_bot_unexplored_inside(vector<bool> subset){
+	calls++;
+        botSolver->rnd_pol = false;
+        for(int i = 0; i < vars; i++)
+                solver->setPolarity(i, lbool(uint8_t(0)));
+
+        vec<Lit> lits;
+        for(int i = 0; i < vars; i++)
+                if(!subset[i])
+                        lits.push(~mkLit(i));
+
+        if(!solver->solve(lits))
+                return vector<bool>();
+
+        vector<bool> unexplored(vars);
+        for (int i = 0 ; i < vars ; i++) {
+		if(subset[i])
+             		unexplored[i] = solver->modelValue(i) != l_False;
+		else
+			unexplored[i] = false;
+        }
+        return unexplored;
+}
 
 vector<bool> Explorer::get_top_unexplored(vector<bool> bot){
+	calls++;
         topSolver->rnd_pol = false;
         for(int i = 0; i < vars; i++)
                 topSolver->setPolarity(i, lbool(uint8_t(1)));
@@ -190,6 +220,7 @@ vector<bool> Explorer::get_top_unexplored(vector<bool> bot){
 }
 
 std::vector<bool> Explorer::get_unexplored(vector<int> assumptions){
+	calls++;
         solver->rnd_pol = true; //default value is randomly chosen
 
         vec<Lit> lits;
@@ -207,6 +238,7 @@ std::vector<bool> Explorer::get_unexplored(vector<int> assumptions){
 }
 
 std::vector<bool> Explorer::get_top_unexplored(vector<int> assumptions){
+	calls++;
         solver->rnd_pol = false; //default value is not randomly chosen
         for(int i = 0; i < vars; i++)
                 solver->setPolarity(i, lbool((uint8_t) 1)); //default variable value is true (1)
@@ -227,6 +259,7 @@ std::vector<bool> Explorer::get_top_unexplored(vector<int> assumptions){
 
 
 std::vector<bool> Explorer::get_bot_unexplored(vector<int> assumptions){
+	calls++;
         solver->rnd_pol = false; //default value is not randomly chosen
         for(int i = 0; i < vars; i++)
                 solver->setPolarity(i, lbool((uint8_t) 0)); //default variable value is false (0)
@@ -247,6 +280,7 @@ std::vector<bool> Explorer::get_bot_unexplored(vector<int> assumptions){
 
 
 std::vector<bool> Explorer::get_unexplored(uint8_t polarity, bool rnd_pol){
+	calls++;
 
         solver->rnd_pol = rnd_pol;
 	if(!rnd_pol)

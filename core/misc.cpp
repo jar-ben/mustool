@@ -16,11 +16,11 @@ void trim(string &f){
 	f = regex_replace(f, pattern, "");	
 }
 
-int count_zeros(vector<bool> &f){
+int count_zeros(vector<bool> f){
 	return std::count(f.begin(), f.end(), false);
 }
 
-int count_ones(vector<bool> &f){
+int count_ones(vector<bool> f){
 	return std::count(f.begin(), f.end(), true);
 }
 
@@ -49,6 +49,12 @@ bool ends_with(std::string const & value, std::string const & ending)
 {
     if (ending.size() > value.size()) return false;
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+bool starts_with(std::string const & value, std::string const & start)
+{
+    if (start.size() > value.size()) return false;
+    return value.rfind(start, 0) == 0;
 }
 
 std::string exec(const char* cmd) {
@@ -107,6 +113,29 @@ bool is_disjoint(std::vector<bool> &a, std::vector<int> &b){
 		if(a[c])
 			return false;
 	return true;
+}
+
+std::vector<bool> intersection(std::vector<bool> &a, std::vector<bool> &b){
+	std::vector<bool> inter = a;
+	for(int i = 0; i < a.size(); i++)
+		if(!b[i]) inter[i] = false;
+	return inter;
+}
+
+//subtracts a from b
+std::vector<int> subtract_int(std::vector<bool> &a, std::vector<bool> &b){
+	std::vector<int> inter;
+	for(int i = 0; i < a.size(); i++)
+		if(b[i] && !a[i]) inter.push_back(i);
+	return inter;
+}
+
+//subtracts a from b
+std::vector<bool> subtract(std::vector<bool> &a, std::vector<bool> &b){
+	std::vector<bool> inter = b;
+	for(int i = 0; i < a.size(); i++)
+		if(a[i]) inter[i] = false;
+	return inter;
 }
 
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b){

@@ -57,6 +57,12 @@ vector<bool> SatSolver::grow(std::vector<bool> &f, std::vector<bool> conflicts){
 	return s;
 }
 
+vector<vector<bool>> SatSolver::growMultiple(std::vector<bool> &f, std::vector<bool> conflicts, int limit){
+	vector<vector<bool>> mcses;
+	mcses.push_back(grow(f, conflicts));
+	return mcses;
+}
+
 void SatSolver::exportMUS(std::vector<bool> mus, std::string outputFile){
 	exported_muses++;
 	ofstream file;

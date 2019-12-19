@@ -32,9 +32,10 @@ class MSS{
 	public:
 	MSS(Formula& f, float d, int idc, int seed_d = 1){
 		bool_mss = f;
-		for(int i = 0; i < f.size(); i++)
+		for(int i = 0; i < f.size(); i++){
 			if(f[i])
 				int_mss.push_back(i);
+		}
 		without_conflicts = int_mss;		
 		dimension = int_mss.size();
 		duration = d;
