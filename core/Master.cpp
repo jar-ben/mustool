@@ -143,7 +143,7 @@ int Master::rotateMSS(Formula mss){
 					}
 					if(ok){
 						grow_combined(copy);
-						mark_MSS(MSS(copy, -1, msses.size(), count_ones(copy)));
+						mark_MSS_executive(MSS(copy, -1, msses.size(), count_ones(copy)));
 						rotated_msses++;
 						rots++;
 					}
@@ -287,7 +287,7 @@ void Master::grow_combined(Formula &f, Formula conflicts){
 	f = mss;
 }
 
-void Master::mark_MSS(MSS f, bool block_unex){	
+void Master::mark_MSS_executive(MSS f, bool block_unex){	
 	msses.push_back(f);
 	if(validate_mus_c) validate_mss(f.bool_mss);		
 	explorer->block_down(f.bool_mss);
@@ -307,7 +307,16 @@ void Master::mark_MSS(MSS f, bool block_unex){
 	if(output_file != "")
 		write_mss_to_file(f);
 	if(mss_rotation)
-		rotateMSS(f.bool_mss);
+		rotation_queue.push_back(f.bool_mss);
+}
+
+void Master::mark_MSS(MSS f, bool block_unex){
+	mark_MSS_executive(f, block_unex);
+	while(!rotation_queue.empty()){
+		Formula mss = rotation_queue.back();
+		rotation_queue.pop_back();
+		rotateMSS(mss);
+	}
 }
 
 void Master::mark_MUS(MUS& f, bool block_unex){	

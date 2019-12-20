@@ -24,6 +24,7 @@
 #include <ctime>
 #include <chrono>	
 #include <unordered_map>
+#include <queue>
 
 using namespace std;
 
@@ -53,6 +54,7 @@ public:
 	Explorer* explorer;
 	SatSolver* satSolver; 
 	string sat_solver;
+	std::vector<Formula> rotation_queue;
 
 	Master(string filename, string alg, string ssolver);
 	~Master();
@@ -61,6 +63,7 @@ public:
 	void block_up(Formula f);
 	void mark_MUS(MUS& m, bool block = true);
 	void mark_MSS(MSS m, bool block = true);
+	void mark_MSS_executive(MSS m, bool block = true);
 	MUS& shrink_formula(Formula& f, Formula crits = Formula());
 	MSS grow_formula(Formula& f, Formula conflicts = Formula());
 	vector<MSS> grow_formulas(Formula& f, Formula conflicts = Formula(), int limit = 1);
