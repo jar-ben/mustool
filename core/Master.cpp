@@ -267,6 +267,17 @@ MSS Master::grow_formula(Formula &f, Formula conflicts){
 	return MSS(mss, duration, msses.size(), f_size);
 }
 
+void Master::grow_hitting_extension(Formula &mss, int c1){
+	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	vector<int> co;
+	int m = 0;
+	for(int i = 0; i < dimension; i++)
+		if(!mss[i] && i != c1 && is_hitting_pair(msSolver->clauses[c1], msSolver->clauses[i])){ 
+			mss[i] = true;
+			m++;
+		}
+}
+
 void Master::grow_combined(Formula &f, Formula conflicts){
 	if(conflicts.empty())
 		conflicts.resize(dimension, false);
@@ -279,6 +290,7 @@ void Master::grow_combined(Formula &f, Formula conflicts){
 			if(!satSolver->solve(copyMss, true, true)){
 				mss[i] = false;
 				block_up(copyMss);
+				grow_hitting_extension(mss, i);
 			}else{
 				mss = copyMss;
 			}
@@ -320,7 +332,7 @@ void Master::mark_MSS(MSS f, bool block_unex){
 }
 
 void Master::mark_MUS(MUS& f, bool block_unex){	
-	if(validate_mus_c) validate_mus(f.bool_mus);		
+	//if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f.bool_mus);
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();

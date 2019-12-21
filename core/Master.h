@@ -68,6 +68,7 @@ public:
 	MSS grow_formula(Formula& f, Formula conflicts = Formula());
 	vector<MSS> grow_formulas(Formula& f, Formula conflicts = Formula(), int limit = 1);
 	void grow_combined(Formula &f, Formula conflicts = Formula());
+	void grow_hitting_extension(Formula &mss, int c1);
 	void write_mus_to_file(MUS& f);
 	void write_mss_to_file(MSS& f);
 	void validate_mus(Formula &f);

@@ -50,26 +50,15 @@ void Master::unimus(){
 	Formula seed = explorer->get_bot_unexplored_inside(uni);	
 	while(!seed.empty()){
 		bit++;
-		cout << "uni size: " << count_ones(uni);
 		if(is_valid(seed, true, true)){
 			vector<int> missing = subtract_int(seed, whole);
-			if(missing.size() < 5){			
+			if(true || missing.size() < 5){			
 				if(missing.size() > 1)
 					grow_combined(seed);
 				mark_MSS(MSS(seed, -1, msses.size(), count_ones(seed)));
 			}else{
-				Formula trimmed = subtract(couni,seed);
-				vector<MSS> grown = grow_formulas(trimmed, couni, 1);
-				vector<int> toAdd;
-				for(auto mss: grown){
-					Formula mssCopy = mss.bool_mss;
-					for(auto a: extendCS(mss, uni, couni))
-						toAdd.push_back(a);
-				}
-				for(auto c: toAdd){
-					uni[c] = true;
-					couni[c] = false;
-				}
+				MSS mss = grow_formula(seed);
+				mark_MSS(mss);
 			}	
 		}else{
 			block_up(seed);
