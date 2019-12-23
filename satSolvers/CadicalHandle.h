@@ -1,13 +1,13 @@
 #ifndef CADICALHANDLE_H
 #define CADICALHANDLE_H
 
-#include "SatSolver.h"
+#include "BooleanSolver.h"
 #include "cadical.hpp"
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-class CadicalHandle: public SatSolver{
+class CadicalHandle: public BooleanSolver{
 public:
 
 	CaDiCaL::Solver* solver;
@@ -17,7 +17,6 @@ public:
 	bool solve(std::vector<bool> &f, bool shrink = false, bool grow = false);
 
 	int vars;
-	std::vector<std::vector<int>> clauses;
 	std::unordered_map<std::string, int> clauses_unique_map;
 	std::vector<std::string> clauses_str;
 	bool add_clause(std::vector<int> clause);

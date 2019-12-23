@@ -37,7 +37,7 @@ vector<int>  convert_clause(string clause){
 	return ret;
 }
 
-MSHandle::MSHandle(string filename):SatSolver(filename){
+MSHandle::MSHandle(string filename):BooleanSolver(filename){
 	solver = new Solver();
 	vars = 0;
 	parse(filename);
@@ -53,36 +53,6 @@ MSHandle::~MSHandle(){
 	delete solver;
 }
 
-void MSHandle::compute_flip_edges(int c){
-	if(flip_edges_computed[c]) return;
-	flip_edges_computed[c] = true;
-
-	vector<bool> flatten(dimension, false);
-	for(int l = 0; l < clauses[c].size() - 1; l++){
-		auto lit = clauses[c][l];
-		vector<int> edges;
-		if(lit > 0){
-			for(auto &h: hitmap_neg[lit - 1]){
-				if(h != c){
-					edges.push_back(h);
-					flatten[h] = true;
-				}
-			}
-		}
-		else{
-			for(auto &h: hitmap_pos[(-1 * lit) - 1]){
-				if(h != c){
-					edges.push_back(h);			
-					flatten[h] = true;
-				}
-			}
-		}
-		flip_edges[c].push_back(edges);
-	}
-	for(int i = 0; i < dimension; i++)
-		if(flatten[i])
-			flip_edges_flatten[c].push_back(i);
-}
 
 bool MSHandle::add_clause(vector<int> cl){
 	std::sort(cl.begin(), cl.end());
@@ -172,40 +142,23 @@ vector<bool> MSHandle::model_extension(vector<bool> subset, vector<bool> model){
 	return extension;
 }
 
-void MSHandle::criticals_rotation(vector<bool>& criticals, vector<bool> subset){
-	vector<int> criticals_int;
-	for(int i = 0; i < dimension; i++)
-		if(criticals[i] && subset[i]) criticals_int.push_back(i);
-
-	for(int i = 0; i < criticals_int.size(); i++){
-		int c = criticals_int[i];
-		compute_flip_edges(c); //TODO: better encansulape
-		for(auto &lit_group: flip_edges[c]){
-			int count = 0;			
-			int flip_c;	
-			for(auto c2: lit_group){
-				if(subset[c2]){ count++; flip_c = c2; }
-			}
-			if(count == 1 && !criticals[flip_c]){
-				criticals_int.push_back(flip_c);
-				criticals[flip_c] = true;
-			}
-		}
-	}
-}
-
-
-// check formula for satisfiability using miniSAT
-// the core and grow variables controls whether to return an unsat core or model extension, respectively
-bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
+bool MSHandle::solve(std::vector<bool> &controls, std::vector<int> conflicts, bool unsat_improve, bool sat_improve){
 	checks++;
 	vec<Lit> lits;
 	for(unsigned int i = 0; i < controls.size(); i++){
 		if(controls[i])
 			lits.push(itoLit((i + vars + 1) * (-1)));
-		else
+		else{
 			lits.push(itoLit(i + vars + 1 ));
+		}
 	}
+
+	for(auto c: conflicts){
+		for(auto l: clauses[c]){
+			lits.push(itoLit(l)); 
+		}
+	}
+
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
 		int initSize = count_ones(controls);
@@ -232,11 +185,19 @@ bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improv
 	else if(!sat && unsat_improve){ // extract unsat core
 		vector<bool> core = vector<bool> (dimension, false);		
 	        for (int i = 0 ; i < solver->conflict.size() ; i++) 
-			core[var(solver->conflict[i]) - vars] = true;
+			if(var(solver->conflict[i]) - vars > 0 && var(solver->conflict[i]) - vars < dimension)
+				core[var(solver->conflict[i]) - vars] = true;
 		controls = core;		
 
 	}				
 	return sat;
+
+}
+
+// check formula for satisfiability using miniSAT
+// the core and grow variables controls whether to return an unsat core or model extension, respectively
+bool MSHandle::solve(vector<bool>& controls, bool unsat_improve, bool sat_improve){
+	return solve(controls, vector<int>(), unsat_improve, sat_improve);
 }
 
 vector<bool> MSHandle::get_model(){

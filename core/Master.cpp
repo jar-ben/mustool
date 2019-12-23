@@ -124,7 +124,7 @@ void Master::validate_mss(Formula &f){
 
 int Master::rotateMSS(Formula mss){
 	int rots = 0;
-	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	BooleanSolver *msSolver = static_cast<BooleanSolver*>(satSolver);
 	for(int c = 0; c < dimension; c++){
 		if(!mss[c]){
 			msSolver->compute_flip_edges(c); //TODO: better encansulape
@@ -165,7 +165,7 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
 		if(criticals_rotation && domain == "sat"){
 			int before = count_ones(crits);
-			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+			BooleanSolver *msSolver = static_cast<BooleanSolver*>(satSolver);
 			msSolver->criticals_rotation(crits, f);
 			if(verbose) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
 		}
@@ -268,7 +268,7 @@ MSS Master::grow_formula(Formula &f, Formula conflicts){
 }
 
 void Master::grow_hitting_extension(Formula &mss, int c1){
-	MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
+	BooleanSolver *msSolver = static_cast<BooleanSolver*>(satSolver);
 	vector<int> co;
 	int m = 0;
 	for(int i = 0; i < dimension; i++)
@@ -281,13 +281,27 @@ void Master::grow_hitting_extension(Formula &mss, int c1){
 void Master::grow_combined(Formula &f, Formula conflicts){
 	if(conflicts.empty())
 		conflicts.resize(dimension, false);
+	vector<int> cnfs;
+	if(conflicts_negation && count_ones(conflicts) == 0)
+		explorer->getConflicts(conflicts, f);
+	for(int i = 0; i < dimension; i++){
+		if(conflicts[i]) 
+			cnfs.push_back(i);
+	}
+	for(int c = 0; c < dimension; c++){
+		if(conflicts[c])
+			grow_hitting_extension(f, c);
+	}
+
 	satSolver->grows++;
 	Formula mss = f;
 	for(int i = 0; i < dimension; i++){
 		if(!mss[i] && !conflicts[i] && explorer->is_available(i, mss)){
 			mss[i] = true;
 			Formula copyMss = mss;
-			if(!satSolver->solve(copyMss, true, true)){
+			bool sat = (conflicts_negation)? satSolver->solve(copyMss, cnfs, true, true) : satSolver->solve(copyMss, true, true);
+			if(!sat){
+				cnfs.push_back(i);
 				mss[i] = false;
 				block_up(copyMss);
 				grow_hitting_extension(mss, i);

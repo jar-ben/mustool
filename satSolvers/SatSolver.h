@@ -26,6 +26,7 @@ public:
 	~SatSolver(){}
 	virtual std::string toString(std::vector<bool> &mus) = 0;
 	virtual bool solve(std::vector<bool> &f, bool core = false, bool grow = false) = 0;
+	virtual bool solve(std::vector<bool> &f, std::vector<int> conflicts, bool core = false, bool grow = false);
 	virtual std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 	virtual std::vector<bool> grow2(std::vector<bool> &f, std::vector<std::vector<bool>> &unsat, std::vector<bool> conflicts = std::vector<bool>());
 	virtual std::vector<bool> grow(std::vector<bool> &f, std::vector<bool> conflicts = std::vector<bool>());

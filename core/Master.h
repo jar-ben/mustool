@@ -55,6 +55,7 @@ public:
 	SatSolver* satSolver; 
 	string sat_solver;
 	std::vector<Formula> rotation_queue;
+	bool conflicts_negation;
 
 	Master(string filename, string alg, string ssolver);
 	~Master();

@@ -6,7 +6,7 @@
 using namespace std;
 
 
-CadicalHandle::CadicalHandle(string filename):SatSolver(filename){
+CadicalHandle::CadicalHandle(string filename):BooleanSolver(filename){
         solver = new CaDiCaL::Solver;
         vars = 0;
         parse(filename);
@@ -94,14 +94,12 @@ bool CadicalHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
                                 for(int l = 0; l < clauses[i].size() - 1; l++){
 	  				if(clauses[i][l] > 0){
 						if(solver->val(clauses[i][l]) > 0){                  				
-						cout << solver->val(clauses[i][l]) << endl;
 		  					f[i] = true;
                                                         break;
                                                 }
                                         }
                                         else{
 						if(solver->val(-1 * clauses[i][l]) < 0){
-                                                cout << solver->val(-1 * clauses[i][l]) << endl;
 							f[i] = true;
                                                         break;
                                                 }
@@ -110,7 +108,8 @@ bool CadicalHandle::solve(std::vector<bool> &f, bool shrink, bool grow){
                         }
                 }
 		int finalSize = count_ones(f);
-		//cout << "init size: " << initSize << ", finalSize: " << finalSize << ", diff: " << (finalSize - initSize) << endl;
+	}
+	if(!sat && shrink){
 	}
 	return sat;
 }

@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 		TCLAP::ValueArg<std::string> mcslsArgs("","mcsls-args","",false,"","string");
 		cmd.add(mcslsArgs);
 
-
+		TCLAP::SwitchArg conflictsNegation("","conflicts-negation","Negate known conflicting clauses during satsolver.solve() calls.", cmd, false);
 		TCLAP::SwitchArg mssRotation("","mss-rotation","Use mss-rotation technique", cmd, false);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
 		vector<string> allowedShrinks {"default", "muser"};
@@ -77,6 +77,7 @@ int main(int argc, char *argv[]){
 		solver.depthMUS = (recursionDepthLimit.getValue() >= 0)? recursionDepthLimit.getValue() : solver.dimension;
 		solver.dim_reduction = reductionCoeff.getValue();
 		solver.validate_mus_c = verify.getValue();		
+		solver.conflicts_negation = conflictsNegation.getValue();
 		std::string shr = shrink.getValue();
 		if(solver.domain != "sat") shr = "default";
 		solver.satSolver->shrink_alg = shr;

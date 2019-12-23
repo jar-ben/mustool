@@ -52,7 +52,7 @@ void Master::unimus(){
 		bit++;
 		if(is_valid(seed, true, true)){
 			vector<int> missing = subtract_int(seed, whole);
-			if(true || missing.size() < 5){			
+			if(missing.size() < 5){			
 				if(missing.size() > 1)
 					grow_combined(seed);
 				mark_MSS(MSS(seed, -1, msses.size(), count_ones(seed)));
