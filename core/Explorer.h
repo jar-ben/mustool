@@ -36,6 +36,7 @@ public:
 	std::vector<bool> get_top_unexplored(std::vector<int> assumptions);
 	std::vector<bool> get_bot_unexplored(std::vector<int> assumptions);
 	std::vector<bool> get_bot_unexplored_inside(std::vector<bool> subset);
+	std::vector<bool> get_bot_unexplored_containing(std::vector<bool> subset);
 	std::vector<bool> get_unexplored(std::vector<bool> top, std::vector<bool>& mus);
 	bool isUnexplored(std::vector<bool> valuation);
 	bool isUnexploredSat(std::vector<bool> valuation);

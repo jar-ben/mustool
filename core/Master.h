@@ -56,6 +56,9 @@ public:
 	string sat_solver;
 	std::vector<Formula> rotation_queue;
 	bool conflicts_negation;
+	int extended; //number of saved satisfiability checks via the grow extension
+	Formula uni;
+	Formula couni;
 
 	Master(string filename, string alg, string ssolver);
 	~Master();
@@ -69,7 +72,8 @@ public:
 	MSS grow_formula(Formula& f, Formula conflicts = Formula());
 	vector<MSS> grow_formulas(Formula& f, Formula conflicts = Formula(), int limit = 1);
 	void grow_combined(Formula &f, Formula conflicts = Formula());
-	void grow_hitting_extension(Formula &mss, int c1);
+	int grow_hitting_extension(Formula &mss, int c1);
+	void grow_fixpoint(Formula &f);
 	void write_mus_to_file(MUS& f);
 	void write_mss_to_file(MSS& f);
 	void validate_mus(Formula &f);
@@ -98,8 +102,8 @@ public:
 
 	//unimus
 	void unimus();
-	std::vector<int> extendCS(MSS&, Formula&, Formula&);
 
+	void counimus();
 
 	//TOME algorithm functions
 	void find_all_muses_tome();
@@ -107,5 +111,7 @@ public:
 
 	//MARCO algorithm functions
 	void marco_base();
+
+	void comarco();
 };
 #endif

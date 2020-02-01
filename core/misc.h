@@ -22,5 +22,6 @@ bool is_subset(std::vector<bool> &a, std::vector<bool> &b);
 bool is_disjoint(std::vector<bool> &a, std::vector<int> &b);
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b);
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<int> &b);
+std::vector<bool> complement(std::vector<bool> &a);
 void trim(std::string &f);
 bool is_hitting_pair(std::vector<int> cl1, std::vector<int> cl2);

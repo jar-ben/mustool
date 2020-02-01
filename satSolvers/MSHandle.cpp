@@ -153,11 +153,11 @@ bool MSHandle::solve(std::vector<bool> &controls, std::vector<int> conflicts, bo
 		}
 	}
 
-	for(auto c: conflicts){
-		for(auto l: clauses[c]){
-			lits.push(itoLit(l)); 
-		}
-	}
+	//for(auto c: conflicts){
+	//	for(auto l: clauses[c]){
+	//		lits.push(itoLit(l)); 
+	//	}
+	//}
 
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
@@ -185,7 +185,7 @@ bool MSHandle::solve(std::vector<bool> &controls, std::vector<int> conflicts, bo
 	else if(!sat && unsat_improve){ // extract unsat core
 		vector<bool> core = vector<bool> (dimension, false);		
 	        for (int i = 0 ; i < solver->conflict.size() ; i++) 
-			if(var(solver->conflict[i]) - vars > 0 && var(solver->conflict[i]) - vars < dimension)
+			//if(var(solver->conflict[i]) - vars > 0 && var(solver->conflict[i]) - vars < dimension)
 				core[var(solver->conflict[i]) - vars] = true;
 		controls = core;		
 
@@ -317,6 +317,10 @@ std::vector<bool> MSHandle::grow(std::vector<bool> &f, std::vector<bool> conflic
 		return SatSolver::grow(f, conflicts);
 	}else if(grow_alg == "uwr"){
 		return grow_uwrmaxsat(f, conflicts);
+	}else if(grow_alg == "mcsls"){
+		std::vector<std::vector<bool>> ms = growMultiple(f, conflicts, 1);
+		if(!ms.empty()) // there is a chance that mcsls fail; in such a case, we proceed with grow_cmp
+			return ms.back();
 	}
 	return grow_cmp(f, conflicts);
 }

@@ -58,6 +58,9 @@ Master::Master(string filename, string alg, string ssolver){
 	bit = 0;
 	guessed = 0;
 	rotated_msses = 0;
+	extended = 0;
+	uni = Formula(dimension, false);
+	couni = Formula(dimension, true);
 }
 
 Master::~Master(){
@@ -142,7 +145,8 @@ int Master::rotateMSS(Formula mss){
 						else{ ok = false; break; }
 					}
 					if(ok){
-						grow_combined(copy);
+						if(satSolver->grow_alg == "fixpoint") grow_fixpoint(copy);
+						else grow_combined(copy);
 						mark_MSS_executive(MSS(copy, -1, msses.size(), count_ones(copy)));
 						rotated_msses++;
 						rots++;
@@ -179,7 +183,6 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			return muses.back();
 		}
 	}
-
 	Formula mus = satSolver->shrink(f, crits);
 	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
@@ -226,12 +229,14 @@ vector<MSS> Master::grow_formulas(Formula &f, Formula conflicts, int limit){
 
 //grow formula into a MSS
 MSS Master::grow_formula(Formula &f, Formula conflicts){
-	int cs = count_ones(conflicts);
+	if(satSolver->grow_alg == "fixpoint" && count_zeros(f) < 100){
+	 	Formula mss = f;
+	 	grow_fixpoint(mss);
+		return MSS(mss, -1, msses.size(), -1);
+	}
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	if(verbose) cout << "growing dimension: " << f_size << endl;
-	f_size = count_ones(f);
-
 	if(conflicts.empty())
 		conflicts.resize(dimension, false);
 	if(get_implies){ //get the list of known critical constraints	
@@ -259,6 +264,11 @@ MSS Master::grow_formula(Formula &f, Formula conflicts){
 	if(satSolver->grow_alg == "combined"){
 		grow_combined(f, conflicts);
 		mss = f;
+	}else if(satSolver->grow_alg == "fixpoint"){
+		satSolver->grow_alg = "cmp";
+		mss = satSolver->grow(f, conflicts);
+		satSolver->grow_alg = "fixpoint";
+	
 	}else{
 		mss = satSolver->grow(f, conflicts);
 	}
@@ -267,7 +277,59 @@ MSS Master::grow_formula(Formula &f, Formula conflicts){
 	return MSS(mss, duration, msses.size(), f_size);
 }
 
-void Master::grow_hitting_extension(Formula &mss, int c1){
+//grow formula into a MSS
+void Master::grow_fixpoint(Formula &f){
+	if(verbose) cout << "growing dimension: " << count_ones(f) << endl;
+	Formula conflicts(dimension, false);
+	explorer->getConflicts(conflicts, f);
+	int f_size = count_ones(f);	
+	int c_conflicts = count_ones(conflicts);
+	if(c_conflicts == (dimension - f_size)){ 
+		return;
+	}		
+
+	while(true){
+		int g = 0;
+		for(int c = 0; c < dimension; c++){
+			if(conflicts[c])
+				g += grow_hitting_extension(f, c);
+		}
+		if(g == 0) break;
+		explorer->getConflicts(conflicts, f);
+	}
+	if(verbose) cout << "grown by: " << (count_ones(f) - f_size) << ", new conflicts: " << (count_ones(conflicts) - c_conflicts) << endl;
+	
+	for(int i = 0; i < dimension; i++){
+		if(!f[i] && !conflicts[i] && explorer->is_available(i, f)){
+			if(verbose) cout << "iteration: " << i << endl;
+			f[i] = true;
+			Formula copyMss = f;
+			bool sat = satSolver->solve(copyMss, true, true);
+			if(!sat){
+				f[i] = false;
+				block_up(copyMss);
+				if(grow_hitting_extension(f, i) > 0){
+					while(true){
+						Formula prevConflicts = conflicts;
+						explorer->getConflicts(conflicts, f);
+						int g = 0;
+						for(int i = 0; i < dimension; i++){
+							if(conflicts[i] && !prevConflicts[i])
+								g += grow_hitting_extension(f, i);
+						}
+						if(g == 0) break;
+					}
+				}
+			}else{
+				f = copyMss;
+			}
+		}
+	}
+	if(verbose) cout << "end of grow_fixpoint" << endl;
+}
+
+
+int Master::grow_hitting_extension(Formula &mss, int c1){
 	BooleanSolver *msSolver = static_cast<BooleanSolver*>(satSolver);
 	vector<int> co;
 	int m = 0;
@@ -276,22 +338,26 @@ void Master::grow_hitting_extension(Formula &mss, int c1){
 			mss[i] = true;
 			m++;
 		}
+	extended += m;
+	return m;
 }
 
 void Master::grow_combined(Formula &f, Formula conflicts){
 	if(conflicts.empty())
 		conflicts.resize(dimension, false);
 	vector<int> cnfs;
-	if(conflicts_negation && count_ones(conflicts) == 0)
+	//if(conflicts_negation && count_ones(conflicts) == 0)
 		explorer->getConflicts(conflicts, f);
 	for(int i = 0; i < dimension; i++){
 		if(conflicts[i]) 
 			cnfs.push_back(i);
 	}
+	int f_size = count_ones(f);
 	for(int c = 0; c < dimension; c++){
 		if(conflicts[c])
 			grow_hitting_extension(f, c);
 	}
+	extended += count_ones(f) - f_size;
 
 	satSolver->grows++;
 	Formula mss = f;
@@ -314,6 +380,9 @@ void Master::grow_combined(Formula &f, Formula conflicts){
 }
 
 void Master::mark_MSS_executive(MSS f, bool block_unex){	
+	Formula mcs = complement(f.bool_mss);
+	uni = union_sets(uni, mcs);
+	couni = complement(uni);
 	msses.push_back(f);
 	if(validate_mus_c) validate_mss(f.bool_mss);		
 	explorer->block_down(f.bool_mss);
@@ -323,11 +392,11 @@ void Master::mark_MSS_executive(MSS f, bool block_unex){
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
 	cout << ", intersection: " << count_ones(explorer->mus_intersection);
-	cout << ", union: " << count_ones(explorer->mus_union) << ", dimension: " << dimension;
+	cout << ", union: " << count_ones(uni) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", grow duration: " << f.duration;
 	cout << ", grows: " << satSolver->grows << ", depth: " << current_depth;
 	cout << ", sats: " << explorer->mcses.size() << ", unsats: " << explorer->muses.size() << ", bit: " << bit << ", guessed: " << guessed;
-	cout << ", exp calls: " << explorer->calls << ", rotated msses: " << rotated_msses;
+	cout << ", exp calls: " << explorer->calls << ", rotated msses: " << rotated_msses << ", extended: " << extended;
 	cout << endl;
 
 	if(output_file != "")
@@ -346,6 +415,8 @@ void Master::mark_MSS(MSS f, bool block_unex){
 }
 
 void Master::mark_MUS(MUS& f, bool block_unex){	
+	uni = union_sets(uni, f.bool_mus);
+	couni = complement(uni);
 	//if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f.bool_mus);
 
@@ -384,6 +455,9 @@ void Master::enumerate(){
 	else if(algorithm == "marco"){
 		marco_base();
 	}
+	else if(algorithm == "comarco"){
+		comarco();
+	}
 	else if(algorithm == "unibase"){
 		unibase();
 	}
@@ -392,6 +466,9 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "unimus"){
 		unimus();
+	}
+	else if(algorithm == "counimus"){
+		counimus();
 	}
 	return;
 }

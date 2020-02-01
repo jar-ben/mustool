@@ -66,7 +66,7 @@ else
 	LIBS    += -lspot
 endif
 
-must: $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(GLOBJS)
+must2: $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(GLOBJS)
 	@echo Linking: $@
 	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(GLOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 

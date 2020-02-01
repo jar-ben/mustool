@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("domain agnostic MUS enumeration Tool (MUST), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco", "duremus", "unibase", "unibase2", "unimus"};
+		vector<string> allowedAlgs {"remus", "tome", "marco", "comarco", "duremus", "unibase", "unibase2", "unimus", "counimus"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
 		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
 		cmd.add(shrink);
 		
-		vector<string> allowedGrows {"default", "cmp", "uwr", "combined", "mcsls"};
+		vector<string> allowedGrows {"default", "cmp", "uwr", "combined", "mcsls", "fixpoint"};
 		TCLAP::ValuesConstraint<string> allowedValsGrow(allowedGrows);
 		TCLAP::ValueArg<std::string> grow("","grow","Specifies the growing algorithm (single MSS/MCS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (naive) and cmp.",false,"default",&allowedValsGrow);
 		cmd.add(grow);

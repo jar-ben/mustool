@@ -195,6 +195,30 @@ vector<bool> Explorer::get_bot_unexplored_inside(vector<bool> subset){
         return unexplored;
 }
 
+vector<bool> Explorer::get_bot_unexplored_containing(vector<bool> subset){
+	calls++;
+        botSolver->rnd_pol = false;
+        for(int i = 0; i < vars; i++)
+                solver->setPolarity(i, lbool(uint8_t(0)));
+
+        vec<Lit> lits;
+        for(int i = 0; i < vars; i++)
+                if(subset[i])
+                        lits.push(mkLit(i));
+
+        if(!solver->solve(lits))
+                return vector<bool>();
+
+        vector<bool> unexplored(vars);
+        for (int i = 0 ; i < vars ; i++) {
+		if(!subset[i])
+             		unexplored[i] = solver->modelValue(i) != l_False;
+		else
+			unexplored[i] = true;
+        }
+        return unexplored;
+}
+
 vector<bool> Explorer::get_top_unexplored(vector<bool> bot){
 	calls++;
         topSolver->rnd_pol = false;
@@ -327,7 +351,7 @@ int Explorer::getImplied(std::vector<bool>& implied, std::vector<bool>& f){
 
 int Explorer::getConflicts(std::vector<bool>& conflicts, std::vector<bool>& f){
 	for(int i = 0; i < dimension; i++){
-		if(!f[i] && !is_available(i, f))
+		if(!f[i] && !conflicts[i] && !is_available(i, f))
 			conflicts[i] = true;
 	}
 	return 0;

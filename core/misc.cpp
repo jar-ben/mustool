@@ -138,6 +138,13 @@ std::vector<bool> subtract(std::vector<bool> &a, std::vector<bool> &b){
 	return inter;
 }
 
+std::vector<bool> complement(std::vector<bool> &a){
+	std::vector<bool> b(a.size(), false);
+	for(int i = 0; i < a.size(); i++)
+		if(!a[i]) b[i] = true;
+	return b;
+}
+
 std::vector<bool> union_sets(std::vector<bool> &a, std::vector<bool> &b){
 	int dimension = a.size();
 	std::vector<bool> res(dimension, false);
