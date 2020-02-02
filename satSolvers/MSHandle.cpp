@@ -153,11 +153,11 @@ bool MSHandle::solve(std::vector<bool> &controls, std::vector<int> conflicts, bo
 		}
 	}
 
-	//for(auto c: conflicts){
-	//	for(auto l: clauses[c]){
-	//		lits.push(itoLit(l)); 
-	//	}
-	//}
+	for(auto c: conflicts){
+		for(int l = 0; l < clauses[c].size() - 1; l++){
+			lits.push(itoLit(-1 * clauses[c][l])); 
+		}
+	}
 
 	bool sat = solver->solve(lits);
 	if(sat && sat_improve){ // extract model extension		
@@ -182,12 +182,22 @@ bool MSHandle::solve(std::vector<bool> &controls, std::vector<int> conflicts, bo
 		}
 		int finalSize = count_ones(controls);
 	}			
-	else if(!sat && unsat_improve){ // extract unsat core
+	else if(!sat){
 		vector<bool> core = vector<bool> (dimension, false);		
-	        for (int i = 0 ; i < solver->conflict.size() ; i++) 
-			//if(var(solver->conflict[i]) - vars > 0 && var(solver->conflict[i]) - vars < dimension)
+	        vector<int> varsInCore;
+		int a = 0, b = 0;
+		for (int i = 0 ; i < solver->conflict.size() ; i++) {
+			if(var(solver->conflict[i]) < vars)
+				varsInCore.push_back(var(solver->conflict[i]));
+			else
 				core[var(solver->conflict[i]) - vars] = true;
-		controls = core;		
+		}
+		if(varsInCore.empty())
+			controls = core;	
+		else{
+			cout << "banana" << endl;
+//			controls = extendCore(core, varsInCore);	
+		}
 
 	}				
 	return sat;
@@ -250,7 +260,7 @@ void MSHandle::export_formula_crits(vector<bool> f, string filename, vector<bool
 vector<bool> MSHandle::import_formula_crits(string filename){
 	vector<bool> f(dimension, false);
 	vector<vector<int>> cls;
-	ReMUS::parse_DIMACS(filename, cls);
+	Uparse_DIMACS(filename, cls);
 	for(auto cl: cls){
 		sort(cl.begin(), cl.end());
 		if(clauses_map.count(cl))

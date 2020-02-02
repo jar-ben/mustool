@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);
 
-		vector<string> allowedSolvers {"minisat", "glucose", "cadical", "default"};
+		vector<string> allowedSolvers {"minisat", "glucose", "cadical", "maplesat", "default"};
 		TCLAP::ValuesConstraint<string> allowedSolversVals(allowedSolvers);
 		TCLAP::ValueArg<string> satsolver("","sat-solver","SAT-solver to be used.",false,"default",&allowedSolversVals);
 		cmd.add(satsolver);

@@ -4,6 +4,7 @@
 #include "satSolvers/MSHandle.h"
 #include "satSolvers/GlucoseHandle.h"
 #include "satSolvers/CadicalHandle.h"
+#include "satSolvers/MapleHandle.h"
 #include "Explorer.h"
 #ifndef NOSMT
 	#include "satSolvers/Z3Handle.h"
@@ -63,6 +64,7 @@ public:
 	Master(string filename, string alg, string ssolver);
 	~Master();
 	bool is_valid(Formula &f, bool core = false, bool grow = false);
+	bool is_valid(Formula &f, Formula &cnfs, bool core = false, bool grow = false);
 	void block_down(Formula f);
 	void block_up(Formula f);
 	void mark_MUS(MUS& m, bool block = true);

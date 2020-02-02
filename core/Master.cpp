@@ -24,7 +24,10 @@ Master::Master(string filename, string alg, string ssolver){
 			satSolver = new GlucoseHandle(filename);
 		}else if(sat_solver == "cadical"){
 			satSolver = new CadicalHandle(filename);
-		}else{
+		}else if(sat_solver == "maplesat"){
+                        satSolver = new MapleHandle(filename);
+                }
+		else{
 			satSolver = new MSHandle(filename);
 		}
 		domain = "sat";
@@ -90,6 +93,21 @@ void Master::block_down(Formula formula){
 // core and grow controls optional extraction of unsat core and model extension (replaces formula)
 bool Master::is_valid(Formula &formula, bool core, bool grow){
 	bool sat = satSolver->solve(formula, core, grow); 
+	if(sat) unex_sat++;
+	else unex_unsat++;
+	return sat;
+}
+
+bool Master::is_valid(Formula &formula, Formula &conflicts,  bool core, bool grow){
+	bool sat;
+	if(conflicts_negation){
+		vector<int> cnfs;
+		for(int i = 0; i < dimension; i++)
+			if(conflicts[i]) cnfs.push_back(i);
+		sat = satSolver->solve(formula, cnfs, core, grow); 
+	}
+	else
+		sat = satSolver->solve(formula, core, grow); 
 	if(sat) unex_sat++;
 	else unex_unsat++;
 	return sat;
@@ -300,11 +318,12 @@ void Master::grow_fixpoint(Formula &f){
 	if(verbose) cout << "grown by: " << (count_ones(f) - f_size) << ", new conflicts: " << (count_ones(conflicts) - c_conflicts) << endl;
 	
 	for(int i = 0; i < dimension; i++){
-		if(!f[i] && !conflicts[i] && explorer->is_available(i, f)){
+		//if(!f[i] && !conflicts[i] && explorer->is_available(i, f)){
+		if(!f[i] && !conflicts[i]){
 			if(verbose) cout << "iteration: " << i << endl;
 			f[i] = true;
 			Formula copyMss = f;
-			bool sat = satSolver->solve(copyMss, true, true);
+			bool sat = is_valid(copyMss, conflicts, true, true);
 			if(!sat){
 				f[i] = false;
 				block_up(copyMss);
@@ -365,7 +384,7 @@ void Master::grow_combined(Formula &f, Formula conflicts){
 		if(!mss[i] && !conflicts[i] && explorer->is_available(i, mss)){
 			mss[i] = true;
 			Formula copyMss = mss;
-			bool sat = (conflicts_negation)? satSolver->solve(copyMss, cnfs, true, true) : satSolver->solve(copyMss, true, true);
+			bool sat = (conflicts_negation)? is_valid(copyMss, false, true) : is_valid(copyMss, true, true);
 			if(!sat){
 				cnfs.push_back(i);
 				mss[i] = false;
@@ -417,7 +436,7 @@ void Master::mark_MSS(MSS f, bool block_unex){
 void Master::mark_MUS(MUS& f, bool block_unex){	
 	uni = union_sets(uni, f.bool_mus);
 	couni = complement(uni);
-	//if(validate_mus_c) validate_mus(f.bool_mus);		
+	if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f.bool_mus);
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();

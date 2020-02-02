@@ -1,5 +1,6 @@
 DIR	= $(shell pwd)
 MINISAT	= $(DIR)/custom_minisat
+MAPLE 	= $(DIR)/custom_maplesat
 GLUCOSE	= $(DIR)/glucose
 MCSMUS	= $(DIR)/mcsmus
 CADICAL = /home/xbendik/bin/cadical/src
@@ -9,7 +10,7 @@ LIBD 	= -L/usr/lib -L/usr/local/lib -L/home/xbendik/bin/cadical/build
 LIBS 	= -lz -lcadical
 LIBS	+= -lstdc++fs
 USR 	= /usr/include
-INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(GLUCOSE) -I $(USR) -I /usr/local/include -I $(DIR) -I $(MCSMUS) -I $(CADICAL)
+INC 	= -I $(MCSMUS) -I $(MINISAT) -I $(MAPLE) -I $(GLUCOSE) -I $(USR) -I /usr/local/include -I $(DIR) -I $(MCSMUS) -I $(CADICAL)
 
 CSRCS	= $(wildcard *.cpp) $(wildcard $(DIR)/algorithms/*.cpp)
 CSRCS	+= $(wildcard $(DIR)/satSolvers/*.cpp) $(wildcard $(DIR)/core/*.cpp)
@@ -17,6 +18,9 @@ COBJS	= $(CSRCS:.cpp=.o)
 
 MCSRCS	= $(wildcard $(MINISAT)/*.cc)
 MCOBJS	= $(MCSRCS:.cc=.o)
+
+MPCSRCS	= $(wildcard $(MAPLE)/*.cc)
+MPCOBJS	= $(MPCSRCS:.cc=.o)
 
 GLSRCS	= $(wildcard $(GLUCOSE)/*.cc)
 GLOBJS	= $(GLSRCS:.cc=.o)
@@ -66,9 +70,9 @@ else
 	LIBS    += -lspot
 endif
 
-must2: $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(GLOBJS)
+must: $(COBJS) $(MCOBJS) $(MPCOBJS) $(MCSMUS_OBJS) $(GLOBJS)
 	@echo Linking: $@
-	$(CXX) -o $@ $(COBJS) $(MCOBJS) $(MCSMUS_OBJS) $(GLOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
+	$(CXX) -o $@ $(COBJS) $(MCOBJS)  $(MPCOBJS)  $(MCSMUS_OBJS) $(GLOBJS) $(CFLAGS) $(INC) $(LIBD) $(LIBS) 
 
 %.o: %.cpp
 	@echo Compiling: $@
@@ -84,6 +88,7 @@ clean:
 	rm -f $(MCSMUS_OBJS)
 	rm -f $(COBJS)
 	rm -f $(MINISAT)/*.o
+	rm -f $(MAPLE)/*.o
 	rm -f $(GLOBJS)
 
 cleanCore:
