@@ -12,6 +12,7 @@ public:
 	BooleanSolver(std::string filename);
     	~BooleanSolver();
 	std::vector<std::vector<int>> clauses;
+	int vars;
 
         //model rotation
         int rotated_crits;
@@ -22,5 +23,6 @@ public:
         std::vector<std::vector<int>> flip_edges_flatten;
         void compute_flip_edges(int c);
 	void criticals_rotation(std::vector<bool>& criticals, std::vector<bool> subset);
+	std::vector<int> get_implied(std::vector<bool> mus, int c);
 };
 #endif

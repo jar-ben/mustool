@@ -11,6 +11,7 @@
 #include <time.h>   
 #include <cstdio>
 #include <assert.h>
+#include <queue>
 
 using namespace std;
 
@@ -19,6 +20,92 @@ BooleanSolver::BooleanSolver(string filename):SatSolver(filename){
 }
 
 BooleanSolver::~BooleanSolver(){
+}
+
+void print_clause(vector<int> cl){
+	cout << "clause: ";
+	for(auto l: cl)
+		cout << l << " ";
+	cout << endl;
+}
+
+void print_model(vector<int> model){
+	for(auto l: model)
+		cout << l << " ";
+	cout << endl;
+}
+
+vector<int> BooleanSolver::get_implied(vector<bool> mus, int c){
+	if(!mus[c]) print_err("c is not in mus");
+	mus[c] = false;
+	vector<int> lits_left (dimension,0);
+	for(int i = 0 ; i < dimension; i++){
+		lits_left[i] = clauses[i].size() - 1; // -1 because there is the activation literal
+	}
+	vector<bool> satisfied(dimension, false);
+	queue<int> to_propagate;
+	vector<bool> setup(vars + 1, false);
+	vector<bool> value(vars + 1, false);
+	vector<int> model;
+	for(auto l: clauses[c]){
+		int var = (l > 0)? l : -l;
+		if(var <= vars){
+			to_propagate.push(-l);
+			model.push_back(-l);
+		}
+	}
+	while(!to_propagate.empty()){
+		auto l = to_propagate.front();
+		to_propagate.pop();
+		int var = (l > 0)? l : -l;
+		if(setup[var])
+			continue;
+		setup[var] = true;
+		value[var] = l < 0;
+		model.push_back(l);
+		if(l < 0){
+			for(auto c1: hitmap_neg[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				satisfied[c1] = true;
+			}
+			for(auto c1: hitmap_pos[var - 1]){ //trim clauses that contain positive i-th literal
+				if(!mus[c1] || satisfied[c1]) continue;
+				lits_left[c1]--;
+				if(lits_left[c1] == 1){
+					for(auto lit: clauses[c1]){
+						int var2 = (lit > 0)? lit : -lit;
+						if(!setup[var2]){
+							to_propagate.push(lit);
+							break;
+						}
+					}
+				}
+				if(lits_left[c1] == 0){
+					print_err("conflict during propagation");
+				}
+			}
+		}else{
+			for(auto c1: hitmap_pos[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				satisfied[c1] = true;
+			}
+			for(auto c1: hitmap_neg[var - 1]){ //trim clauses that contain positive i-th literal
+				if(!mus[c1] || satisfied[c1]) continue;
+				lits_left[c1]--;
+				if(lits_left[c1] == 1){
+					for(auto lit: clauses[c1]){
+						int var2 = (lit > 0)? lit : -lit;
+						if(!setup[var2]){
+							to_propagate.push(lit);
+							break;
+						}
+					}
+				}
+				if(lits_left[c1] == 0){
+					print_err("conflict during propagation");
+				}
+			}
+		}
+	}
+	return model;
 }
 
 void BooleanSolver::compute_flip_edges(int c){
