@@ -89,21 +89,18 @@ public:
 	void find_all_muses_duality_based_remus(Formula subset, Formula crits, int depth);
 	void extend_mus(Formula &top, Formula &mus);
 
-	//duremus
-	void duremus(Formula subset, Formula crits, int depth);
-	void reduce_mss(Formula &bot, Formula &mss);
-	void duremus_booster(int limit);
-
-	//unibase
-	void unibase();
-	vector<bool> unibase_union(int limit);
-	void unibase2();
-	void unibase2_rec(Formula subset, Formula used);
-
 	//unimus
 	void unimus();
-
-	void counimus();
+	void unimus_rotate_mus(int mid);
+	vector<vector<pair<int,int>>> unimus_hitmap_pos;
+	vector<vector<pair<int,int>>> unimus_hitmap_neg;
+	void unimus_mark_mus(MUS &m);
+	std::queue<int> unimus_rotation_queue;
+	int unimus_rotated;
+	int unimus_attempts;
+	bool unimus_hitting_pair(int mid1, int mid2, int c1, int c2);
+	std::vector<unordered_map<int, std::vector<int>>> unimus_map;
+	void unimus_add_blocks(MUS &m1, int from, int to, vector<vector<int>> &blocks);
 
 	//TOME algorithm functions
 	void find_all_muses_tome();
@@ -111,7 +108,5 @@ public:
 
 	//MARCO algorithm functions
 	void marco_base();
-
-	void comarco();
 };
 #endif

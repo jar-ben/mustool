@@ -59,7 +59,7 @@ bool Explorer::is_critical(int c, std::vector<bool> &subset){
 			}
 			if(crit) return true;
 		}
-	}	
+	}
 	return false;	
 }
 
@@ -171,6 +171,29 @@ vector<bool> Explorer::get_bot_unexplored(vector<bool> top){
         return unexplored;
 }
 
+vector<bool> Explorer::get_top_unexplored_inside(vector<bool> subset){
+	calls++;
+        botSolver->rnd_pol = false;
+        for(int i = 0; i < vars; i++)
+                solver->setPolarity(i, lbool(uint8_t(1)));
+
+        vec<Lit> lits;
+        for(int i = 0; i < vars; i++)
+                if(!subset[i])
+                        lits.push(~mkLit(i));
+
+        if(!solver->solve(lits))
+                return vector<bool>();
+
+        vector<bool> unexplored(vars);
+        for (int i = 0 ; i < vars ; i++) {
+		if(subset[i])
+             		unexplored[i] = solver->modelValue(i) != l_False;
+		else
+			unexplored[i] = false;
+        }
+        return unexplored;
+}
 vector<bool> Explorer::get_bot_unexplored_inside(vector<bool> subset){
 	calls++;
         botSolver->rnd_pol = false;
@@ -334,6 +357,14 @@ bool Explorer::isUnexplored(vector<bool> valuation){
 }
 
 bool Explorer::isUnexploredSat(vector<bool> f){
+	for(auto &mcs: mcses){
+		if(is_disjoint(f, mcs))
+			return false;
+	}
+	return true;
+}
+
+bool Explorer::isUnexploredUnsat(vector<bool> f){
 	for(auto &mcs: mcses){
 		if(is_disjoint(f, mcs))
 			return false;

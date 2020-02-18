@@ -61,6 +61,7 @@ Master::Master(string filename, string alg, string ssolver){
 	extended = 0;
 	uni = Formula(dimension, false);
 	couni = Formula(dimension, true);
+	unimus_rotated = unimus_attempts = 0;
 }
 
 Master::~Master(){
@@ -417,7 +418,7 @@ void Master::mark_MSS(MSS f, bool block_unex){
 void Master::mark_MUS(MUS& f, bool block_unex){	
 	uni = union_sets(uni, f.bool_mus);
 	couni = complement(uni);
-	//if(validate_mus_c) validate_mus(f.bool_mus);		
+	if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f.bool_mus);
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
@@ -429,11 +430,13 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
 	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
-	cout << ", shrinks: " << satSolver->shrinks;
+	cout << ", shrinks: " << satSolver->shrinks << ", unimus rotated: " << unimus_rotated << ", unimus attempts: " << unimus_attempts;
 	cout << endl;
 
 	if(output_file != "")
 		write_mus_to_file(f);
+
+	unimus_map.push_back(unordered_map<int, std::vector<int>>());
 }
 
 void Master::enumerate(){
@@ -446,29 +449,14 @@ void Master::enumerate(){
 	if(algorithm == "remus"){
 		find_all_muses_duality_based_remus(Formula (dimension, true), Formula (dimension, false), 0);
 	}
-	if(algorithm == "duremus"){
-		duremus(Formula (dimension, false), Formula (dimension, false), 0);
-	}
 	else if(algorithm == "tome"){
 		find_all_muses_tome();
 	}
 	else if(algorithm == "marco"){
 		marco_base();
 	}
-	else if(algorithm == "comarco"){
-		comarco();
-	}
-	else if(algorithm == "unibase"){
-		unibase();
-	}
-	else if(algorithm == "unibase2"){
-		unibase2();
-	}
 	else if(algorithm == "unimus"){
 		unimus();
-	}
-	else if(algorithm == "counimus"){
-		counimus();
 	}
 	return;
 }

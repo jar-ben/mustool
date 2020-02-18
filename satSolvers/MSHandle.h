@@ -15,7 +15,6 @@ public:
 	std::map<std::vector<int>,int> clauses_map;
 	std::vector<std::string> clauses_str;
 	std::unordered_map<std::string, int> clauses_unique_map;
-	int vars;
 
 	MSHandle(std::string filename);
 	~MSHandle();

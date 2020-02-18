@@ -104,6 +104,7 @@ bool MSHandle::parse(string path){
 			clauses_unique_map[line] = clauses_str.size() - 1;
 		}
         }
+	cout << "vars: " << vars << endl;
 	hitmap_pos.resize(vars);
 	hitmap_neg.resize(vars);
 	for(int i = 0; i < vars; i++){
