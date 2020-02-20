@@ -1,5 +1,5 @@
 # MUST
-MUST is a  tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO [9], TOME [2], and ReMUS [3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL. A paper [+] describing MUST will be presented at TACAS 2020.
+MUST is a  tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO [9], TOME [2], and ReMUS [3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL. A paper [1] describing MUST will be presented at TACAS 2020.
 
 
 We distribute this source code under the MIT licence. See ./LICENSE for mode details.
