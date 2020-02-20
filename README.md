@@ -1,5 +1,6 @@
 # MUST
-MUST is a  tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO [1], TOME [2], and ReMUS [3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL.
+MUST is a  tool for online enumeration of minimal unsatisfiable subsets (MUSes) of a given unsatisfiable set of constraints. The tool currently implements three online MUS enumeration algorithms: MARCO [9], TOME [2], and ReMUS [3], and supports MUS enumeration in three constraint domains: SAT, SMT, and LTL. A paper [+] describing MUST will be presented at TACAS 2020.
+
 
 We distribute this source code under the MIT licence. See ./LICENSE for mode details.
 
@@ -82,7 +83,8 @@ To see all the available parameters, run:
 Besides the above mentioned tools, we also use two single MUS extraction algorithms: muser2 [5] and mcsmus [8]. You do not have to install these. Muser2 is presented in our repo in a binary form, and mcsmus is compiled with our code. 
 
 ## References
-* [1] Mark H. Liffiton, Alessandro Previti, Ammar Malik, João Marques-Silva: Fast, flexible MUS enumeration. Constraints 21(2), 2016.
+
+* [1] Jaroslav Bendík and Ivana Černá: MUST: Minimal Unsatisfiable Subsets Enumeration Tool. TACAS 2020.
 * [2] Jaroslav Bendík, Nikola Beneš, Ivana Černá, Jiří Barnat: Tunable Online MUS/MSS Enumeration. FSTTCS 2016.
 * [3] Jaroslav Bendík, Ivana Černá, Nikola Beneš: Recursive Online Enumeration of All Minimal Unsatisfiable Subsets. ATVA 2018.
 * [4] http://minisat.se/
@@ -90,6 +92,7 @@ Besides the above mentioned tools, we also use two single MUS extraction algorit
 * [6] https://github.com/Z3Prover/z3
 * [7] https://spot.lrde.epita.fr/
 * [8] https://bitbucket.org/gkatsi/mcsmus
+* [9] Mark H. Liffiton, Alessandro Previti, Ammar Malik, João Marques-Silva: Fast, flexible MUS enumeration. Constraints 21(2), 2016.
 
 ## Contact
 In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the developer of the tool, at xbendik=at=fi.muni.cz.
