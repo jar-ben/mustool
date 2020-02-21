@@ -96,10 +96,13 @@ void Master::unimus_rotate_mus(int mid, int limit){
 				bool ok = true;
 				for(auto &block: blocks){
 					int musId = block[0];
-					ok = muses[musId].bool_mus[c1];
-					for(int k = 1; k < block.size(); k++){
-					       	int c = block[k];	
-						ok = ok || c == c2 || !muses[i].bool_mus[c];
+					ok = muses[musId].bool_mus[c1] || muses[musId].bool_mus[c2];
+					if(!ok){
+						for(int k = 1; k < block.size(); k++){
+							int c = block[k];	
+							ok = !muses[i].bool_mus[block[k]];
+							if(ok) break;
+						}
 					}
 					if(!ok){
 						reducePossibilities(muses[musId].bool_mus, m1_over, m2_over, blockedPairs);
@@ -115,12 +118,9 @@ void Master::unimus_rotate_mus(int mid, int limit){
 					unimus_add_blocks(m1, muses.size() - 1, muses.size() - 1, blocks);
 					unimus_rotation_queue.push(muses.size() - 1);
 					foundSeed = true;
-					
-					//break;
 				q++;
 			}
 			p++;
-			//if(foundSeed) break;
 		}
 	}
 }
