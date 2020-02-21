@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("domain agnostic MUS enumeration Tool (MUST), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco", "comarco", "duremus", "unibase", "unibase2", "unimus", "counimus"};
+		vector<string> allowedAlgs {"remus", "tome", "marco", "comarco", "duremus", "unibase", "unibase2", "unimus", "counimus", "unimus2"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);

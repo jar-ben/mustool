@@ -44,14 +44,27 @@ void Master::unimus_add_blocks(MUS &m1, int from, int to, vector<vector<int>> &b
 	}
 }
 
-void Master::unimus_rotate_mus(int mid){
+void reducePossibilities(Formula &m3, vector<int> &m1_over, vector<int> &m2_over, vector<vector<bool>> &blockedPairs){
+	for(int i = 0; i < m1_over.size(); i++){
+		for(int j = 0; j < m2_over.size(); j++){
+			if(!m3[m1_over[i]] && !m3[m2_over[j]]){
+				blockedPairs[i][j] = true;
+			}
+		}
+	}
+}
+
+void Master::unimus_rotate_mus(int mid, int limit){
 	MUS m1 = muses[mid];
 	vector<vector<int>> blocks;
 	unimus_add_blocks(m1, 0, muses.size() - 1, blocks);
-	//for(int i = mid - 10; i < mid; i++){
 	for(int i = mid - 40; i < mid; i++){
+	//for(int i = 0; i < mid; i++){
 		if(i < 0) continue;
-		if(abs(int(m1.int_mus.size() - muses[i].int_mus.size())) > 200) continue;
+		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) > 10;
+		stay = stay || (abs(int(m1.int_mus.size() - muses[i].int_mus.size()))/float(dimension)) < 0.1;
+		if(!stay) continue;
+		
 		vector<int> m1_over;
 		for(auto c1: m1.int_mus)
 			if(!muses[i].bool_mus[c1])
@@ -64,9 +77,18 @@ void Master::unimus_rotate_mus(int mid){
 		bool found = false;
 		bool foundSeed = false;
 		int iter = 0;
+		
+		vector<vector<bool>> blockedPairs(m1_over.size(), vector<bool>(m2_over.size(),false));
+		int skippedIters = 0;
+		int p = 0;
 		for(auto c1: m1_over){
+			int q = 0;
 			for(auto c2: m2_over){
 				iter++;
+				if(blockedPairs[p][q]){
+					skippedIters++;
+					continue;
+				}
 				if(!unimus_hitting_pair(mid, i, c1, c2))
 					continue;
 				unimus_attempts++;
@@ -79,10 +101,12 @@ void Master::unimus_rotate_mus(int mid){
 					       	int c = block[k];	
 						ok = ok || c == c2 || !muses[i].bool_mus[c];
 					}
+					if(!ok){
+						reducePossibilities(muses[musId].bool_mus, m1_over, m2_over, blockedPairs);
+					}
 					if(!ok) break;
 				}
 				if(!ok) continue;
-				//if(unimus_hitting_pair(mid, i, c1, c2)){
 					Formula seed = union_sets(m1.bool_mus, muses[i].int_mus);
 					seed[c1] = seed[c2] = false;
 					unimus_rotated++;
@@ -91,11 +115,12 @@ void Master::unimus_rotate_mus(int mid){
 					unimus_add_blocks(m1, muses.size() - 1, muses.size() - 1, blocks);
 					unimus_rotation_queue.push(muses.size() - 1);
 					foundSeed = true;
-					cout << "banana " << (float(iter)/(m1_over.size() * m2_over.size())) << endl;
-					break;
-					//}
+					
+					//break;
+				q++;
 			}
-			if(foundSeed) break;
+			p++;
+			//if(foundSeed) break;
 		}
 	}
 }
@@ -107,31 +132,55 @@ void Master::unimus_mark_mus(MUS &mus){
 	while(!unimus_rotation_queue.empty()){
 		int mid = unimus_rotation_queue.front();
 		unimus_rotation_queue.pop();
-		unimus_rotate_mus(mid);
+		unimus_rotate_mus(mid, 1);
 	}
 }
 
 void Master::unimus(){
-	//init phase
-	BooleanSolver *bSolver = static_cast<BooleanSolver*>(satSolver);
-	unimus_hitmap_pos.resize(bSolver->vars + 1);
-	unimus_hitmap_neg.resize(bSolver->vars + 1);
 
 	Formula top = explorer->get_unexplored(1, false);
         int streak = 0;
+	bit = 0;
 	while(!top.empty()){
-                Formula original_top = top;
+                bit++;
+		Formula original_top = top;
                 if(is_valid(top, true, true)){
                        	streak++;
 		       	block_down(top);
+			//MSS mss = grow_formula(top);
+			//mark_MSS(mss, true);
                 }else{
                         MUS mus = shrink_formula(top);
-                        unimus_mark_mus(mus);
+			unimus_mark_mus(mus);
 		}
                 if(streak < 10)
 			top = explorer->get_top_unexplored_inside(uni);	
 		if(top.empty() || streak > 9)
 			top = explorer->get_unexplored(1, false);
+        }
+}
+
+
+void Master::unimus2(){
+	Formula bot = explorer->get_unexplored(0, false);
+        int streak = 0;
+	bit = 0;
+	while(!bot.empty()){
+		bot = union_sets(bot,couni);
+                bit++;
+                if(is_valid(bot, true, true)){
+                       	streak++;
+		       	//block_down(bot);
+			MSS mss = grow_formula(bot);
+			mark_MSS(mss, true);
+                }else{
+                        MUS mus = shrink_formula(bot);
+                        unimus_mark_mus(mus);
+		}
+                if(streak < 10)
+			bot = explorer->get_bot_unexplored_inside(uni);	
+		if(bot.empty() || streak > 9)
+			bot = explorer->get_unexplored(0, false);
         }
 }
 

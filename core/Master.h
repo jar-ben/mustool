@@ -91,7 +91,8 @@ public:
 
 	//unimus
 	void unimus();
-	void unimus_rotate_mus(int mid);
+	void unimus2();
+	void unimus_rotate_mus(int mid, int limit);
 	vector<vector<pair<int,int>>> unimus_hitmap_pos;
 	vector<vector<pair<int,int>>> unimus_hitmap_neg;
 	void unimus_mark_mus(MUS &m);

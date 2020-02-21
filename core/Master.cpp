@@ -408,10 +408,15 @@ void Master::mark_MSS_executive(MSS f, bool block_unex){
 
 void Master::mark_MSS(MSS f, bool block_unex){
 	mark_MSS_executive(f, block_unex);
+	int i = 0;
 	while(!rotation_queue.empty()){
 		Formula mss = rotation_queue.back();
 		rotation_queue.pop_back();
 		rotateMSS(mss);
+		if(++i > 10){
+			rotation_queue.clear();
+			break;
+		}
 	}
 }
 
@@ -431,6 +436,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
 	cout << ", shrinks: " << satSolver->shrinks << ", unimus rotated: " << unimus_rotated << ", unimus attempts: " << unimus_attempts;
+	cout << ", bit: " << bit;
 	cout << endl;
 
 	if(output_file != "")
@@ -457,6 +463,9 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "unimus"){
 		unimus();
+	}
+	else if(algorithm == "unimus2"){
+		unimus2();
 	}
 	return;
 }
