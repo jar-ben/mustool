@@ -32,7 +32,6 @@ bool Master::unimus_hitting_pair(int mid1, int mid2, int c1, int c2){
 
 void Master::unimus_add_blocks(MUS &m1, int from, int to, vector<vector<int>> &blocks){
 	for(int i = from; i <= to; i++){
-		//todo try to add i as the first element and then use c1 in the unex check below
 		vector<int> block(1, i);
 		for(auto c: muses[i].int_mus){
 			if(!m1.bool_mus[c]){
@@ -44,12 +43,11 @@ void Master::unimus_add_blocks(MUS &m1, int from, int to, vector<vector<int>> &b
 	}
 }
 
-void reducePossibilities(Formula &m3, vector<int> &m1_over, vector<int> &m2_over, vector<vector<bool>> &blockedPairs){
-	for(int i = 0; i < m1_over.size(); i++){
-		for(int j = 0; j < m2_over.size(); j++){
-			if(!m3[m1_over[i]] && !m3[m2_over[j]]){
-				blockedPairs[i][j] = true;
-			}
+void reducePossibilities(Formula &m3, vector<pair<int,int>> &pairs){
+	for(int i = pairs.size() - 1; i > -1; i--){		
+		if(!m3[pairs[i].first] && !m3[pairs[i].second]){
+			swap(pairs[i], pairs[pairs.size() - 1]);
+			pairs.pop_back();
 		}
 	}
 }
@@ -61,67 +59,56 @@ void Master::unimus_rotate_mus(int mid, int limit){
 	for(int i = mid - 40; i < mid; i++){
 	//for(int i = 0; i < mid; i++){
 		if(i < 0) continue;
-		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) > 10;
+		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) < 200;
 		stay = stay || (abs(int(m1.int_mus.size() - muses[i].int_mus.size()))/float(dimension)) < 0.1;
 		if(!stay) continue;
-		
-		vector<int> m1_over;
-		for(auto c1: m1.int_mus)
-			if(!muses[i].bool_mus[c1])
-				m1_over.push_back(c1);
-		vector<int> m2_over;
-		for(auto c2: muses[i].int_mus)
-			if(!m1.bool_mus[c2])
-				m2_over.push_back(c2);
-//		if(m1_over.size() * m2_over.size() > 100) continue;
-		bool found = false;
-		bool foundSeed = false;
-		int iter = 0;
-		
-		vector<vector<bool>> blockedPairs(m1_over.size(), vector<bool>(m2_over.size(),false));
-		int skippedIters = 0;
-		int p = 0;
-		for(auto c1: m1_over){
-			int q = 0;
-			for(auto c2: m2_over){
-				iter++;
-				if(blockedPairs[p][q]){
-					skippedIters++;
-					continue;
+	
+
+		vector<pair<int,int>> pairs;
+		for(auto c1: m1.int_mus){
+			for(auto c2: muses[i].int_mus){
+				if(!muses[i].bool_mus[c1] && !m1.bool_mus[c2]){
+					pairs.push_back(make_pair(c1,c2));
 				}
-				if(!unimus_hitting_pair(mid, i, c1, c2))
-					continue;
-				unimus_attempts++;
-				//check if the seed is unexplored
-				bool ok = true;
-				for(auto &block: blocks){
-					int musId = block[0];
-					ok = muses[musId].bool_mus[c1] || muses[musId].bool_mus[c2];
-					if(!ok){
-						for(int k = 1; k < block.size(); k++){
-							int c = block[k];	
-							ok = !muses[i].bool_mus[block[k]];
-							if(ok) break;
-						}
-					}
-					if(!ok){
-						reducePossibilities(muses[musId].bool_mus, m1_over, m2_over, blockedPairs);
-					}
-					if(!ok) break;
-				}
-				if(!ok) continue;
-					Formula seed = union_sets(m1.bool_mus, muses[i].int_mus);
-					seed[c1] = seed[c2] = false;
-					unimus_rotated++;
-					MUS mus = shrink_formula(seed);					
-					mark_MUS(mus);
-					unimus_add_blocks(m1, muses.size() - 1, muses.size() - 1, blocks);
-					unimus_rotation_queue.push(muses.size() - 1);
-					foundSeed = true;
-				q++;
 			}
-			p++;
 		}
+		
+		int initSize = pairs.size();
+		int iter = 0;
+		while(!pairs.empty()){
+			iter++;
+			pair<int,int> candidate = pairs[pairs.size() - 1];
+			pairs.pop_back();
+			unimus_attempts++;
+			if(!unimus_hitting_pair(mid, i, candidate.first, candidate.second))
+				continue;
+			//check if the seed is unexplored
+			bool ok = true;
+			for(auto &block: blocks){
+				int musId = block[0];
+				ok = muses[musId].bool_mus[candidate.first] || muses[musId].bool_mus[candidate.second];
+				if(!ok){
+					for(int k = 1; k < block.size(); k++){
+						int c = block[k];	
+						ok = !muses[i].bool_mus[block[k]];
+						if(ok) break;
+					}
+				}
+				if(!ok){
+					reducePossibilities(muses[musId].bool_mus, pairs);
+					break;
+				}
+			}
+			if(!ok) continue;
+			Formula seed = union_sets(m1.bool_mus, muses[i].int_mus);
+			seed[candidate.first] = seed[candidate.second] = false;
+			unimus_rotated++;
+			MUS mus = shrink_formula(seed);					
+			mark_MUS(mus);
+			unimus_add_blocks(m1, muses.size() - 1, muses.size() - 1, blocks);
+			unimus_rotation_queue.push(muses.size() - 1);
+		}
+//		cout << "malina " << iter << " " << initSize << " " << (float(iter)/initSize) << endl;
 	}
 }
 
