@@ -25,6 +25,7 @@
 #include <chrono>	
 #include <unordered_map>
 #include <queue>
+#include <stack>
 
 using namespace std;
 
@@ -91,17 +92,24 @@ public:
 
 	//unimus
 	void unimus();
-	void unimus2();
 	void unimus_rotate_mus(int mid, int limit);
 	vector<vector<pair<int,int>>> unimus_hitmap_pos;
 	vector<vector<pair<int,int>>> unimus_hitmap_neg;
 	void unimus_mark_mus(MUS &m);
 	std::queue<int> unimus_rotation_queue;
+	std::stack<int> unimus_rotation_stack;
 	int unimus_rotated;
 	int unimus_attempts;
 	bool unimus_hitting_pair(int mid1, int mid2, int c1, int c2);
 	std::vector<unordered_map<int, std::vector<int>>> unimus_map;
 	void unimus_add_blocks(MUS &m1, int from, int to, vector<vector<int>> &blocks);
+	vector<int> unimus_get_implied(int mid, int c);
+	void unimus_refine();
+	bool unimus_use_stack;
+	int critical_extension_saves;
+	int unimus_refines;
+
+	void critical_extension(Formula &f, Formula &crits);
 
 	//TOME algorithm functions
 	void find_all_muses_tome();

@@ -270,7 +270,18 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	}
 #ifdef UMCSMUS
 	if(shrink_alg == "default"){
-		return shrink_mcsmus(f, clauses, crits);
+		vector<bool> mus;		
+		try{
+			mus = shrink_mcsmus(f, clauses, crits);
+		} catch (...){
+			//mcsmus sometimes fails so we use muser instead
+			cout << "mcsmus crashed during shrinking, using muser2 instead" << endl;
+			stringstream exp;			
+			exp << "./tmp/f_" << hash << ".cnf";			
+			export_formula_crits(f, exp.str(), crits);	
+			mus = shrink_muser(exp.str(), hash);
+		}
+		return mus;
 	}
 #endif
 	stringstream exp;			

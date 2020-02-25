@@ -62,6 +62,9 @@ Master::Master(string filename, string alg, string ssolver){
 	uni = Formula(dimension, false);
 	couni = Formula(dimension, true);
 	unimus_rotated = unimus_attempts = 0;
+	unimus_use_stack = true;
+	critical_extension_saves = 0;
+	unimus_refines = 0;
 }
 
 Master::~Master(){
@@ -159,6 +162,44 @@ int Master::rotateMSS(Formula mss){
 	return rots;
 }
 
+void Master::critical_extension(Formula &f, Formula &crits){
+	int initSize = count_ones(crits);
+	queue<int> S;
+	for(int i = 0; i < dimension; i++){
+		if(crits[i]){
+			S.push(i);
+		}
+	}
+	
+	BooleanSolver *msSolver = static_cast<BooleanSolver*>(satSolver);
+	while(!S.empty()){
+		int c = S.front();
+		S.pop();
+		for(auto l: msSolver->clauses[c]){
+			vector<int> hits;
+			int var = (l > 0)? l - 1 : (-l) - 1;
+			if(var >= msSolver->vars) break; //these are the control variables
+			if(l > 0){
+				for(auto c2: msSolver->hitmap_neg[var]){
+					if(f[c2])
+						hits.push_back(c2);
+				}
+			}else{
+				for(auto c2: msSolver->hitmap_pos[var]){
+					if(f[c2])
+						hits.push_back(c2);
+				}
+			}
+			if(hits.size() == 1 && !crits[hits[0]]){
+				S.push(hits[0]);	
+				crits[hits[0]] = true;
+			}
+		}
+	}
+	int finalSize = count_ones(crits);
+	critical_extension_saves += (finalSize - initSize);
+}
+
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
@@ -166,7 +207,9 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	f_size = count_ones(f);
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
-		explorer->getImplied(crits, f);	
+		explorer->getImplied(crits, f);
+		if(algorithm == "unimus")	
+			critical_extension(f, crits);
 		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
 		if(criticals_rotation && domain == "sat"){
 			int before = count_ones(crits);
@@ -177,17 +220,21 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 		float c_crits = count_ones(crits);
 		if(int(c_crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink
+			if(verbose) cout << "crits.size() = f.size()" << endl;
 			return muses.back();
 		}
 		if((c_crits / f_size > 0.95 || f_size - c_crits < 2) && !is_valid(crits, false, false)){		
+		//if(!is_valid(crits, false, false)){		
 			muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
+			if(verbose) cout << "crits are unsat on themself" << endl;
 			return muses.back();
 		}
-	}
+	}	
 	Formula mus = satSolver->shrink(f, crits);
 	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
 	muses.push_back(MUS(mus, duration, muses.size(), f_size));
+	if(verbose) cout << "shrunk via satSolver->shrink" << endl;
 	return muses.back();
 }
 
@@ -433,10 +480,17 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
 	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
-	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
+	cout << ", union: " << count_ones(uni) << ", dimension: " << dimension;
 	cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
 	cout << ", shrinks: " << satSolver->shrinks << ", unimus rotated: " << unimus_rotated << ", unimus attempts: " << unimus_attempts;
 	cout << ", bit: " << bit;
+	if(unimus_use_stack)
+		cout << ", stack size: " << unimus_rotation_stack.size();
+	else
+		cout << ", queue size: " << unimus_rotation_queue.size();
+	
+	cout << ", critical_extension_saves: " << critical_extension_saves;
+	cout << ", unimus_refines: " << unimus_refines;
 	cout << endl;
 
 	if(output_file != "")
@@ -463,9 +517,6 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "unimus"){
 		unimus();
-	}
-	else if(algorithm == "unimus2"){
-		unimus2();
 	}
 	return;
 }

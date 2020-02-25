@@ -2122,6 +2122,8 @@ bool MUSSolver::canFlip(Lit p, model_t const& model, Lits... ls)
     return canFlip(theWcnf.hardOccurrences(in2ex(p)), model, ls...);
 }
 
+#include <stdexcept> //added by Jaroslav Bendik
+
 template <typename RotatePred, typename MarkCritFunc>
 int MUSSolver::modelRotate_(Solver& rotsolver, vector<Lit>& conflict,
     Lit inviolated, model_t& model, RotatePred can_rotate_to_p,
@@ -2129,6 +2131,9 @@ int MUSSolver::modelRotate_(Solver& rotsolver, vector<Lit>& conflict,
 {
     assert(!sign(inviolated));
     assert(rotsolver.decisionLevel() == 0);
+    if(var(inviolated) < 0) // Added by Jaroslav Bendik, when I use mcsmus inside my MUS enumeration tool, var(lt) is sometimes <0 at this point which causes a segfault 
+	throw std::runtime_error("Unexpected Failure in mcsmus");
+	    
     Lit violated = in2ex(inviolated);
     auto vc = theWcnf.getGroupVariables(violated);
 
