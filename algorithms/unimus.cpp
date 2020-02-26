@@ -195,7 +195,7 @@ void Master::unimus_refine(){
 }*/
 
 //this is the alternation based version
-void Master::unimus(){
+/*void Master::unimus(){
         int streak = 0;
 	bit = 0;
 	bool bot = false;
@@ -243,9 +243,9 @@ void Master::unimus(){
 			bot = true;
 		}
 	}
-}
+}*/
 
-/*void Master::unimus(){
+void Master::unimus(){
 	Formula top = explorer->get_unexplored(1, false);
         int streak = 0;
 	bit = 0;
@@ -263,11 +263,11 @@ void Master::unimus(){
 			unimus_mark_mus(mus);
 		}
 		top = explorer->get_top_unexplored_inside(uni);	
-		if(top.empty() || streak > 10){			
+		if(top.empty() || streak > 5){			
 			cout << "empty top" << endl;
 			unimus_refine();		
 			top = explorer->get_unexplored(1, false);
 			streak = 0;
 		}
 	}
-}*/
+}
