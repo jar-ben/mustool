@@ -52,7 +52,7 @@ void Master::unimus_rotate_mus(int mid, int limit){
 	MUS m1 = muses[mid];
 	vector<vector<int>> blocks;
 	unimus_add_blocks(m1, 0, muses.size() - 1, blocks);
-	for(int i = max(0,mid - 40); i < mid; i++){
+	for(int i = max(0,mid - 10); i < mid; i++){
 		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) < 200;
 		stay = stay || (abs(int(m1.int_mus.size() - muses[i].int_mus.size()))/float(dimension)) < 0.1;
 		if(!stay) continue;
@@ -142,7 +142,7 @@ void Master::unimus_mark_mus(MUS &mus){
 				streak++;
 			else
 				streak = 0;
-			if(streak == 10){
+			if(streak == 5){
 				unimus_rotation_stack = stack<int>();
 				break;
 			}
@@ -194,7 +194,58 @@ void Master::unimus_refine(){
 	cout << "end of refine" << endl;	
 }*/
 
+//this is the alternation based version
 void Master::unimus(){
+        int streak = 0;
+	bit = 0;
+	bool bot = false;
+	int bot_muses = 0;
+	while(true){
+		bit++;
+		if(streak == 5){
+			unimus_refine();
+			streak = 0;
+		}
+		if(bot){
+			Formula seed = explorer->get_bot_unexplored_inside(uni);
+			if(seed.empty()){			
+				unimus_refine();		
+				seed = explorer->get_unexplored(0, false);
+				if(seed.empty()) break; //unexplore = \emptyset
+			}
+			if(is_valid(seed, false, true)){
+				streak++;
+				block_down(seed);
+				bot = false;
+			}else{
+				streak = 0;
+				muses.push_back(MUS(seed, -1, muses.size(), -1));
+				MUS mus = muses.back();
+				mark_MUS(mus);
+				bot_muses++;
+				cout << "bot_muses " << bot_muses << endl << endl << endl;
+			}
+		}else{
+			Formula seed = explorer->get_top_unexplored_inside(uni);
+			if(seed.empty()){			
+				unimus_refine();		
+				seed = explorer->get_unexplored(1, false);
+				if(seed.empty()) break; //unexplore = \emptyset
+			}
+			if(is_valid(seed, true, true)){
+				streak++;
+				block_down(seed);
+			}else{
+				streak = 0;
+				MUS mus = shrink_formula(seed);
+				unimus_mark_mus(mus);
+			}
+			bot = true;
+		}
+	}
+}
+
+/*void Master::unimus(){
 	Formula top = explorer->get_unexplored(1, false);
         int streak = 0;
 	bit = 0;
@@ -219,4 +270,4 @@ void Master::unimus(){
 			streak = 0;
 		}
 	}
-}
+}*/

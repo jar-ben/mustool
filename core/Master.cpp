@@ -208,7 +208,7 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);
-		if(algorithm == "unimus")	
+		//if(algorithm == "unimus")	
 			critical_extension(f, crits);
 		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
 		if(criticals_rotation && domain == "sat"){
