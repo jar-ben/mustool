@@ -24,5 +24,11 @@ public:
         void compute_flip_edges(int c);
 	void criticals_rotation(std::vector<bool>& criticals, std::vector<bool> subset);
 	std::vector<int> get_implied(std::vector<bool> mus, int c);
+	int critical_extension(std::vector<bool> &f, std::vector<bool> &crits);
+	std::vector<int> critical_extension_clause(std::vector<bool> &f, std::vector<bool> &crits, int c);
+	int critical_propagation(std::vector<bool> &f, std::vector<bool> &crits, int cl);
+	std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits);
+
+	std::vector<bool> shrink(std::vector<bool> &f, Explorer *e, std::vector<bool> crits);
 };
 #endif

@@ -1,7 +1,6 @@
 #ifndef EXPLORER_H
 #define EXPLORER_H
 
-#include "satSolvers/MSHandle.h"
 #include "custom_minisat/Solver.h"
 #include <string>
 #include <map>
@@ -22,7 +21,6 @@ public:
 	CustomMinisat::Solver* solver;
 	CustomMinisat::Solver* botSolver;
 	CustomMinisat::Solver* topSolver;
-	SatSolver* satSolver;
 	int calls;
 
 	Explorer(int vars, bool verb = false);

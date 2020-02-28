@@ -268,11 +268,14 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
+	if(shrink_alg == "extension"){
+		return BooleanSolver::shrink(f, crits); //shrink with unsat cores
+	}
 #ifdef UMCSMUS
 	if(shrink_alg == "default"){
 		vector<bool> mus;		
 		try{
-			mus = shrink_mcsmus(f, clauses, crits);
+			mus = shrink_mcsmus(f, clauses, explorer, crits);
 		} catch (...){
 			//mcsmus sometimes fails so we use muser instead
 			cout << "mcsmus crashed during shrinking, using muser2 instead" << endl;

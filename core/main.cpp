@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
 		TCLAP::SwitchArg conflictsNegation("","conflicts-negation","Negate known conflicting clauses during satsolver.solve() calls.", cmd, false);
 		TCLAP::SwitchArg mssRotation("","mss-rotation","Use mss-rotation technique", cmd, false);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
-		vector<string> allowedShrinks {"default", "muser"};
+		vector<string> allowedShrinks {"default", "muser", "custom", "extension"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
 		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
 		cmd.add(shrink);

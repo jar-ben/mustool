@@ -45,7 +45,7 @@ Master::Master(string filename, string alg, string ssolver){
 	dimension = satSolver->dimension;	
 	cout << "Number of constraints in the input set:" << dimension << endl;
         explorer = new Explorer(dimension);	
-	explorer->satSolver = satSolver;
+	//explorer->satSolver = satSolver;
         verbose = false;
 	depthMUS = 0;
 	dim_reduction = 0.5;
@@ -65,6 +65,7 @@ Master::Master(string filename, string alg, string ssolver){
 	unimus_use_stack = true;
 	critical_extension_saves = 0;
 	unimus_refines = 0;
+	satSolver->explorer = explorer;
 }
 
 Master::~Master(){
@@ -209,7 +210,6 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);
 		//if(algorithm == "unimus")	
-			critical_extension(f, crits);
 		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
 		if(criticals_rotation && domain == "sat"){
 			int before = count_ones(crits);
@@ -217,6 +217,9 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			msSolver->criticals_rotation(crits, f);
 			if(verbose) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
 		}
+
+		BooleanSolver *bSolver = static_cast<BooleanSolver*>(satSolver);
+		critical_extension_saves += bSolver->critical_extension(f, crits);
 		float c_crits = count_ones(crits);
 		if(int(c_crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
 			muses.push_back(MUS(f, -1, muses.size(), f_size)); //-1 duration means skipped shrink

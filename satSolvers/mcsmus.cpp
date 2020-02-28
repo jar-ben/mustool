@@ -15,6 +15,7 @@
 #include "mcsmus/dimacs.hh"
 #include "mcsmus/system.hh"
 
+
 using namespace mcsmus;
 
 std::vector<Lit> intToLit(std::vector<int> cls){
@@ -30,7 +31,7 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 	return lits;
 }
 
-std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, std::vector<bool> crits){
+std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, Explorer *explorer, std::vector<bool> crits){
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;
@@ -47,9 +48,12 @@ std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<in
 
 	//add the clauses
 	std::vector<int> constraintGroupMap;
+	std::vector<int> indexOfClause (f.size(), -1);
 	int cnt = 0;
+	int counter = 0;
 	for(int i = 0; i < f.size(); i++){
 		if(f[i]){
+			indexOfClause[i] = counter++;
 			if(crits[i]){
 				wcnf.addClause(intToLit(clauses[i]), 0);
 			}else{
@@ -58,6 +62,23 @@ std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<in
 				wcnf.addClause(intToLit(clauses[i]), cnt);
 			}
 		}
+	}
+
+	//add the blocks from Explorer
+	for(auto &mcs: explorer->mcses){
+		vector<int> trimmed_mcs;
+		bool forFree = false;
+		for(auto c: mcs){
+			if(f[c] && !crits[c]){
+				trimmed_mcs.push_back(indexOfClause[c]);
+			}
+			if(crits[c]){
+				forFree = true;
+				break;
+			}
+		}
+		if(!forFree)
+			mussolver.addMinableBlockDown(trimmed_mcs);
 	}
 	
 	std::vector<Lit> mus_lits;

@@ -24,6 +24,11 @@ vector<bool> SatSolver::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	return s;
 }
 
+vector<bool> SatSolver::shrink(std::vector<bool> &f, Explorer *e, std::vector<bool> crits){
+	return shrink(f, crits);
+}
+
+
 //basic, domain agnostic, implementation of the grow procedure
 vector<bool> SatSolver::grow2(std::vector<bool> &f, std::vector<std::vector<bool>> &unsats, std::vector<bool> conflicts){
 	grows++;

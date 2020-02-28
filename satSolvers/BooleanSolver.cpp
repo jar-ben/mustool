@@ -166,3 +166,101 @@ void BooleanSolver::criticals_rotation(vector<bool>& criticals, vector<bool> sub
 	}
 }
 
+vector<int> BooleanSolver::critical_extension_clause(vector<bool> &f, vector<bool> &crits, int c){
+	vector<int> extensions;
+	for(auto l: clauses[c]){
+		vector<int> hits;
+		int var = (l > 0)? l - 1 : (-l) - 1;
+		if(var >= vars) break; //these are the control variables
+		if(l > 0){
+			for(auto c2: hitmap_neg[var]){
+				if(f[c2])
+					hits.push_back(c2);
+			}
+		}else{
+			for(auto c2: hitmap_pos[var]){
+				if(f[c2])
+					hits.push_back(c2);
+			}
+		}
+		if(hits.size() == 1 && !crits[hits[0]]){
+			extensions.push_back(hits[0]);
+			crits[hits[0]] = true;
+		}
+	}
+	return extensions;
+}
+
+int BooleanSolver::critical_extension(vector<bool> &f, vector<bool> &crits){
+	int initSize = count_ones(crits);
+        queue<int> S;
+        for(int i = 0; i < dimension; i++){
+                if(crits[i]){
+                        S.push(i);
+                }
+        }
+
+        while(!S.empty()){
+                int c = S.front();
+                S.pop();
+		for(auto e: critical_extension_clause(f, crits, c))
+			S.push(e);
+        }
+	return count_ones(crits) - initSize;
+}
+
+int BooleanSolver::critical_propagation(vector<bool> &f, vector<bool> &crits, int cl){
+        int extensions = 0;
+	queue<int> S;
+	S.push(cl);
+        while(!S.empty()){
+		extensions++;
+                int c = S.front();
+                S.pop();
+		for(auto e: critical_extension_clause(f, crits, c))
+			S.push(e);
+        }
+	return extensions - 1; //exclude the initical clause cl
+}
+
+//basic, domain agnostic, implementation of the shrink procedure
+vector<bool> BooleanSolver::shrink(std::vector<bool> &f, std::vector<bool> crits){
+        shrinks++;
+        if(crits.empty())
+                crits = std::vector<bool> (dimension, false);
+        vector<bool> s = f;
+	int extensions = 0;
+        for(int i = 0; i < dimension; i++){
+                if(s[i] && !crits[i]){
+                        s[i] = false;
+                        if(solve(s, true, false)){
+                                s[i] = true;
+				crits[i] = true;
+				extensions += critical_propagation(f, crits, i);
+			}
+                }
+        }
+	cout << "crit extensions: " << extensions << endl;
+        return s;
+}
+
+vector<bool> BooleanSolver::shrink(std::vector<bool> &f, Explorer *e, std::vector<bool> crits){
+        shrinks++;
+        if(crits.empty())
+                crits = std::vector<bool> (dimension, false);
+        vector<bool> s = f;
+	int extensions = 0;
+        for(int i = 0; i < dimension; i++){
+                if(s[i] && !crits[i]){
+                        s[i] = false;
+                        if(solve(s, true, false)){
+                                s[i] = true;
+				crits[i] = true;
+				extensions += critical_propagation(f, crits, i);
+			}
+                }
+        }
+	cout << "crit extensions: " << extensions << endl;
+        return s;
+}
+

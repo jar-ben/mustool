@@ -22,7 +22,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ***********/
-
+#include <stdexcept> //added by Jaroslav Bendik
 #include "mcsmus/algorithm.hh"
 #include <vector>
 #include <algorithm>
@@ -685,6 +685,10 @@ bool MUSSolver::refute_and_refine(Solver& rrsolver, vector<Lit>& conflict)
     for (Lit l : conflict)
         rrsolver.assumptions().push_back(~l);
     auto val = satsolve(rrsolver, TEST_SOLVE);
+    
+    if(val == l_True){ // Added by Jaroslav Bendik, when I use mcsmus inside my MUS enumeration tool, var(lt) is sometimes <0 at this point which causes a segfault 
+    	    throw std::runtime_error("Unexpected Failure in mcsmus");
+    }
     assert(val != l_True);
     rrsolver.shrinkAssumptions(
         rrsolver.assumptions().size() - crits_size - assumptions.size());
@@ -814,7 +818,7 @@ bool MUSSolver::mus_mishmash_iteration(vector<Lit>& conflict, vector<Lit>& cs,
     // reprove unsatisfiability to refine core
     if (cs.size() > 1) {
         bool success = refute_and_refine(*solver, conflict);
-        if (!success) {
+        if (!success) { //JB: this probably means that refute_and_refine was interrupted (timeouted), i.e. the reportMUS below is an overapproximated MUS
             for (Lit l : conflict)
                 solver->assumptions().push_back(~l);
             conflict.clear();
@@ -832,6 +836,38 @@ bool MUSSolver::mus_mishmash_iteration(vector<Lit>& conflict, vector<Lit>& cs,
     if (amc)
         return addMoreCrits(conflict);
     return true;
+}
+
+
+// Added by JB
+// Add a clause from Explorer (from the overal MUS enumeration tool) that represents a mcs
+void MUSSolver::addMinableBlockDown(vector<int> &block){
+	blockDowns.push_back(block);
+}
+
+// Added by JB
+// checks if the clause unknown[c] is minable critical for F = (unknown \cup crits)
+bool MUSSolver::isMinableCritical(vector<Lit> const& unknown, vector<Lit> const& crits, Lit c){
+	vector<bool> f(theWcnf.nClauses(), false);
+	for(auto l: unknown){
+		f[theWcnf.bvarIdx(in2ex(l)) - 1] = true;
+	}
+	for(auto l: crits){
+		f[theWcnf.bvarIdx(in2ex(l)) - 1] = true;
+	}
+	f[theWcnf.bvarIdx(in2ex(c)) - 1] = false;
+
+	for(auto &block: blockDowns){
+		bool found = false;
+		for(auto cl: block){
+			if(f[cl]){
+				found = true;
+				break;
+			}			
+		}
+		if(!found) return true;// the block (mcs) is not hit by F - {unknown[c]}
+	}
+	return false;
 }
 
 bool MUSSolver::mus_mishmash(vector<Lit>& conflict, vector<Lit> const& all,
@@ -867,6 +903,13 @@ bool MUSSolver::mus_mishmash(vector<Lit>& conflict, vector<Lit> const& all,
 
         auto prev_redundant{redundant_size};
         isMus = mus_mishmash_iteration(conflict, cs, all, require_global_mcses);
+
+	//JB: place the Explorer based and Critical Extension based refinement here
+	for(auto c: conflict){
+		if(isMinableCritical(conflict, solver->assumptions(), c)){
+			std::cout << "zombie" << std::endl << std::endl << std::endl;
+		}	
+	}
 
         auto num_removed{redundant_size - prev_redundant};
         double current_time = cpuTime();
@@ -2122,7 +2165,6 @@ bool MUSSolver::canFlip(Lit p, model_t const& model, Lits... ls)
     return canFlip(theWcnf.hardOccurrences(in2ex(p)), model, ls...);
 }
 
-#include <stdexcept> //added by Jaroslav Bendik
 
 template <typename RotatePred, typename MarkCritFunc>
 int MUSSolver::modelRotate_(Solver& rotsolver, vector<Lit>& conflict,

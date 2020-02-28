@@ -53,8 +53,13 @@ void Master::unimus_rotate_mus(int mid, int limit){
 	vector<vector<int>> blocks;
 	unimus_add_blocks(m1, 0, muses.size() - 1, blocks);
 	for(int i = max(0,mid - 10); i < mid; i++){
-		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) < 200;
-		stay = stay || (abs(int(m1.int_mus.size() - muses[i].int_mus.size()))/float(dimension)) < 0.1;
+		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) < 20;
+		int cointersection = 0;
+		for(int c = 0; c < dimension; c++)
+			if((m1.bool_mus[c] && !muses[i].bool_mus[c]) || (!m1.bool_mus[c] && muses[i].bool_mus[c]))
+				cointersection++;
+		stay = stay && cointersection < 10;
+		//		stay = stay || (abs(int(m1.int_mus.size() - muses[i].int_mus.size()))/float(dimension)) < 0.1;
 		if(!stay) continue;
 	
 		vector<pair<int,int>> pairs;
@@ -112,6 +117,7 @@ void Master::unimus_rotate_mus(int mid, int limit){
 			Formula seed = union_sets(m1.bool_mus, muses[i].int_mus);
 			seed[candidate.first] = seed[candidate.second] = false;
 			unimus_rotated++;
+			
 			MUS mus = shrink_formula(seed);					
 			mark_MUS(mus);
 			unimus_add_blocks(m1, muses.size() - 1, muses.size() - 1, blocks);
@@ -122,7 +128,6 @@ void Master::unimus_rotate_mus(int mid, int limit){
 				unimus_rotation_queue.push(muses.size() - 1);
 			}
 		}
-//		cout << "malina " << iter << " " << initSize << " " << (float(iter)/initSize) << endl;
 	}
 }
 

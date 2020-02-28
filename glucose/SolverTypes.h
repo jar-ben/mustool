@@ -72,8 +72,8 @@ namespace CustomGlucose {
 // so that they can be used as array indices.
 
 typedef int Var;
-#define var_Undef (-1)
-
+//#define var_Undef (-1)
+const Var var_Undef = -1;
 
 struct Lit {
     int     x;
@@ -113,9 +113,10 @@ const Lit lit_Error = { -1 };  // }
 //       does enough constant propagation to produce sensible code, and this appears to be somewhat
 //       fragile unfortunately.
 
-#define l_True  (CustomGlucose::lbool((uint8_t)0)) // gcc does not do constant propagation if these are real constants.
-#define l_False (CustomGlucose::lbool((uint8_t)1))
-#define l_Undef (CustomGlucose::lbool((uint8_t)2))
+//#define l_True  (CustomGlucose::lbool((uint8_t)0)) // gcc does not do constant propagation if these are real constants.
+//#define l_False (CustomGlucose::lbool((uint8_t)1))
+//#define l_Undef (CustomGlucose::lbool((uint8_t)2))
+
 
 class lbool {
     uint8_t value;
@@ -146,6 +147,9 @@ public:
 inline int   toInt  (lbool l) { return l.value; }
 inline lbool toLbool(int   v) { return lbool((uint8_t)v);  }
 
+const CustomGlucose::lbool l_True ((uint8_t)0);
+const CustomGlucose::lbool l_False((uint8_t)1);
+const CustomGlucose::lbool l_Undef((uint8_t)2);
 //=================================================================================================
 // Clause -- a simple class for representing a clause:
 

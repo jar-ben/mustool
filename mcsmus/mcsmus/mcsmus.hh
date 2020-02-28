@@ -498,8 +498,12 @@ public:
 
     uint64_t mr_trigger_resets{0}, mr_trigger_blocks{0};
 
+    bool isMinableCritical(vector<Lit> const& unknown, vector<Lit> const& crits, Lit c);
+    void addMinableBlockDown(vector<int> &block);
 
  protected:
+
+  vector<vector<int>> blockDowns; //JB: added to store map^+ (information from Explorer)
 
   //Stats reporting
   bool status_timeout{false};
