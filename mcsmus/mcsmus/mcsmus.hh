@@ -498,8 +498,9 @@ public:
 
     uint64_t mr_trigger_resets{0}, mr_trigger_blocks{0};
 
-    bool isMinableCritical(vector<Lit> const& unknown, vector<Lit> const& crits, Lit c);
-    void addMinableBlockDown(vector<int> &block);
+    bool isMinableCritical(vector<Lit> const& unknown, vector<Lit> const& crits, Lit c); //JB: used for mining critical clauses
+    void addMinableBlockDown(vector<int> &block); //JB: used for mining critical clauses
+    int minedCriticals{0}; //JB: used for mining critical clauses
 
  protected:
 

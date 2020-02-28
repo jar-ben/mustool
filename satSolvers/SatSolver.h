@@ -24,8 +24,9 @@ public:
 	std::string mcslsArgs;
 	int growStrategy;
 	Explorer *explorer;
+	int shrinkMinedCrits;
 
-	SatSolver(std::string filename): shrink_alg("default"), checks(0), shrinks(0), grows(0), exported_muses(0){}
+	SatSolver(std::string filename): shrink_alg("default"), checks(0), shrinks(0), grows(0), exported_muses(0), shrinkMinedCrits(0) {}
 	~SatSolver(){}
 	virtual std::string toString(std::vector<bool> &mus) = 0;
 	virtual bool solve(std::vector<bool> &f, bool core = false, bool grow = false) = 0;

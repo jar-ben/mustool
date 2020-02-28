@@ -239,7 +239,7 @@ vector<bool> GlucoseHandle::shrink(std::vector<bool> &f, std::vector<bool> crits
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
-	return shrink_mcsmus(f, clauses, explorer, crits);
+	return shrink_mcsmus(f, clauses, explorer, shrinkMinedCrits, crits);
 }
 
 int GLmuser_output(std::string filename){

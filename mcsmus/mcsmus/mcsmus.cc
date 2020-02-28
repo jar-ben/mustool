@@ -905,10 +905,20 @@ bool MUSSolver::mus_mishmash(vector<Lit>& conflict, vector<Lit> const& all,
         isMus = mus_mishmash_iteration(conflict, cs, all, require_global_mcses);
 
 	//JB: place the Explorer based and Critical Extension based refinement here
+	vector<Lit> newCrits;
 	for(auto c: conflict){
-		if(isMinableCritical(conflict, solver->assumptions(), c)){
-			std::cout << "zombie" << std::endl << std::endl << std::endl;
-		}	
+		if(isMinableCritical(conflict, solver->assumptions(), c)){			
+			minedCriticals++;
+			newCrits.push_back(c);
+		}else{
+		}
+	}
+	for(auto &c: newCrits){
+		moveToCrits(~c);
+	    	conflict.erase(find(begin(conflict), end(conflict), c));
+	}
+	if(!conflict.empty()){
+        	isMus = true;
 	}
 
         auto num_removed{redundant_size - prev_redundant};
@@ -3462,6 +3472,7 @@ void MUSSolver::verify_unsat(Solver& origsolver,
     ACT("verify") << " val = " << itsval
                   << " conflicts = " << s->getStats().conflicts
                   << std::endl;
+    if(itsval != l_False) std::cout << "varify_unsat failed (it is sat)" << std::endl; //added by JB 
     assert(itsval == l_False);
 }
 
@@ -3490,6 +3501,7 @@ void MUSSolver::verify_mcs(vector<Lit> const& assumptions,
     ACT("verify") << " val = " << itsval
                   << " conflicts = " << s->getStats().conflicts
                   << std::endl;
+    if(itsval != l_False) std::cout << "varify_mcs failed (it is not a mcs)" << std::endl; //added by JB 
     assert(itsval == l_False);
 }
 

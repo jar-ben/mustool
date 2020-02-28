@@ -102,6 +102,7 @@ bool Master::is_valid(Formula &formula, bool core, bool grow){
 
 //verify if f is a MUS
 void Master::validate_mus(Formula &f){
+	cout << "validationg MUS with size " << count_ones(f) << endl;
 	if(is_valid(f))
 		print_err("the mus is SAT");
 	if(!explorer->isUnexplored(f))
@@ -494,6 +495,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	
 	cout << ", critical_extension_saves: " << critical_extension_saves;
 	cout << ", unimus_refines: " << unimus_refines;
+	cout << ", mcsmus saves: " << satSolver->shrinkMinedCrits;
 	cout << endl;
 
 	if(output_file != "")

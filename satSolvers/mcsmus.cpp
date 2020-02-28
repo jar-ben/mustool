@@ -31,7 +31,7 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 	return lits;
 }
 
-std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, Explorer *explorer, std::vector<bool> crits){
+std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, Explorer *explorer, int &minedCrits, std::vector<bool> crits){
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;
@@ -53,10 +53,10 @@ std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<in
 	int counter = 0;
 	for(int i = 0; i < f.size(); i++){
 		if(f[i]){
-			indexOfClause[i] = counter++;
 			if(crits[i]){
 				wcnf.addClause(intToLit(clauses[i]), 0);
 			}else{
+				indexOfClause[i] = counter++;
 				constraintGroupMap.push_back(i);
 				cnt++;
 				wcnf.addClause(intToLit(clauses[i]), cnt);
@@ -84,6 +84,8 @@ std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<in
 	std::vector<Lit> mus_lits;
 	wcnf.relax();
 	mussolver.find_mus(mus_lits, false);
+	
+	minedCrits += mussolver.minedCriticals;
 
 	std::vector<bool> mus(f.size(), false);
 	for(auto b : mus_lits){
