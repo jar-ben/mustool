@@ -440,21 +440,29 @@ void Master::mark_MSS_executive(MSS f, bool block_unex){
 	explorer->block_down(f.bool_mss);
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
-        cout << "Found MSS #" << msses.size() <<  ", mss dimension: " << f.dimension;
-	cout << ", checks: " << satSolver->checks << ", time: " << duration;
-	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
-	cout << ", intersection: " << count_ones(explorer->mus_intersection);
-	cout << ", union: " << count_ones(uni) << ", dimension: " << dimension;
-	cout << ", seed dimension: " << f.seed_dimension << ", grow duration: " << f.duration;
-	cout << ", grows: " << satSolver->grows << ", depth: " << current_depth;
-	cout << ", sats: " << explorer->mcses.size() << ", unsats: " << explorer->muses.size() << ", bit: " << bit << ", guessed: " << guessed;
-	cout << ", exp calls: " << explorer->calls << ", rotated msses: " << rotated_msses << ", extended: " << extended;
-	cout << endl;
+        bool printMSSes = false;
+	if(printMSSes){
+		cout << "Found MSS #" << msses.size() <<  ", mss dimension: " << f.dimension;
+		cout << ", checks: " << satSolver->checks << ", time: " << duration;
+		cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
+		cout << ", intersection: " << count_ones(explorer->mus_intersection);
+		cout << ", union: " << count_ones(uni) << ", dimension: " << dimension;
+		cout << ", seed dimension: " << f.seed_dimension << ", grow duration: " << f.duration;
+		cout << ", grows: " << satSolver->grows << ", depth: " << current_depth;
+		cout << ", sats: " << explorer->mcses.size() << ", unsats: " << explorer->muses.size() << ", bit: " << bit << ", guessed: " << guessed;
+		cout << ", exp calls: " << explorer->calls << ", rotated msses: " << rotated_msses << ", extended: " << extended;
+		cout << endl;
+	}
 
 	if(output_file != "")
 		write_mss_to_file(f);
 	if(mss_rotation)
 		rotation_queue.push_back(f.bool_mss);
+}
+
+void Master::mark_MSS(Formula f, bool block_unex){
+	MSS mss (f, -1, msses.size(), -1);
+	mark_MSS(mss, block_unex);
 }
 
 void Master::mark_MSS(MSS f, bool block_unex){
@@ -464,9 +472,9 @@ void Master::mark_MSS(MSS f, bool block_unex){
 		Formula mss = rotation_queue.back();
 		rotation_queue.pop_back();
 		rotateMSS(mss);
-		if(++i > 10){
+		if(++i > mssRotationLimit){
 			rotation_queue.clear();
-			break;
+			return;
 		}
 	}
 }
@@ -480,7 +488,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
         if(algorithm == "unibase2") return;
-	cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
+	cout << "Found MUS #" << muses.size() << ", msses: " << msses.size() <<  ", mus dimension: " << f.dimension;
 	cout << ", checks: " << satSolver->checks << ", time: " << duration;
 	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
 	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
@@ -522,6 +530,9 @@ void Master::enumerate(){
 	}
 	else if(algorithm == "unimus"){
 		unimus();
+	}
+	else if(algorithm == "unimusRec"){
+		unimusRecMain();
 	}
 	return;
 }

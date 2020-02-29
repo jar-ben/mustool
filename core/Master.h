@@ -68,6 +68,7 @@ public:
 	void block_up(Formula f);
 	void mark_MUS(MUS& m, bool block = true);
 	void mark_MSS(MSS m, bool block = true);
+	void mark_MSS(Formula m, bool block = true);
 	void mark_MSS_executive(MSS m, bool block = true);
 	MUS& shrink_formula(Formula& f, Formula crits = Formula());
 	MSS grow_formula(Formula& f, Formula conflicts = Formula());
@@ -108,6 +109,14 @@ public:
 	bool unimus_use_stack;
 	int critical_extension_saves;
 	int unimus_refines;
+	int mssRotationLimit;
+
+
+	//unimusRec
+	void unimusRecMain();
+	bool unimusRecRefine();
+	void unimusRec(Formula subset, Formula crits, int depth);
+
 
 	void critical_extension(Formula &f, Formula &crits);
 

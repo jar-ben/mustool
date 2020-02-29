@@ -25,6 +25,7 @@ public:
 	int growStrategy;
 	Explorer *explorer;
 	int shrinkMinedCrits;
+	bool shrinkMining;
 
 	SatSolver(std::string filename): shrink_alg("default"), checks(0), shrinks(0), grows(0), exported_muses(0), shrinkMinedCrits(0) {}
 	~SatSolver(){}

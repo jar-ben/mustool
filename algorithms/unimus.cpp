@@ -52,7 +52,7 @@ void Master::unimus_rotate_mus(int mid, int limit){
 	MUS m1 = muses[mid];
 	vector<vector<int>> blocks;
 	unimus_add_blocks(m1, 0, muses.size() - 1, blocks);
-	for(int i = max(0,mid - 10); i < mid; i++){
+	for(int i = max(0,mid - 200); i < mid; i++){
 		bool stay = abs(int(m1.int_mus.size() - muses[i].int_mus.size())) < 20;
 		int cointersection = 0;
 		for(int c = 0; c < dimension; c++)
@@ -169,11 +169,12 @@ void Master::unimus_refine(){
 		Formula seed = explorer->get_unexplored(1, false);
 		if(!is_valid(seed, true, false)){
                         MUS mus = shrink_formula(seed);
-			mark_MUS(mus);
+			unimus_mark_mus(mus);
+			//mark_MUS(mus);
 			found++;	
 		}else{		
-			block_down(seed);	
-			//mark_MSS(seed);
+			//block_down(seed);	
+			mark_MSS(seed);
 			//block_down(mss.bool_mss);
 			//found++;
 		}
@@ -258,17 +259,17 @@ void Master::unimus(){
                 bit++;
                 if(is_valid(top, true, true)){
                        	streak++;
-		       	block_down(top);
+		       	//block_down(top);
 			//cout << "growing" << endl;
-			//MSS mss = grow_formula(top);
-			//mark_MSS(mss, true);
+			MSS mss = grow_formula(top);
+			mark_MSS(mss, true);
                 }else{
 			streak = 0;
                         MUS mus = shrink_formula(top);
 			unimus_mark_mus(mus);
 		}
 		top = explorer->get_top_unexplored_inside(uni);	
-		if(top.empty() || streak > 5){			
+		if(top.empty() || streak > 10){			
 			cout << "empty top" << endl;
 			unimus_refine();		
 			top = explorer->get_unexplored(1, false);

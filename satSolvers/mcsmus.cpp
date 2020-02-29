@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "satSolvers/mcsmus_handle.h"
+#include "satSolvers/BooleanSolver.h"
 #include "mcsmus/minisat-wrapper.hh"
 #include "mcsmus/glucose-wrapper.hh"
 #include "mcsmus/minisolver.hh"
@@ -31,7 +31,7 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 	return lits;
 }
 
-std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<int>> &clauses, Explorer *explorer, int &minedCrits, std::vector<bool> crits){
+std::vector<bool> BooleanSolver::shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits){
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;
@@ -65,27 +65,29 @@ std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<std::vector<in
 	}
 
 	//add the blocks from Explorer
-	for(auto &mcs: explorer->mcses){
-		vector<int> trimmed_mcs;
-		bool forFree = false;
-		for(auto c: mcs){
-			if(f[c] && !crits[c]){
-				trimmed_mcs.push_back(indexOfClause[c]);
+	if(shrinkMining){
+		for(auto &mcs: explorer->mcses){
+			vector<int> trimmed_mcs;
+			bool forFree = false;
+			for(auto c: mcs){
+				if(f[c] && !crits[c]){
+					trimmed_mcs.push_back(indexOfClause[c]);
+				}
+				if(crits[c]){
+					forFree = true;
+					break;
+				}
 			}
-			if(crits[c]){
-				forFree = true;
-				break;
-			}
+			if(!forFree)
+				mussolver.addMinableBlockDown(trimmed_mcs);
 		}
-		if(!forFree)
-			mussolver.addMinableBlockDown(trimmed_mcs);
 	}
 	
 	std::vector<Lit> mus_lits;
 	wcnf.relax();
 	mussolver.find_mus(mus_lits, false);
 	
-	minedCrits += mussolver.minedCriticals;
+	shrinkMinedCrits += mussolver.minedCriticals;
 
 	std::vector<bool> mus(f.size(), false);
 	for(auto b : mus_lits){

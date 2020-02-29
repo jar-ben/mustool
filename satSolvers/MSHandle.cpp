@@ -1,5 +1,4 @@
 #include "satSolvers/Dimacs.h"
-#include "satSolvers/mcsmus_handle.h"
 #include "core/misc.h"
 #include "satSolvers/MSHandle.h"
 #include <sstream>
@@ -275,7 +274,7 @@ vector<bool> MSHandle::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	if(shrink_alg == "default"){
 		vector<bool> mus;		
 		try{
-			mus = shrink_mcsmus(f, clauses, explorer, shrinkMinedCrits, crits);
+			mus = shrink_mcsmus(f, crits);
 		} catch (...){
 			//mcsmus sometimes fails so we use muser instead
 			cout << "mcsmus crashed during shrinking, using muser2 instead" << endl;

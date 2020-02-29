@@ -28,6 +28,7 @@ public:
 	std::vector<int> critical_extension_clause(std::vector<bool> &f, std::vector<bool> &crits, int c);
 	int critical_propagation(std::vector<bool> &f, std::vector<bool> &crits, int cl);
 	std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits);
+	std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 
 	std::vector<bool> shrink(std::vector<bool> &f, Explorer *e, std::vector<bool> crits);
 };

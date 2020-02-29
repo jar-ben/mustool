@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
 	try{
 		TCLAP::CmdLine cmd("domain agnostic MUS enumeration Tool (MUST), Jaroslav Bendik, 2019.", ' ', "");
-		vector<string> allowedAlgs {"remus", "tome", "marco", "comarco", "duremus", "unibase", "unibase2", "unimus", "counimus", "unimus2"};
+		vector<string> allowedAlgs {"unimusRec", "remus", "tome", "marco", "comarco", "duremus", "unibase", "unibase2", "unimus", "counimus", "unimus2"};
 		TCLAP::ValuesConstraint<string> allowedVals(allowedAlgs);
 		TCLAP::ValueArg<string> algorithm("a","algorithm","MUS enumeration algorithm to be used.",false,"remus",&allowedVals);
 		cmd.add(algorithm);
@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
 		TCLAP::SwitchArg conflictsNegation("","conflicts-negation","Negate known conflicting clauses during satsolver.solve() calls.", cmd, false);
 		TCLAP::SwitchArg mssRotation("","mss-rotation","Use mss-rotation technique", cmd, false);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
+		TCLAP::SwitchArg shrinkMining("","shrink-mining","Allows mcsmus to mine critical clauses from Explorer.", cmd, false);
 		vector<string> allowedShrinks {"default", "muser", "custom", "extension"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
 		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
@@ -53,6 +54,10 @@ int main(int argc, char *argv[]){
 		cmd.add(cmpStrategy);
 		TCLAP::ValueArg<int> recursionDepthLimit("","max-recursion-depth","Affects only the algorithm ReMUS. Sets the depth limit on recursion calls in the algorithm.",false,100,"N+ or -1 for unlimited.");
 		cmd.add(recursionDepthLimit);
+
+		TCLAP::ValueArg<int> mssRotationLimit("","mss-rotation-limit","The maximum number of rotated MSS per a single rotation batch.", false,10,"N+ or -1 for unlimited.");
+		cmd.add(mssRotationLimit);
+
 		TCLAP::ValueArg<float> reductionCoeff("","dimension-reduction-coefficient","Affects only the algorithm ReMUS. Sets the dimension reduction coefficient used for the recursion calls of the algorithm.",false,0.9,"float 0-1");
 		cmd.add(reductionCoeff);
 		TCLAP::SwitchArg verify("c","verify-muses","Used for testing purposes. Verify that the outputted MUSes are indeed MUSes.", cmd, false);
@@ -86,7 +91,9 @@ int main(int argc, char *argv[]){
 		solver.criticals_rotation = criticalsRotation.getValue(); //criticals_rotation;
 		solver.satSolver->growStrategy = cmpStrategy.getValue();
 		solver.satSolver->mcslsArgs = mcslsArgs.getValue();
+		solver.satSolver->shrinkMining = shrinkMining.getValue();
 		solver.mss_rotation = mssRotation.getValue();
+		solver.mssRotationLimit = (mssRotationLimit.getValue() >= 0)? mssRotationLimit.getValue() : 1000000;
 		solver.enumerate();
 		
 		cout << "Enumeration completed" << endl;

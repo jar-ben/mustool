@@ -1,6 +1,5 @@
 #include "core/misc.h"
 #include "satSolvers/GlucoseHandle.h"
-#include "satSolvers/mcsmus_handle.h"
 #include <sstream>
 #include <fstream>
 #include <sstream>
@@ -239,7 +238,7 @@ vector<bool> GlucoseHandle::shrink(std::vector<bool> &f, std::vector<bool> crits
 	if(shrink_alg == "custom"){
 		return SatSolver::shrink(f, crits); //shrink with unsat cores
 	}
-	return shrink_mcsmus(f, clauses, explorer, shrinkMinedCrits, crits);
+	return shrink_mcsmus(f, crits);
 }
 
 int GLmuser_output(std::string filename){
