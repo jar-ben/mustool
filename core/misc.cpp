@@ -77,6 +77,11 @@ int random_number(){
 	return distr(eng);
 }
 
+void shuffle_ints(std::vector<int> &shuffled){
+	auto rng = std::default_random_engine {};
+	std::shuffle(std::begin(shuffled), std::end(shuffled), rng);
+}
+
 std::string convert_vec(std::vector<bool> node){
 	string result = "";
 	for(auto b: node)

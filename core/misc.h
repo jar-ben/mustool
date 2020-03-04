@@ -12,6 +12,8 @@ bool ends_with(std::string const & value, std::string const & ending);
 bool starts_with(std::string const & value, std::string const & start);
 std::string exec(const char* cmd);
 int random_number();
+void shuffle_ints(std::vector<int> &v);
+
 std::string convert_vec(std::vector<bool> node);
 
 std::vector<int> subtract_int(std::vector<bool> &a, std::vector<bool> &b);

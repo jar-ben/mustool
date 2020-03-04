@@ -32,7 +32,6 @@ std::vector<Lit> intToLit(std::vector<int> cls){
 }
 
 std::vector<bool> BooleanSolver::shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits){
-	std::cout << "start of shrink_mcsmus" << std::endl;
 	setX86FPUPrecision();
 	Wcnf wcnf;
 	std::unique_ptr<BaseSolver> s;
@@ -64,10 +63,10 @@ std::vector<bool> BooleanSolver::shrink_mcsmus(std::vector<bool> &f, std::vector
 			}
 		}
 	}
-	std::cout << "added clauses" << std::endl;
 
 	//add the blocks from Explorer
 	if(shrinkMining){
+		mussolver.conflictMining = true;
 		for(auto &mcs: explorer->mcses){
 			vector<int> trimmed_mcs;
 			bool forFree = false;
@@ -84,13 +83,10 @@ std::vector<bool> BooleanSolver::shrink_mcsmus(std::vector<bool> &f, std::vector
 				mussolver.addMinableBlockDown(trimmed_mcs);
 		}
 	}
-	std::cout << "added mining information" << std::endl;
 	
 	std::vector<Lit> mus_lits;
 	wcnf.relax();
-	std::cout << "relaxed" << std::endl;
 	mussolver.find_mus(mus_lits, false);
-	std::cout << "found MUS" << std::endl;
 	
 	shrinkMinedCrits += mussolver.minedCriticals;
 

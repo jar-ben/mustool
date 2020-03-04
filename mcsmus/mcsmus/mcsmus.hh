@@ -501,6 +501,7 @@ public:
     bool isMinableCritical(vector<Lit> const& unknown, vector<Lit> const& crits, Lit c); //JB: used for mining critical clauses
     void addMinableBlockDown(vector<int> &block); //JB: used for mining critical clauses
     int minedCriticals{0}; //JB: used for mining critical clauses
+    bool conflictMining{false}; //Control variable (switch) that enables the mining (in default false, i.s. the mining is disabled)
 
  protected:
 

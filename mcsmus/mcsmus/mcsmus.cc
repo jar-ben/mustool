@@ -904,22 +904,25 @@ bool MUSSolver::mus_mishmash(vector<Lit>& conflict, vector<Lit> const& all,
         auto prev_redundant{redundant_size};
         isMus = mus_mishmash_iteration(conflict, cs, all, require_global_mcses);
 
-	//JB: place the Explorer based and Critical Extension based refinement here
-	vector<Lit> newCrits;
-	for(auto c: conflict){
-		if(isMinableCritical(conflict, solver->assumptions(), c)){			
-			minedCriticals++;
-			newCrits.push_back(c);
-		}else{
+	//JB: Critical Clauses Extension based on information from Explorer (the overall MUST tool)
+	if(conflictMining){
+		vector<Lit> newCrits;
+		for(auto c: conflict){
+			if(isMinableCritical(conflict, solver->assumptions(), c)){			
+				minedCriticals++;
+				newCrits.push_back(c);
+			}else{
+			}
+		}
+		for(auto &c: newCrits){
+			moveToCrits(~c);
+			conflict.erase(find(begin(conflict), end(conflict), c));
+		}
+		if(!conflict.empty()){
+			isMus = true;
 		}
 	}
-	for(auto &c: newCrits){
-		moveToCrits(~c);
-	    	conflict.erase(find(begin(conflict), end(conflict), c));
-	}
-	if(!conflict.empty()){
-        	isMus = true;
-	}
+	//End of added code by JB
 
         auto num_removed{redundant_size - prev_redundant};
         double current_time = cpuTime();

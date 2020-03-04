@@ -32,11 +32,45 @@ bool Master::unimusRec_isAvailable(int c, Formula &subset, vector<vector<int>> &
         return true;
 }
 
-Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<int> implied, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap){
+Formula Master::unimusRec_propagateRefine(Formula &conflict, Formula &base, vector<pair<int,int>> &implied){
+	Formula toKeep(dimension, true);
+	BooleanSolver *bSolver = static_cast<BooleanSolver*>(satSolver);        
+	int finalOne = implied.back().first;
+	int removed = 0;
+	for(int i = implied.size() - 2; i >= 0; i--){
+		bool needed = false;
+		int c1 = implied[i].first;
+		int lit = implied[i].second;
+		for(int j = i + 1; j < implied.size(); j++){
+			int c2 = implied[j].first;
+			if(!toKeep[c2]) continue;
+			vector<int> &cl = bSolver->clauses[c2];
+			if(find(cl.begin(), cl.end(), -lit) != cl.end()){
+				needed = true;
+				break;
+			}		
+		}
+		if(!needed && !base[c1] && c1 != finalOne){
+			toKeep[c1] = false;
+			removed++;
+		}
+	}
+	for(int i = 0; i < dimension; i++){
+		if(!toKeep[i])
+			conflict[i] = false;
+	}
+	if(DBG){
+		if(is_valid(conflict)) print_err("satisfiable seed after unimusRec_propagateRefine()");
+	}
+
+	return conflict;
+}
+
+Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<pair<int,int>> implied, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap){
 	BooleanSolver *bSolver = static_cast<BooleanSolver*>(satSolver);        
         queue<int> toPropagate;
-        for(auto l: implied)
-                toPropagate.push(l);
+        for(auto p: implied)
+                toPropagate.push(p.second);
         vector<bool> conflict = base;
         vector<int> lits_left (dimension,0);
         for(int i = 0 ; i < dimension; i++){
@@ -70,7 +104,7 @@ Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<i
                                                 int var2 = (lit > 0)? lit : -lit;
                                                 if(!setup[var2]){
                                                         toPropagate.push(lit);
-                                                        implied.push_back(lit);
+                                                        implied.push_back(make_pair(c1,lit));
                                                         break;
                                                 }
                                         }
@@ -79,7 +113,8 @@ Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<i
                                 }
                                 if(lits_left[c1] == 0 && unimusRec_isAvailable(c1, conflict, blocks, blocks_hitmap)){
 					conflict[c1] = true;
-                                        return conflict;
+					implied.push_back(make_pair(c1, 0));
+					return unimusRec_propagateRefine(conflict, base, implied);
                                 }
                         }
                 }else{
@@ -95,7 +130,7 @@ Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<i
                                                 int var2 = (lit > 0)? lit : -lit;
                                                 if(!setup[var2]){
                                                         toPropagate.push(lit);
-                                                        implied.push_back(lit);
+                                                        implied.push_back(make_pair(c1,lit));
                                                         break;
                                                 }
                                         }
@@ -104,7 +139,8 @@ Formula Master::unimusRec_propagateToUnsat(Formula base, Formula cover, vector<i
                                 }
                                 if(lits_left[c1] == 0 && unimusRec_isAvailable(c1, conflict, blocks, blocks_hitmap)){
                                         conflict[c1] = true;
-                                        return conflict;
+					implied.push_back(make_pair(c1, 0));
+					return unimusRec_propagateRefine(conflict, base, implied);
                                 }
                         }
                 }
@@ -121,15 +157,20 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		unimusRec_add_block(m1, mi, blocks, blocks_hitmap);
 	
 	BooleanSolver *bSolver = static_cast<BooleanSolver*>(satSolver);        
-	for(auto c1: m1.int_mus){
-		if(explorer->is_critical(c1, cover)) continue;
-		
+	int iter = 0;
+	int limit = 500;
+	if(m1.int_mus.size() > limit)
+		shuffle_ints(m1.int_mus);
+	for(auto c1: m1.int_mus){			
+		if(explorer->is_critical(c1, cover)) continue;		
+		iter++;
+		if(iter > limit) break;
 		Formula base = m1.bool_mus;
 		base[c1] = false;
 		cover[c1] = false;
-		vector<int> implied;
+		vector<pair<int,int>> implied;
 		for(int k = 0; k < bSolver->clauses[c1].size() - 1; k++)
-			implied.push_back(-1 * bSolver->clauses[c1][k]);
+			implied.push_back(make_pair(c1, -1 * bSolver->clauses[c1][k]));
 		Formula seed = unimusRec_propagateToUnsat(base, cover, implied, blocks, blocks_hitmap);
 		cover[c1] = true;
 		unimus_attempts++;	
@@ -157,7 +198,6 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 			}
 		}
 		if(!ok) continue;*/
-		cout << "found seed " << (count_ones(seed) - m1.int_mus.size()) <<  endl;
 		if(DBG){
 			if(is_valid(seed)) print_err("the rotated seed is validi");
 		}
@@ -168,7 +208,7 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		unimusRec_add_block(m1, muses.size() - 1, blocks, blocks_hitmap);
 		unimus_rotation_stack.push(muses.size() - 1);
 	}
-	
+	cout << "propagates " << iter << endl;
 	
 }
 

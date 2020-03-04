@@ -485,6 +485,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	couni = complement(uni);
 	if(validate_mus_c) validate_mus(f.bool_mus);		
 	explorer->block_up(f.bool_mus);
+	//explorer->block_down(f.bool_mus);
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
