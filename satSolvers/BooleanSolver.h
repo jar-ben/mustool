@@ -27,9 +27,12 @@ public:
 	int critical_extension(std::vector<bool> &f, std::vector<bool> &crits);
 	std::vector<int> critical_extension_clause(std::vector<bool> &f, std::vector<bool> &crits, int c);
 	int critical_propagation(std::vector<bool> &f, std::vector<bool> &crits, int cl);
+	std::vector<bool> propagateToUnsat(std::vector<bool> base, std::vector<bool> cover, std::vector<int> implied);
+	
 	std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits);
 	std::vector<bool> shrink_mcsmus(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
-
+	bool lit_occurences(std::vector<bool> subset, int c2);
 	std::vector<bool> shrink(std::vector<bool> &f, Explorer *e, std::vector<bool> crits);
+
 };
 #endif

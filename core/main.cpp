@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
 		TCLAP::SwitchArg conflictsNegation("","conflicts-negation","Negate known conflicting clauses during satsolver.solve() calls.", cmd, false);
 		TCLAP::SwitchArg mssRotation("","mss-rotation","Use mss-rotation technique", cmd, false);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
+		TCLAP::SwitchArg dbg("","dbg","Debugging mode", cmd, false);
 		TCLAP::SwitchArg shrinkMining("","shrink-mining","Allows mcsmus to mine critical clauses from Explorer.", cmd, false);
 		vector<string> allowedShrinks {"default", "muser", "custom", "extension"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
@@ -94,6 +95,7 @@ int main(int argc, char *argv[]){
 		solver.satSolver->shrinkMining = shrinkMining.getValue();
 		solver.mss_rotation = mssRotation.getValue();
 		solver.mssRotationLimit = (mssRotationLimit.getValue() >= 0)? mssRotationLimit.getValue() : 1000000;
+		solver.DBG = dbg.getValue();
 		solver.enumerate();
 		
 		cout << "Enumeration completed" << endl;

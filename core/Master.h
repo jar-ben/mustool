@@ -60,6 +60,7 @@ public:
 	int extended; //number of saved satisfiability checks via the grow extension
 	Formula uni;
 	Formula couni;
+	bool DBG;
 
 	Master(string filename, string alg, string ssolver);
 	~Master();
@@ -115,8 +116,15 @@ public:
 	//unimusRec
 	void unimusRecMain();
 	bool unimusRecRefine();
-	void unimusRec(Formula subset, Formula crits, int depth);
-
+	void unimusRec(Formula subset, Formula crits, int depth, std::vector<int> &localMuses);
+	void unimusRec_add_block(MUS &m1, int mid, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap);
+	void unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector<int> &localMuses);
+	void unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset, vector<int> &localMuses);
+	Formula unimusRec_propagateToUnsat(Formula base, Formula cover, vector<int> implied, 
+		vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap);
+	bool unimusRec_isAvailable(int c, Formula &subset, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap);
+	Formula currentSubset;
+	int unimusRecDepth;
 
 	void critical_extension(Formula &f, Formula &crits);
 

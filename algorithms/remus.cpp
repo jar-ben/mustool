@@ -44,6 +44,7 @@ void Master::find_all_muses_duality_based_remus(Formula subset, Formula crits, i
 			//prevent getting stuck in a small subset
 			if(streak > 10 && depth > 0){ current_depth--; return; }
 			vector<bool> model;
+			//mark_MSS(top);
 			block_down(top);	
 			vector<int> crit_all;
 			for(int i = 0; i < dimension; i++)

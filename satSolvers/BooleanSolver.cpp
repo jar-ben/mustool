@@ -35,6 +35,99 @@ void print_model(vector<int> model){
 	cout << endl;
 }
 
+
+bool BooleanSolver::lit_occurences(vector<bool> subset, int c2){
+	for(auto l: clauses[c2]){
+		int var = (l > 0)? l : -l;
+		if(var > vars) break; //the activation literal
+		int count = 0;
+		if(l > 0){
+			for(auto c1: hitmap_pos[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				if(subset[c1] && c1 != c2){ count++; }
+			}
+		} else {
+			for(auto c1: hitmap_neg[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				if(subset[c1] && c1 != c2){ count++; }
+			}
+		}
+		if(count == 0) return false;
+	}
+	return true;
+}
+
+
+vector<bool> BooleanSolver::propagateToUnsat(vector<bool> base, vector<bool> cover, vector<int> implied){
+	queue<int> toPropagate;
+	for(auto l: implied)
+		toPropagate.push(l);
+	vector<bool> conflict = base;
+	vector<int> lits_left (dimension,0);
+	for(int i = 0 ; i < dimension; i++){
+		lits_left[i] = clauses[i].size() - 1; // -1 because there is the activation literal
+	}
+	vector<bool> satisfied(dimension, false);
+	vector<bool> setup(vars + 1, false);
+	vector<bool> value(vars + 1, false);
+	while(!toPropagate.empty()){
+		auto l = toPropagate.front();
+		toPropagate.pop();
+		int var = (l > 0)? l : -l;
+		if(setup[var])
+			continue;
+		setup[var] = true;
+		value[var] = l < 0;
+		if(l < 0){
+			for(auto c1: hitmap_neg[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				satisfied[c1] = true;
+			}
+			for(auto c1: hitmap_pos[var - 1]){ //trim clauses that contain positive i-th literal
+				if(satisfied[c1] || !cover[c1]) continue;
+				lits_left[c1]--;
+				if(lits_left[c1] == 1){
+					for(auto lit: clauses[c1]){
+						if(lit >= vars) break; //the activation literal
+						int var2 = (lit > 0)? lit : -lit;
+						if(!setup[var2]){
+							toPropagate.push(lit);
+							implied.push_back(lit);
+							break;
+						}
+					}
+					conflict[c1] = true;
+				}
+				if(lits_left[c1] == 0){
+					conflict[c1] = true;
+					return conflict;
+				}
+			}
+		}else{
+			for(auto c1: hitmap_pos[var - 1]){ //clauses satisfied by implied negative value of i-th literal
+				satisfied[c1] = true;
+			}
+			for(auto c1: hitmap_neg[var - 1]){ //trim clauses that contain positive i-th literal
+				if(satisfied[c1] || !cover[c1]) continue;
+				lits_left[c1]--;
+				if(lits_left[c1] == 1){
+					for(auto lit: clauses[c1]){
+						if(lit >= vars) break; //the activation literal
+						int var2 = (lit > 0)? lit : -lit;
+						if(!setup[var2]){
+							toPropagate.push(lit);
+							implied.push_back(lit);
+							break;
+						}
+					}
+					conflict[c1] = true;
+				}
+				if(lits_left[c1] == 0){
+					conflict[c1] = true;
+					return conflict;
+				}
+			}
+		}
+	}
+	return vector<bool>();
+}
 vector<int> BooleanSolver::get_implied(vector<bool> mus, int c){
 	if(!mus[c]) print_err("c is not in mus");
 	mus[c] = false;

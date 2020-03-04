@@ -227,13 +227,14 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			if(verbose) cout << "crits.size() = f.size()" << endl;
 			return muses.back();
 		}
-		if((c_crits / f_size > 0.95 || f_size - c_crits < 2) && !is_valid(crits, false, false)){		
+		if(false && (c_crits / f_size > 0.95 || f_size - c_crits < 2) && !is_valid(crits, false, false)){		
 		//if(!is_valid(crits, false, false)){		
 			muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
 			if(verbose) cout << "crits are unsat on themself" << endl;
 			return muses.back();
 		}
-	}	
+	}
+	if(verbose) cout << "calling satSolver->shrink" << endl;	
 	Formula mus = satSolver->shrink(f, crits);
 	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
@@ -504,6 +505,7 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 	cout << ", critical_extension_saves: " << critical_extension_saves;
 	cout << ", unimus_refines: " << unimus_refines;
 	cout << ", mcsmus saves: " << satSolver->shrinkMinedCrits;
+	//cout << ", unimusRecDepth: " << unimusRecDepth;
 	cout << endl;
 
 	if(output_file != "")
