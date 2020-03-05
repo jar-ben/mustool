@@ -14,14 +14,16 @@ void Master::unimusRec_add_block(MUS &m1, int mid, vector<vector<int>> &blocks, 
 			blocks_hitmap[c].push_back(blocks.size());
 		}
 	}
-	if(block.size() > 1)
+	if(block.size() > 1){
 		blocks.push_back(block);
+	}
 }
 
 bool Master::unimusRec_isAvailable(int c, Formula &subset, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap){
 	for(auto bid: blocks_hitmap[c]){
                 bool covered = false;
-                for(auto &c2: blocks[bid]){
+                for(int i = 1; i < blocks[bid].size(); i++){ //the first element of a block is the mid of the MUS
+			auto &c2 = blocks[bid][i];
                         if(c2 != c && !subset[c2]){
                                 covered = true;
                                 break;
@@ -175,31 +177,20 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		cover[c1] = true;
 		unimus_attempts++;	
 		if(seed.empty()) continue;
-		
 		if(DBG){
 			if(!is_subset(base, seed)) print_err("the base is not a subset of the seed");
 			if(is_valid(seed)) print_err("the rotated seed is valid A");
-		}
+			if(!is_subset(seed, cover)) print_err("the seed is not a subset of the cover");
+			for(auto mi: localMuses){
+				if(is_subset(seed, muses[mi].bool_mus)) print_err("the seed is a subset of a local MUS " + to_string(mi));
+			}
+			for(int mi = 0; mi < muses.size(); mi++){
+				if(is_subset(seed, muses[mi].bool_mus)) print_err("the seed is a subset of a MUS " + to_string(mi));
+			}
+		}		
 
-       		//the check is now done inside the propagation procedure
-		/*
-		bool ok = true;
-		for(auto &block: blocks){
-			int musId = block[0];
-			ok = muses[musId].bool_mus[c1];
-			if(!ok){
-				for(int k = 1; k < block.size(); k++){
-					ok = !seed[block[k]];
-					if(ok) break;
-				}
-			}
-			if(!ok){
-				break;
-			}
-		}
-		if(!ok) continue;*/
 		if(DBG){
-			if(is_valid(seed)) print_err("the rotated seed is validi");
+			if(is_valid(seed)) print_err("the rotated seed is valid");
 		}
 		unimus_rotated++;
 		MUS mus = shrink_formula(seed);
@@ -208,13 +199,11 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		unimusRec_add_block(m1, muses.size() - 1, blocks, blocks_hitmap);
 		unimus_rotation_stack.push(muses.size() - 1);
 	}
-	cout << "propagates " << iter << endl;
-	
 }
 
 
-void Master::unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset, vector<int> &localMuses){
-        //unimus_use_stack = false;
+void Master::unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset){
+	vector<int> localMuses {muses.size() - 1};
 	unimus_rotation_stack.push(muses.size() - 1);
 	int streak = 0;
 	while(!unimus_rotation_stack.empty()){
@@ -233,7 +222,7 @@ void Master::unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset, vector<
 	}
 }
 
-void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &localMuses){
+void Master::unimusRec(Formula subset, Formula crits, int depth){
 	Formula processed(dimension, false);
 	currentSubset = subset;
 	unimusRecDepth = depth;
@@ -247,19 +236,8 @@ void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &lo
         Formula top;
         int streak = 0;
         int iteration = 0;
+	bool unsatFound = false;
         while(true){
-		if(DBG){
-			for(int mid = 0; mid < muses.size(); mid++){
-				if(is_subset(muses[mid].bool_mus, subset)){
-					if(find(localMuses.begin(), localMuses.end(), mid) == localMuses.end()){
-						string message = "localMuses is incomplete, depth " + to_string(depth)
-							+ ", muses " + to_string(muses.size())
-							+ ", localMuses " + to_string(localMuses.size());
-						print_err(message);
-					}
-				}
-			}
-		}
 		
 		iteration++;
 		top = explorer->get_top_unexplored(assumptions);
@@ -268,13 +246,13 @@ void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &lo
                 }
                 Formula origin_top = top;
                 if(!is_valid(top, true, true)){
-                        streak = 0;
+                        unsatFound = true;
+			streak = 0;
                         MUS mus = shrink_formula(top, crits);
                         //MUS mus = shrink_formula(top);
 			mark_MUS(mus);
-			localMuses.push_back(muses.size() - 1);
                         //if(depth > 0)
-				unimusRec_mark_mus(mus, origin_top, subset, localMuses);
+				unimusRec_mark_mus(mus, origin_top, subset);
                 }
                 else{   //top is necessarily an MSS of subset
                         block_down(top);
@@ -290,7 +268,7 @@ void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &lo
                                 crits[crit_all[0]] = true;
                                 continue;
                         }
-			if(localMuses.empty()) continue; //optimization step
+			if(!unsatFound) continue; // optimization step
                         for(auto crit: crit_all){
 				if(processed[crit])
 					continue;
@@ -306,23 +284,11 @@ void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &lo
 
 				Formula rec_subset = subset;
                                 rec_subset[crit] = false;
-				vector<int> recLocalMuses;
-				for(auto mid: localMuses){
-					if(!muses[mid].bool_mus[crit]){
-						recLocalMuses.push_back(mid);
-					}
-				}
 
 				//pick a random subset of the rotationMuses
-				unimusRec(rec_subset, crits, depth + 1, recLocalMuses);
+				unimusRec(rec_subset, crits, depth + 1);
 				currentSubset = subset;
 				unimusRecDepth = depth;
-				int lastMid = localMuses[localMuses.size() - 1];
-				for(auto m: recLocalMuses){
-					if(m > lastMid){
-						localMuses.push_back(m);
-					}
-				}
                         }
                 }
         }
@@ -330,18 +296,19 @@ void Master::unimusRec(Formula subset, Formula crits, int depth, vector<int> &lo
 
 //return false if Unexplored is empty
 bool Master::unimusRecRefine(){
-	int found = 0;
+	int foundMUS = 0;
+	int foundMSS = 0;
         unimus_refines++;
 	Formula seed = explorer->get_unexplored(1, false);
-        while(found < 1 && !seed.empty()){
+        while(foundMUS < 1 && foundMSS < 50 && !seed.empty()){
                 if(!is_valid(seed, true, false)){
                         MUS mus = shrink_formula(seed);
                         //unimus_mark_mus(mus);
                         mark_MUS(mus);
-                        found++;
+                        foundMUS++;
                 }else{
                         mark_MSS(seed);
-			found++;
+			foundMSS++;
                 }
                 seed = explorer->get_unexplored(1, false);
         }
@@ -351,9 +318,6 @@ bool Master::unimusRecRefine(){
 
 void Master::unimusRecMain(){
 	while(unimusRecRefine()){                
-		vector<int> allMids;
-		for(int i = 0; i < muses.size(); i++)
-			allMids.push_back(i);	
-		unimusRec(uni,Formula(dimension, false), 0, allMids);
+		unimusRec(uni,Formula(dimension, false), 0);
 	}
 }

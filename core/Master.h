@@ -116,10 +116,10 @@ public:
 	//unimusRec
 	void unimusRecMain();
 	bool unimusRecRefine();
-	void unimusRec(Formula subset, Formula crits, int depth, std::vector<int> &localMuses);
+	void unimusRec(Formula subset, Formula crits, int depth);
 	void unimusRec_add_block(MUS &m1, int mid, vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap);
 	void unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector<int> &localMuses);
-	void unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset, vector<int> &localMuses);
+	void unimusRec_mark_mus(MUS &mus, Formula cover, Formula subset);
 	Formula unimusRec_propagateToUnsat(Formula base, Formula cover, vector<pair<int,int>> implied, 
 		vector<vector<int>> &blocks, vector<vector<int>> &blocks_hitmap);
 	Formula unimusRec_propagateRefine(Formula &conflict, Formula &base, vector<pair<int,int>> &implied);
