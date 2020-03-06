@@ -192,6 +192,7 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		if(DBG){
 			if(is_valid(seed)) print_err("the rotated seed is valid");
 		}
+		cout << "parent MUS " << mid << " " << iter << endl;
 		unimus_rotated++;
 		MUS mus = shrink_formula(seed);
 		mark_MUS(mus);
@@ -283,7 +284,11 @@ void Master::unimusRec(Formula subset, Formula crits, int depth){
 				}
 
 				Formula rec_subset = subset;
-                                rec_subset[crit] = false;
+                                //rec_subset[crit] = false;
+
+				for(auto crit2: crit_all)
+					rec_subset[crit2] = false;
+				rec_subset[crit] = true;
 
 				//pick a random subset of the rotationMuses
 				unimusRec(rec_subset, crits, depth + 1);
@@ -301,10 +306,12 @@ bool Master::unimusRecRefine(){
         unimus_refines++;
 	Formula seed = explorer->get_unexplored(1, false);
         while(foundMUS < 1 && foundMSS < 50 && !seed.empty()){
-                if(!is_valid(seed, true, false)){
+                Formula origin_top = seed;
+		if(!is_valid(seed, true, false)){
                         MUS mus = shrink_formula(seed);
                         //unimus_mark_mus(mus);
                         mark_MUS(mus);
+				unimusRec_mark_mus(mus, origin_top, origin_top);
                         foundMUS++;
                 }else{
                         mark_MSS(seed);

@@ -49,6 +49,7 @@ public:
 	//data structures for maintaining criticals
 	std::vector<bool> critical; //critical[c] = true iff c forms singleton MCS
 	std::vector<bool> maybe_critical; //critical[c] = true iff c is a part of some MCS
+	std::vector<bool> testedForCriticality;
 	std::vector<std::vector<int>> mcses; //serves for storing mcses
 	std::vector<std::vector<int>> parent_mcses; //parent_mcses[c] holds ids of MCSes stored in mcses
 	bool is_critical(int c, std::vector<bool> &subset); // returns true if c is critical for subset

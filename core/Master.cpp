@@ -227,14 +227,14 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			if(verbose) cout << "crits.size() = f.size()" << endl;
 			return muses.back();
 		}
-		if(false && (f_size - c_crits < 4) && !is_valid(crits, false, false)){		
+		if((f_size - c_crits < 3) && !is_valid(crits, false, false)){		
 		//if(!is_valid(crits, false, false)){		
 			muses.push_back(MUS(crits, -1, muses.size(), f_size));//-1 duration means skipped shrink
 			if(verbose) cout << "crits are unsat on themself" << endl;
 			return muses.back();
 		}
 	}
-	if(verbose) cout << "calling satSolver->shrink" << endl;
+	if(verbose) cout << "calling satSolver->shrink with " << count_ones(crits) << " crits" << endl;
 	
 	if(DBG){
 		if(is_valid(f)) print_err("shrink_formula: the seed is valid");
@@ -253,6 +253,23 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
 	muses.push_back(MUS(mus, duration, muses.size(), f_size));
 	if(verbose) cout << "shrunk via satSolver->shrink" << endl;
+		
+	if(muses.size() > 2){
+		int limit = count_ones(explorer->mus_intersection) / 10;	
+		cout << "limit: " << limit << endl;
+		for(int i = 0; i < dimension; i++){
+			if(explorer->mus_intersection[i] && !explorer->testedForCriticality[i] && !explorer->critical[i] && mus[i]){
+				Formula seed (dimension, true);
+				seed[i] = false;
+				explorer->testedForCriticality[i] = true;
+				if(is_valid(seed, false, false)){
+					explorer->block_down(seed);
+				}
+				if(limit-- < 0) break;
+			}
+		}
+	}
+	
 	return muses.back();
 }
 

@@ -29,6 +29,7 @@ Explorer::Explorer(int v, bool verb){
 	//init local critical structures
 	critical.resize(dimension, false);
 	maybe_critical.resize(dimension, false);
+	testedForCriticality.resize(dimension, false);
 	parent_mcses.resize(dimension, std::vector<int>());
 	criticals = 0;
 
