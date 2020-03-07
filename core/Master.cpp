@@ -66,6 +66,8 @@ Master::Master(string filename, string alg, string ssolver){
 	critical_extension_saves = 0;
 	unimus_refines = 0;
 	satSolver->explorer = explorer;
+	unex_unsat_time = unex_sat_time = total_shrink_time = 0;
+	total_shrinks = 0;
 }
 
 Master::~Master(){
@@ -94,9 +96,12 @@ void Master::block_down(Formula formula){
 // check formula for satisfiability
 // core and grow controls optional extraction of unsat core and model extension (replaces formula)
 bool Master::is_valid(Formula &formula, bool core, bool grow){
+	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
 	bool sat = satSolver->solve(formula, core, grow); 
-	if(sat) unex_sat++;
-	else unex_unsat++;
+	chrono::high_resolution_clock::time_point end_time = chrono::high_resolution_clock::now();
+	auto duration = chrono::duration_cast<chrono::microseconds>( end_time - start_time ).count() / float(1000000);
+	if(sat){ unex_sat++; unex_sat_time += duration; }
+	else { unex_unsat++; unex_unsat_time += duration; }
 	return sat;
 }
 
@@ -254,7 +259,17 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	muses.push_back(MUS(mus, duration, muses.size(), f_size));
 	if(verbose) cout << "shrunk via satSolver->shrink" << endl;
 		
-	if(muses.size() > 2){
+	total_shrinks++;
+	total_shrink_time += duration;
+	
+	//If the average time of performing sat. checks with result "satisfiable" is relatively low compared 
+	//to the average time of shrinking, we attempt to collect singleton MCSes from the mus_intersection
+	float avg_shrink = total_shrink_time / total_shrinks;
+	float avg_sat_check = (unex_sat == 0)? 10000000 : (unex_sat_time/unex_sat);
+	cout << "avg_shrink " << avg_shrink << ", avg sat: " << avg_sat_check << endl;
+	cout << "ratio: " << (avg_shrink / avg_sat_check) << endl;
+	bool cheap_sat_checks = (avg_shrink / avg_sat_check) > 5;
+	if(muses.size() > 2 && cheap_sat_checks ){
 		int limit = count_ones(explorer->mus_intersection) / 10;	
 		cout << "limit: " << limit << endl;
 		for(int i = 0; i < dimension; i++){
@@ -269,7 +284,7 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 			}
 		}
 	}
-	
+		
 	return muses.back();
 }
 

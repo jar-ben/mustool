@@ -47,6 +47,11 @@ public:
 	int hash;
 	int unex_unsat;
 	int unex_sat;
+	float unex_unsat_time;
+	float unex_sat_time;
+	float total_shrink_time;
+	int total_shrinks;
+
 	int guessed;
 	int rotated_msses;
 	chrono::high_resolution_clock::time_point initial_time;

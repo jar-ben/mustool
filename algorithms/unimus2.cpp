@@ -192,7 +192,6 @@ void Master::unimusRec_rotate_mus(int mid, Formula cover, Formula subset, vector
 		if(DBG){
 			if(is_valid(seed)) print_err("the rotated seed is valid");
 		}
-		cout << "parent MUS " << mid << " " << iter << endl;
 		unimus_rotated++;
 		MUS mus = shrink_formula(seed);
 		mark_MUS(mus);
