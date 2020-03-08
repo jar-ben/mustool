@@ -264,24 +264,24 @@ MUS& Master::shrink_formula(Formula &f, Formula crits){
 	
 	//If the average time of performing sat. checks with result "satisfiable" is relatively low compared 
 	//to the average time of shrinking, we attempt to collect singleton MCSes from the mus_intersection
-	float avg_shrink = total_shrink_time / total_shrinks;
-	float avg_sat_check = (unex_sat == 0)? 10000000 : (unex_sat_time/unex_sat);
-	cout << "avg_shrink " << avg_shrink << ", avg sat: " << avg_sat_check << endl;
-	cout << "ratio: " << (avg_shrink / avg_sat_check) << endl;
-	bool cheap_sat_checks = (avg_shrink / avg_sat_check) > 5;
-	if(muses.size() > 2 && cheap_sat_checks ){
-		int limit = count_ones(explorer->mus_intersection) / 10;	
-		cout << "limit: " << limit << endl;
+	if(muses.size() > 4){
+		float ratio = (total_shrink_time / total_shrinks) / ((unex_sat == 0)? 10000000 : (unex_sat_time/unex_sat));
+		int active_iterations = 0;
 		for(int i = 0; i < dimension; i++){
 			if(explorer->mus_intersection[i] && !explorer->testedForCriticality[i] && !explorer->critical[i] && mus[i]){
+				//cout << "ratio " << ratio << ", active_iters " << active_iterations << endl;
+				active_iterations++;
 				Formula seed (dimension, true);
 				seed[i] = false;
 				explorer->testedForCriticality[i] = true;
 				if(is_valid(seed, false, false)){
-					explorer->block_down(seed);
+					mark_MSS(seed);
+					//explorer->block_down(seed);
 				}
-				if(limit-- < 0) break;
 			}
+			ratio = (total_shrink_time / total_shrinks) / ((unex_sat == 0)? 10000000 : (unex_sat_time/unex_sat));
+			if(active_iterations > (ratio * 1))
+				break;
 		}
 	}
 		
