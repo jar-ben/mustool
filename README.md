@@ -94,5 +94,21 @@ Besides the above mentioned tools, we also use two single MUS extraction algorit
 * [8] https://bitbucket.org/gkatsi/mcsmus
 * [9] Mark H. Liffiton, Alessandro Previti, Ammar Malik, João Marques-Silva: Fast, flexible MUS enumeration. Constraints 21(2), 2016.
 
+## Citing
+If you use our tool (MUST) in your research, please cite our paper that presented MUST:
+```
+@inproceedings{DBLP:conf/tacas/BendikC20,
+  author    = {Jaroslav Bend{\'{\i}}k and
+               Ivana Cern{\'{a}}},
+  title     = {{MUST:} Minimal Unsatisfiable Subsets Enumeration Tool},
+  booktitle = {{TACAS} {(1)}},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12078},
+  pages     = {135--152},
+  publisher = {Springer},
+  year      = {2020}
+}
+```
+
 ## Contact
 In case of any troubles, do not hesitate to contact me, Jaroslav Bendik, the developer of the tool, at xbendik=at=fi.muni.cz.
