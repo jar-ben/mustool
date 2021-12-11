@@ -27,6 +27,8 @@ int main(int argc, char *argv[]){
 
 		TCLAP::ValueArg<std::string> output("o","output-file","A file where the identified MUSes will be exported to.",false,"","string");
 		cmd.add(output);
+		TCLAP::ValueArg<std::string> hardConstraints("","hard-constraints","A file with hard constraints.",false,"","string");
+		cmd.add(hardConstraints);
 		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
 		vector<string> allowedShrinks {"default", "muser"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
@@ -63,7 +65,11 @@ int main(int argc, char *argv[]){
 		solver.satSolver->shrink_alg = shr;
 		solver.get_implies = getImplied.getValue();
 		solver.criticals_rotation = criticalsRotation.getValue(); //criticals_rotation;
-		
+	
+        if(solver.domain == "smt" && hardConstraints.getValue() != ""){
+            solver.satSolver->addHardConstraints(hardConstraints.getValue());
+        }
+
 		solver.enumerate();
 		
 		cout << "Enumeration completed" << endl;

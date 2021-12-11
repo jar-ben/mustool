@@ -23,4 +23,5 @@ public:
 	std::vector<bool> shrink(std::vector<bool> &formula, std::vector<bool> crits = std::vector<bool>());	
 	bool solve(std::vector<bool> &formula, bool core = false, bool grow = false);
 	std::string toString(std::vector<bool> &mus);
+    void addHardConstraints(std::string filename);
 };

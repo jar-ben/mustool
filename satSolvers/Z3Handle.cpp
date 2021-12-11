@@ -7,6 +7,15 @@
 #include "core/misc.h"
 using namespace z3;
 
+void Z3Handle::addHardConstraints(std::string filename){
+    Z3_ast_vector a_vec = ctx.parse_file(filename.c_str());
+	int size = Z3_ast_vector_size(ctx, a_vec);
+    for(unsigned int i = 0; i < size; i++){
+        expr e(ctx, Z3_ast_vector_get(ctx, a_vec, i));
+        s->add(e);
+    }
+}
+
 void Z3Handle::addExpr(expr &e){
 	std::string control_name = "ceasar" + std::to_string(clauses.size()); //name and create control variables
 	expr control = ctx.bool_const(control_name.c_str());

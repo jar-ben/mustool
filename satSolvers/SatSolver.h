@@ -25,6 +25,7 @@ public:
 	virtual std::vector<bool> shrink(std::vector<bool> &f, std::vector<bool> crits = std::vector<bool>());
 	virtual std::vector<bool> grow(std::vector<bool> &f);
 	void exportMUS(std::vector<bool> mus, std::string outputFile);
+    virtual void addHardConstraints(std::string filename) {};
 };
 
 
