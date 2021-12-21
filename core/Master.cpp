@@ -37,16 +37,16 @@ Master::Master(string filename, string alg){
 		print_err("The input file has to have one of these extensions: .smt2, .ltl, or .cnf. See example files in ./examples/ folder.");
 	dimension = satSolver->dimension;	
 	cout << "Number of constraints in the input set:" << dimension << endl;
-        explorer = new Explorer(dimension);	
+    explorer = new Explorer(dimension);	
 	explorer->satSolver = satSolver;
-        verbose = false;
+    verbose = 2;
 	depthMUS = 0;
 	dim_reduction = 0.5;
 	output_file = "";
 	validate_mus_c = false;
 	current_depth = 0;
 	unex_sat = unex_unsat = 0;
-        hash = random_number();
+    hash = random_number();
 	satSolver->hash = hash;
 }
 
@@ -96,17 +96,17 @@ void Master::validate_mus(Formula &f){
 MUS& Master::shrink_formula(Formula &f, Formula crits){
 	int f_size = count_ones(f);
 	chrono::high_resolution_clock::time_point start_time = chrono::high_resolution_clock::now();
-	if(verbose) cout << "shrinking dimension: " << f_size << endl;
+	if(verbose >= 3) cout << "shrinking dimension: " << f_size << endl;
 	f_size = count_ones(f);
 	if(crits.empty()) crits = explorer->critical;
 	if(get_implies){ //get the list of known critical constraints	
 		explorer->getImplied(crits, f);	
-		if(verbose) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
+		if(verbose >= 3) cout << "# of known critical constraints before shrinking: " << count_ones(crits) << endl;	
 		if(criticals_rotation && domain == "sat"){
 			int before = count_ones(crits);
 			MSHandle *msSolver = static_cast<MSHandle*>(satSolver);
 			msSolver->criticals_rotation(crits, f);
-			if(verbose) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
+			if(verbose >= 3) cout << "# of found critical constraints by criticals rotation: " << (count_ones(crits) - before) << endl;
 		}
 		float c_crits = count_ones(crits);
 		if(int(c_crits) == f_size){ // each constraint in f is critical for f, i.e. it is a MUS 
@@ -137,14 +137,23 @@ void Master::mark_MUS(MUS& f, bool block_unex){
 
 	chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::microseconds>( now - initial_time ).count() / float(1000000);
+    
+    if(verbose >= 2){
         cout << "Found MUS #" << muses.size() <<  ", mus dimension: " << f.dimension;
-	cout << ", checks: " << satSolver->checks << ", time: " << duration;
-	cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
-	cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
-	cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
-	cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
-	cout << ", shrinks: " << satSolver->shrinks;
-	cout << endl;
+        cout << ", checks: " << satSolver->checks << ", time: " << duration;
+        cout << ", unex sat: " << unex_sat << ", unex unsat: " << unex_unsat << ", criticals: " << explorer->criticals;
+        cout << ", intersections: " << std::count(explorer->mus_intersection.begin(), explorer->mus_intersection.end(), true);
+        cout << ", union: " << std::count(explorer->mus_union.begin(), explorer->mus_union.end(), true) << ", dimension: " << dimension;
+        cout << ", seed dimension: " << f.seed_dimension << ", shrink duration: " << f.duration;
+        cout << ", shrinks: " << satSolver->shrinks;
+        cout << endl;
+    }else if(verbose == 1){
+        cout << "MUS ";
+        for(auto c: f.int_mus){
+            cout << c << " ";
+        }
+        cout << endl;
+    }
 
 	if(output_file != "")
 		write_mus_to_file(f);

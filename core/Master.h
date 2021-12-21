@@ -30,7 +30,7 @@ public:
 	int dimension; //the number of constraints
 	string algorithm; //MUS enumeration algorithm to be used
 	int isValidExecutions;
-	bool verbose; //TODO: make it int based 
+	int verbose; 
 	string output_file;
 	bool validate_mus_c;
 	float mus_approx;

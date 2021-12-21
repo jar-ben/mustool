@@ -38,6 +38,13 @@ void SatSolver::exportMUS(std::vector<bool> mus, std::string outputFile){
 	ofstream file;
 	file.open(outputFile, std::ios_base::app);
 	file << "MUS #" << exported_muses << "\n";
+    file << "indices: ";
+    for(unsigned i = 0; i < dimension; i++){
+        if(mus[i]){
+            file << i << " ";
+        }
+    }
+    file << "\n";
 	file << toString(mus) << "\n";
 	file.close();
 }

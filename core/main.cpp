@@ -29,7 +29,8 @@ int main(int argc, char *argv[]){
 		cmd.add(output);
 		TCLAP::ValueArg<std::string> hardConstraints("","hard-constraints","A file with hard constraints.",false,"","string");
 		cmd.add(hardConstraints);
-		TCLAP::SwitchArg verbose("v","verbose","Verbose output", cmd, false);
+        TCLAP::ValueArg<int> verbose("v","verbose","Verbose output", false, 2, "A positive integer value.");
+        cmd.add(verbose);
 		vector<string> allowedShrinks {"default", "muser"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
 		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
