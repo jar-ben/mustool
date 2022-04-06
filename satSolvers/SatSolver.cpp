@@ -1,5 +1,6 @@
 #include "SatSolver.h"
 #include <fstream>
+#include "core/misc.h"
 
 using namespace std;
 
@@ -11,6 +12,9 @@ vector<bool> SatSolver::shrink(std::vector<bool> &f, std::vector<bool> crits){
 	vector<bool> s = f;
 	for(int i = 0; i < dimension; i++){
 		if(s[i] && !crits[i]){
+            if(count_ones(s) <= cardinalityThreshold) {
+                break; //producing just approximate MUSes when the flag cardinalityThreshold is used
+            }
 			s[i] = false;
 			if(solve(s, true))
 				s[i] = true;

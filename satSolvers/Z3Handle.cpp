@@ -79,6 +79,8 @@ std::vector<bool> Z3Handle::shrink(std::vector<bool> &formula, std::vector<bool>
 	int cores = 3;
 	for(int i = 0; i < formula.size(); i++){
 		if(shrinked[i] && !crits[i]){
+			if(count_ones(shrinked) <= cardinalityThreshold) {                                                                                                                                     break; //producing just approximate MUSes when the flag cardinalityThreshold is used
+            }
 			shrinked[i] = false;
 			checks++;
 			shrinked[i] = solve(shrinked, cores > 0, false);

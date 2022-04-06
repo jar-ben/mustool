@@ -48,6 +48,7 @@ Master::Master(string filename, string alg){
 	unex_sat = unex_unsat = 0;
     hash = random_number();
 	satSolver->hash = hash;
+    satSolver->cardinalityThreshold = 0;
 }
 
 Master::~Master(){

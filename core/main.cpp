@@ -31,6 +31,8 @@ int main(int argc, char *argv[]){
 		cmd.add(hardConstraints);
         TCLAP::ValueArg<int> verbose("v","verbose","Verbose output", false, 2, "A positive integer value.");
         cmd.add(verbose);
+        TCLAP::ValueArg<int> cardinalityThreshold("","cardinality-threshold","Sets the number k such that shrinking of an unsat set N stops when |N| <= k, i.e., the produced MUSes might not be minimal.", false, 0, "A positive integer value.");
+        cmd.add(cardinalityThreshold);
 		vector<string> allowedShrinks {"default", "muser"};
 		TCLAP::ValuesConstraint<string> allowedValsShrink(allowedShrinks);
 		TCLAP::ValueArg<std::string> shrink("s","shrink","Specifies the shrinking algorithm (single MUS extraction subroutine). In the SMT and LTL domain, only the default one is supported. In SAT domain, you can opt between default (implemented as mcsmus) and muser.",false,"default",&allowedValsShrink);
@@ -60,13 +62,14 @@ int main(int argc, char *argv[]){
 		solver.verbose = verbose.getValue();
 		solver.depthMUS = (recursionDepthLimit.getValue() >= 0)? recursionDepthLimit.getValue() : solver.dimension;
 		solver.dim_reduction = reductionCoeff.getValue();
-		solver.validate_mus_c = verify.getValue();		
+		solver.validate_mus_c = verify.getValue();	
 		std::string shr = shrink.getValue();
 		if(solver.domain != "sat") shr = "default";
 		solver.satSolver->shrink_alg = shr;
 		solver.get_implies = getImplied.getValue();
 		solver.criticals_rotation = criticalsRotation.getValue(); //criticals_rotation;
-	
+        solver.satSolver->cardinalityThreshold = cardinalityThreshold.getValue();
+
         if(solver.domain == "smt" && hardConstraints.getValue() != ""){
             solver.satSolver->addHardConstraints(hardConstraints.getValue());
         }

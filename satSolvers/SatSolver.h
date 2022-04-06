@@ -17,6 +17,7 @@ public:
 	int shrinks;
 	int grows;
 	int exported_muses;
+    int cardinalityThreshold;
 
 	SatSolver(std::string filename): shrink_alg("default"), checks(0), shrinks(0), grows(0), exported_muses(0){}
 	~SatSolver(){}

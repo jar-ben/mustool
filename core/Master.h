@@ -41,7 +41,7 @@ public:
 	int hash;
 	int unex_unsat;
 	int unex_sat;
-	chrono::high_resolution_clock::time_point initial_time;
+    chrono::high_resolution_clock::time_point initial_time;
 	vector<MUS> muses;
 	Explorer* explorer;
 	SatSolver* satSolver; 
