@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cstdlib>
 #include <cmath>
 #include <signal.h>
+#include <cstdio>
 
 namespace {
     std::function<void()> set_interrupt_function;
